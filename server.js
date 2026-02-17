@@ -4,6 +4,7 @@ const userRoutes = require("./routes/userRoutes");
 const listingRoutes = require("./routes/listingRoutes");
 const negotiationRoutes = require("./routes/negotiationRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
+const transportRoutes = require("./routes/transportRoutes");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/negotiations", negotiationRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/transports", transportRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
