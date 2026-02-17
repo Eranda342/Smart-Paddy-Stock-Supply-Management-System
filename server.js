@@ -3,6 +3,7 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const listingRoutes = require("./routes/listingRoutes");
 const negotiationRoutes = require("./routes/negotiationRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
 const app = express();
 
@@ -14,7 +15,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/negotiations", negotiationRoutes);
-
+app.use("/api/transactions", transactionRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
