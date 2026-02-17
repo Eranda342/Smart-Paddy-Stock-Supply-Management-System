@@ -2,6 +2,7 @@ const express = require("express");
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const listingRoutes = require("./routes/listingRoutes");
+const negotiationRoutes = require("./routes/negotiationRoutes");
 
 const app = express();
 
@@ -12,6 +13,7 @@ connectDB();
 app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/listings", listingRoutes);
+app.use("/api/negotiations", negotiationRoutes);
 
 
 // Test Route
