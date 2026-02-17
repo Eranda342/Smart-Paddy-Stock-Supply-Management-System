@@ -1,15 +1,37 @@
 const Listing = require("../models/Listing");
-const User = require("../models/User");
 
+// CREATE LISTING (Protected + Role Restricted)
 const createListing = async (req, res) => {
   try {
-    const { ownerId, listingType, paddyType, quantityKg, pricePerKg, district, address } = req.body;
+    const {
+      listingType,
+      paddyType,
+      quantityKg,
+      pricePerKg,
+      district,
+      address,
+    } = req.body;
 
-    // Check if user exists
-    const user = await User.findById(ownerId);
+    const ownerId = req.user.id;
 
-    if (!user) {
-      return res.status(404).json({ message: "Owner not found" });
+    // Basic validation
+    if (!listingType || !paddyType || !quantityKg || !pricePerKg || !district) {
+      return res.status(400).json({
+        message: "All required fields must be provided",
+      });
+    }
+
+    // Role-based enforcement
+    if (req.user.role === "FARMER" && listingType !== "SELL") {
+      return res.status(403).json({
+        message: "Farmers can only create SELL listings",
+      });
+    }
+
+    if (req.user.role === "MILL_OWNER" && listingType !== "BUY") {
+      return res.status(403).json({
+        message: "Mill owners can only create BUY listings",
+      });
     }
 
     const newListing = new Listing({
