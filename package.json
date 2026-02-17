@@ -1,0 +1,26 @@
+{
+  "name": "smart-paddy-stock-supply-management-system",
+  "version": "1.0.0",
+  "description": "The Smart Paddy Stock & Supply Management System is a web-based platform developed to digitally connect farmers and rice mill owners within a structured and transparent trading environment.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/issues"
+  },
+  "homepage": "https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System#readme",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.2.1"
+  }
+}
