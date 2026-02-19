@@ -1,8 +1,15 @@
 const express = require("express");
 const { createTransport } = require("../controllers/transportController");
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/", createTransport);
+// Only MILL_OWNER can create transport
+router.post(
+  "/",
+  protect,
+  authorizeRoles("MILL_OWNER"),
+  createTransport
+);
 
 module.exports = router;

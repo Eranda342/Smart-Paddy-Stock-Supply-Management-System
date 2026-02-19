@@ -7,6 +7,7 @@ const listingRoutes = require("./routes/listingRoutes");
 const negotiationRoutes = require("./routes/negotiationRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const transportRoutes = require("./routes/transportRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/listings", listingRoutes);
 app.use("/api/negotiations", negotiationRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/transports", transportRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Test route
 app.get("/", (req, res) => {

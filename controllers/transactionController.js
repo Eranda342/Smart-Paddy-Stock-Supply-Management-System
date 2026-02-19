@@ -6,28 +6,31 @@ const confirmTransaction = async (req, res) => {
   try {
     const { negotiationId, finalPricePerKg, transportRequired } = req.body;
 
-    // Find negotiation
     const negotiation = await Negotiation.findById(negotiationId);
 
     if (!negotiation) {
       return res.status(404).json({ message: "Negotiation not found" });
     }
 
-    // Update negotiation status
+    // Only involved users can confirm
+    if (
+      req.user.id !== negotiation.farmer.toString() &&
+      req.user.id !== negotiation.millOwner.toString()
+    ) {
+      return res.status(403).json({
+        message: "Not authorized to confirm this transaction",
+      });
+    }
+
     negotiation.status = "AGREED";
     await negotiation.save();
 
-    // Find listing
     const listing = await Listing.findById(negotiation.listing);
-
-    // Close listing
     listing.status = "CLOSED";
     await listing.save();
 
-    // Calculate total
     const totalAmount = finalPricePerKg * listing.quantityKg;
 
-    // Create transaction
     const transaction = new Transaction({
       negotiation: negotiation._id,
       listing: listing._id,

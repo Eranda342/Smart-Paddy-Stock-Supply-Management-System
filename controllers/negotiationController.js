@@ -1,13 +1,11 @@
 const Negotiation = require("../models/Negotiation");
 const Listing = require("../models/Listing");
-const User = require("../models/User");
 
-// Create negotiation
+// CREATE NEGOTIATION
 const createNegotiation = async (req, res) => {
   try {
-    const { listingId, farmerId, millOwnerId, message, offeredPrice } = req.body;
+    const { listingId, message, offeredPrice } = req.body;
 
-    // Check listing exists
     const listing = await Listing.findById(listingId);
     if (!listing) {
       return res.status(404).json({ message: "Listing not found" });
@@ -15,11 +13,11 @@ const createNegotiation = async (req, res) => {
 
     const negotiation = new Negotiation({
       listing: listingId,
-      farmer: farmerId,
-      millOwner: millOwnerId,
+      farmer: listing.owner,
+      millOwner: req.user.id,
       messages: [
         {
-          sender: millOwnerId,
+          sender: req.user.id,
           message,
           offeredPrice,
         },
@@ -38,10 +36,10 @@ const createNegotiation = async (req, res) => {
   }
 };
 
-// Add message
+// ADD MESSAGE
 const addMessage = async (req, res) => {
   try {
-    const { senderId, message, offeredPrice } = req.body;
+    const { message, offeredPrice } = req.body;
 
     const negotiation = await Negotiation.findById(req.params.id);
 
@@ -49,8 +47,18 @@ const addMessage = async (req, res) => {
       return res.status(404).json({ message: "Negotiation not found" });
     }
 
+    // Only involved users can send message
+    if (
+      req.user.id !== negotiation.farmer.toString() &&
+      req.user.id !== negotiation.millOwner.toString()
+    ) {
+      return res.status(403).json({
+        message: "You are not authorized for this negotiation",
+      });
+    }
+
     negotiation.messages.push({
-      sender: senderId,
+      sender: req.user.id,
       message,
       offeredPrice,
     });

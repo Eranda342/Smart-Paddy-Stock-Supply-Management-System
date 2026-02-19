@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false, // 🔒 Hide password from queries
     },
 
     role: {
@@ -40,12 +41,6 @@ const userSchema = new mongoose.Schema(
     },
 
     businessDetails: {
-      businessName: {
-        type: String,
-      },
-      registrationNumber: {
-        type: String,
-      },
       verificationStatus: {
         type: String,
         enum: ["PENDING", "APPROVED", "REJECTED"],
@@ -53,9 +48,7 @@ const userSchema = new mongoose.Schema(
       },
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("User", userSchema);
