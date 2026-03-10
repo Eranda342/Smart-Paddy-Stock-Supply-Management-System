@@ -19,8 +19,18 @@ const app = express();
 connectDB();
 
 // ================= MIDDLEWARE =================
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+
 app.use(express.json());
+
+// ================= HEALTH CHECK =================
+app.get("/", (req, res) => {
+  res.send("AgroBridge API is running");
+});
 
 // ================= ROUTES =================
 app.use("/api/users", userRoutes);
