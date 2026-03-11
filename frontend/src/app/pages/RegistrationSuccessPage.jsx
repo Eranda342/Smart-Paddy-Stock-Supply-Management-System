@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router';
+﻿import { Link } from 'react-router-dom';
 import { Sprout, CheckCircle2, Clock } from 'lucide-react';
 
 export default function RegistrationSuccessPage() {

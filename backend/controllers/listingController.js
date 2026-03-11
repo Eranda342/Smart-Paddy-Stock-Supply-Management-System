@@ -10,6 +10,7 @@ const createListing = async (req, res) => {
       pricePerKg,
       district,
       address,
+      description
     } = req.body;
 
     const ownerId = req.user.id;
@@ -44,6 +45,7 @@ const createListing = async (req, res) => {
         district,
         address,
       },
+      description   
     });
 
     await newListing.save();

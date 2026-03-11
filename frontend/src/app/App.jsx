@@ -1,6 +1,6 @@
-﻿import { RouterProvider } from 'react-router';
-import { router } from './routes';
-import { ThemeProvider } from './contexts/ThemeContext';
+﻿import { RouterProvider } from "react-router-dom";
+import { router } from "./routes.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 export default function App() {
   return (

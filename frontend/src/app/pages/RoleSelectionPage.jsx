@@ -1,4 +1,4 @@
-﻿import { Link, useNavigate } from 'react-router';
+﻿import { Link, useNavigate } from 'react-router-dom';
 import { Sprout, User, Building2 } from 'lucide-react';
 
 export default function RoleSelectionPage() {

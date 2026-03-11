@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router';
+﻿import { Link } from 'react-router-dom';
 import { Sprout, ShieldCheck, MessageSquare, DollarSign, TruckIcon } from 'lucide-react';
 
 export default function LandingPage() {

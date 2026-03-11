@@ -1,4 +1,4 @@
-﻿import { Link, useNavigate } from 'react-router';
+﻿import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Sprout, Upload, AlertCircle } from 'lucide-react';
 
