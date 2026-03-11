@@ -9,7 +9,8 @@ backend/.env
 frontend/.env
 
 # Build folders
-frontend/build
+dist
+frontend/dist
 
 # Logs
 *.log
