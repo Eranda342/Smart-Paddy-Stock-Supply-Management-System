@@ -1,8 +1,10 @@
 const Listing = require("../models/Listing");
 
-// CREATE LISTING (Protected + Role Restricted)
+
+// CREATE LISTING
 const createListing = async (req, res) => {
   try {
+
     const {
       listingType,
       paddyType,
@@ -15,23 +17,23 @@ const createListing = async (req, res) => {
 
     const ownerId = req.user.id;
 
-    // Basic validation
+    // Validation
     if (!listingType || !paddyType || !quantityKg || !pricePerKg || !district) {
       return res.status(400).json({
-        message: "All required fields must be provided",
+        message: "All required fields must be provided"
       });
     }
 
-    // Role-based enforcement
+    // Role restrictions
     if (req.user.role === "FARMER" && listingType !== "SELL") {
       return res.status(403).json({
-        message: "Farmers can only create SELL listings",
+        message: "Farmers can only create SELL listings"
       });
     }
 
     if (req.user.role === "MILL_OWNER" && listingType !== "BUY") {
       return res.status(403).json({
-        message: "Mill owners can only create BUY listings",
+        message: "Mill owners can only create BUY listings"
       });
     }
 
@@ -43,16 +45,132 @@ const createListing = async (req, res) => {
       pricePerKg,
       location: {
         district,
-        address,
+        address
       },
-      description   
+      description
     });
 
     await newListing.save();
 
     res.status(201).json({
       message: "Listing created successfully",
-      listing: newListing,
+      listing: newListing
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
+
+// GET MY LISTINGS (Farmer Dashboard)
+const getMyListings = async (req, res) => {
+  try {
+
+    const ownerId = req.user.id;
+
+    const listings = await Listing.find({ owner: ownerId })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      count: listings.length,
+      listings
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
+
+// GET ALL LISTINGS (Marketplace for mill owners)
+const getAllListings = async (req, res) => {
+  try {
+
+    const listings = await Listing.find({ status: "ACTIVE" })
+      .populate("owner", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      count: listings.length,
+      listings
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
+
+// DELETE LISTING
+const deleteListing = async (req, res) => {
+  try {
+
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return res.status(404).json({
+        message: "Listing not found"
+      });
+    }
+
+    // Check ownership
+    if (listing.owner.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Not authorized to delete this listing"
+      });
+    }
+
+    await listing.deleteOne();
+
+    res.status(200).json({
+      message: "Listing deleted successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
+
+// UPDATE LISTING
+const updateListing = async (req, res) => {
+  try {
+
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found" });
+    }
+
+    listing.paddyType = req.body.paddyType || listing.paddyType;
+    listing.quantityKg = req.body.quantityKg || listing.quantityKg;
+    listing.pricePerKg = req.body.pricePerKg || listing.pricePerKg;
+    listing.description = req.body.description || listing.description;
+
+    listing.location.district =
+      req.body.district || listing.location.district;
+
+    listing.location.address =
+      req.body.address || listing.location.address;
+
+    const updatedListing = await listing.save();
+
+    res.json({
+      message: "Listing updated",
+      listing: updatedListing,
     });
 
   } catch (error) {
@@ -60,4 +178,9 @@ const createListing = async (req, res) => {
   }
 };
 
-module.exports = { createListing };
+module.exports = {
+  createListing,
+  getMyListings,
+  updateListing,
+  deleteListing
+};
