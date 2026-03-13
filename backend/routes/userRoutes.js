@@ -1,9 +1,13 @@
 const express = require("express");
-const { registerUser, loginUser } = require("../controllers/userController");
-
 const router = express.Router();
 
-router.post("/register", registerUser);
+const { registerUser, loginUser } = require("../controllers/userController");
+const upload = require("../middleware/upload");
+
+// REGISTER USER (with document upload)
+router.post("/register", upload.single("document"), registerUser);
+
+// LOGIN USER
 router.post("/login", loginUser);
 
 module.exports = router;

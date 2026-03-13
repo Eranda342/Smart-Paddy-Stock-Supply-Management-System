@@ -24,6 +24,10 @@ const listingSchema = new mongoose.Schema(
     required: true,
   },
 
+  availableQuantityKg: {
+    type: Number,
+  },
+
   pricePerKg: {
     type: Number,
     required: true,
@@ -39,7 +43,7 @@ const listingSchema = new mongoose.Schema(
     },
   },
 
-  description: {          
+  description: {
     type: String,
   },
 
@@ -53,5 +57,20 @@ const listingSchema = new mongoose.Schema(
   timestamps: true,
 }
 );
+
+/* Indexes for faster filtering */
+listingSchema.index({ owner: 1 });
+listingSchema.index({ listingType: 1 });
+listingSchema.index({ paddyType: 1 });
+listingSchema.index({ status: 1 });
+listingSchema.index({ "location.district": 1 });
+
+/* Automatically set available quantity */
+listingSchema.pre("save", function (next) {
+  if (!this.availableQuantityKg) {
+    this.availableQuantityKg = this.quantityKg;
+  }
+  next();
+});
 
 module.exports = mongoose.model("Listing", listingSchema);

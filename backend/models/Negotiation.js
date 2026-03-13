@@ -6,13 +6,31 @@ const messageSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+
   message: {
     type: String,
     required: true,
   },
+
   offeredPrice: {
     type: Number,
   },
+
+  quantityKg: {
+    type: Number,
+  },
+
+  type: {
+    type: String,
+    enum: ["MESSAGE", "OFFER", "COUNTER", "SYSTEM"],
+    default: "MESSAGE",
+  },
+
+  isRead: {
+    type: Boolean,
+    default: false,
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,
@@ -25,26 +43,33 @@ const negotiationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Listing",
       required: true,
+      index: true,
     },
 
     farmer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
 
     millOwner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
 
     messages: [messageSchema],
 
+    lastMessage: {
+      type: String,
+    },
+
     status: {
       type: String,
-      enum: ["PENDING", "AGREED", "REJECTED"],
-      default: "PENDING",
+      enum: ["OPEN", "AGREED", "REJECTED", "CANCELLED"],
+      default: "OPEN",
     },
   },
   {

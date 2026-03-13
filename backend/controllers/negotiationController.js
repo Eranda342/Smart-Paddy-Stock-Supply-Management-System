@@ -1,30 +1,61 @@
 const Negotiation = require("../models/Negotiation");
 const Listing = require("../models/Listing");
+const Transaction = require("../models/Transaction");
+const Transport = require("../models/Transport");
+const Notification = require("../models/Notification");
+
 
 // CREATE NEGOTIATION
 const createNegotiation = async (req, res) => {
+
   try {
-    const { listingId, message, offeredPrice } = req.body;
+
+    const { listingId, message, offeredPrice, quantityKg } = req.body;
 
     const listing = await Listing.findById(listingId);
+
     if (!listing) {
       return res.status(404).json({ message: "Listing not found" });
+    }
+
+    // Prevent duplicate negotiations
+    const existing = await Negotiation.findOne({
+      listing: listingId,
+      millOwner: req.user.id,
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: "Negotiation already exists for this listing",
+      });
     }
 
     const negotiation = new Negotiation({
       listing: listingId,
       farmer: listing.owner,
       millOwner: req.user.id,
+
       messages: [
         {
           sender: req.user.id,
           message,
           offeredPrice,
+          quantityKg,
+          type: "OFFER",
         },
       ],
+
+      lastMessage: message,
     });
 
     await negotiation.save();
+
+    // Notify farmer
+    await Notification.create({
+      user: listing.owner,
+      title: "New Negotiation",
+      message: "A mill owner started negotiation on your listing",
+    });
 
     res.status(201).json({
       message: "Negotiation started",
@@ -32,14 +63,76 @@ const createNegotiation = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(500).json({ message: error.message });
+
   }
+
 };
+
+
+
+// GET USER NEGOTIATIONS
+const getNegotiations = async (req, res) => {
+
+  try {
+
+    const negotiations = await Negotiation.find({
+      $or: [
+        { farmer: req.user.id },
+        { millOwner: req.user.id }
+      ]
+    })
+      .populate("farmer", "name")
+      .populate("millOwner", "name")
+      .populate("listing", "paddyType quantityKg pricePerKg")
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json({ negotiations });
+
+  } catch (error) {
+
+    res.status(500).json({ message: error.message });
+
+  }
+
+};
+
+
+
+// GET SINGLE NEGOTIATION
+const getNegotiationById = async (req, res) => {
+
+  try {
+
+    const negotiation = await Negotiation.findById(req.params.id)
+      .populate("farmer", "name")
+      .populate("millOwner", "name")
+      .populate("messages.sender", "name")
+      .populate("listing");
+
+    if (!negotiation) {
+      return res.status(404).json({ message: "Negotiation not found" });
+    }
+
+    res.status(200).json({ negotiation });
+
+  } catch (error) {
+
+    res.status(500).json({ message: error.message });
+
+  }
+
+};
+
+
 
 // ADD MESSAGE
 const addMessage = async (req, res) => {
+
   try {
-    const { message, offeredPrice } = req.body;
+
+    const { message, offeredPrice, quantityKg } = req.body;
 
     const negotiation = await Negotiation.findById(req.params.id);
 
@@ -47,13 +140,13 @@ const addMessage = async (req, res) => {
       return res.status(404).json({ message: "Negotiation not found" });
     }
 
-    // Only involved users can send message
+    // Only farmer or mill owner can message
     if (
       req.user.id !== negotiation.farmer.toString() &&
       req.user.id !== negotiation.millOwner.toString()
     ) {
       return res.status(403).json({
-        message: "You are not authorized for this negotiation",
+        message: "Not authorized for this negotiation",
       });
     }
 
@@ -61,18 +154,129 @@ const addMessage = async (req, res) => {
       sender: req.user.id,
       message,
       offeredPrice,
+      quantityKg,
+      type: offeredPrice ? "COUNTER" : "MESSAGE",
     });
+
+    negotiation.lastMessage = message;
 
     await negotiation.save();
 
     res.status(200).json({
-      message: "Message added",
+      message: "Message sent",
       negotiation,
     });
 
   } catch (error) {
+
     res.status(500).json({ message: error.message });
+
   }
+
 };
 
-module.exports = { createNegotiation, addMessage };
+
+
+// UPDATE NEGOTIATION STATUS
+const updateNegotiationStatus = async (req, res) => {
+
+  try {
+
+    const { status } = req.body;
+
+    const negotiation = await Negotiation.findById(req.params.id)
+      .populate("listing");
+
+    if (!negotiation) {
+      return res.status(404).json({ message: "Negotiation not found" });
+    }
+
+    negotiation.status = status;
+
+    negotiation.messages.push({
+      sender: req.user.id,
+      message: `Negotiation ${status.toLowerCase()}`,
+      type: "SYSTEM",
+    });
+
+    // DEAL AGREED
+    if (status === "AGREED") {
+
+      const listing = await Listing.findById(negotiation.listing._id);
+
+      const lastOffer = negotiation.messages
+        .filter(m => m.offeredPrice)
+        .slice(-1)[0];
+
+      const finalPrice = lastOffer?.offeredPrice || listing.pricePerKg;
+      const quantity = lastOffer?.quantityKg || listing.quantityKg;
+
+      const totalAmount = finalPrice * quantity;
+
+      // Reduce listing quantity
+      listing.quantityKg = Math.max(0, listing.quantityKg - quantity);
+
+      // Close listing if stock finished
+      if (listing.quantityKg === 0) {
+        listing.status = "CLOSED";
+      }
+
+      await listing.save();
+
+      // Create transaction
+      const transaction = await Transaction.create({
+        negotiation: negotiation._id,
+        listing: listing._id,
+        farmer: negotiation.farmer,
+        millOwner: negotiation.millOwner,
+        finalPricePerKg: finalPrice,
+        quantityKg: quantity,
+        totalAmount: totalAmount,
+        status: "CONFIRMED",
+      });
+
+      // Create transport request
+      await Transport.create({
+        transactions: [transaction._id],
+        pickupDistrict: listing.location?.district,
+        status: "SCHEDULED",
+      });
+
+      // Notifications
+      await Notification.create({
+        user: negotiation.farmer,
+        title: "Deal Confirmed",
+        message: "Your negotiation has been accepted.",
+      });
+
+      await Notification.create({
+        user: negotiation.millOwner,
+        title: "Deal Accepted",
+        message: "The farmer accepted your offer.",
+      });
+
+    }
+
+    await negotiation.save();
+
+    res.status(200).json({
+      message: "Negotiation status updated",
+      negotiation,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({ message: error.message });
+
+  }
+
+};
+
+
+module.exports = {
+  createNegotiation,
+  getNegotiations,
+  getNegotiationById,
+  addMessage,
+  updateNegotiationStatus,
+};

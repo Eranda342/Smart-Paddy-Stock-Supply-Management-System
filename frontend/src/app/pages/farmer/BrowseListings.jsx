@@ -1,7 +1,10 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapPin, User, Package } from "lucide-react";
 
 export default function BrowseListings() {
+
+  const navigate = useNavigate();
 
   const [listings, setListings] = useState([]);
 
@@ -19,10 +22,9 @@ export default function BrowseListings() {
   const token = localStorage.getItem("token");
 
   const fetchListings = async () => {
-
     try {
 
-      const res = await fetch("http://localhost:5000/api/listings/marketplace", {
+      const res = await fetch("http://localhost:5000/api/listings/buy-listings", {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -37,14 +39,11 @@ export default function BrowseListings() {
     } catch (error) {
       console.error(error);
     }
-
   };
 
   useEffect(() => {
     fetchListings();
   }, []);
-
-  // Dynamic filter options
 
   const districts = [
     "All",
@@ -55,8 +54,6 @@ export default function BrowseListings() {
     "All",
     ...new Set(listings.map((l) => l.paddyType).filter(Boolean))
   ];
-
-  // Filtering
 
   let filteredListings = listings.filter((listing) => {
 
@@ -80,8 +77,6 @@ export default function BrowseListings() {
 
   });
 
-  // Sorting
-
   if (sortPrice === "low") {
     filteredListings.sort((a, b) => a.pricePerKg - b.pricePerKg);
   }
@@ -90,19 +85,61 @@ export default function BrowseListings() {
     filteredListings.sort((a, b) => b.pricePerKg - a.pricePerKg);
   }
 
+  const handleNegotiate = async (listing) => {
+
+    try {
+
+      const res = await fetch("http://localhost:5000/api/negotiations", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+
+        body: JSON.stringify({
+          listingId: listing._id,
+          offeredPrice: listing.pricePerKg,
+          quantityKg: listing.quantityKg,
+          message: "I'm interested in your listing"
+        })
+
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+
+        alert("Negotiation started");
+
+        navigate("/farmer/negotiations");
+
+      } else {
+
+        alert(data.message);
+
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
+
   return (
     <div className="max-w-[1320px] mx-auto">
 
       <div className="mb-8">
         <h1 className="text-3xl font-semibold mb-2">Browse Listings</h1>
         <p className="text-muted-foreground">
-          Find paddy harvests from verified farmers
+          Find mill owners requesting paddy
         </p>
       </div>
 
       <div className="flex gap-6">
-
-        {/* FILTER PANEL */}
 
         <div className="w-[280px]">
 
@@ -111,8 +148,6 @@ export default function BrowseListings() {
             <h2 className="font-semibold mb-6">Filters</h2>
 
             <div className="space-y-6">
-
-              {/* District */}
 
               <div>
                 <label className="block text-sm font-medium mb-3">
@@ -129,8 +164,6 @@ export default function BrowseListings() {
                   ))}
                 </select>
               </div>
-
-              {/* Paddy Type */}
 
               <div>
 
@@ -149,8 +182,6 @@ export default function BrowseListings() {
                 </select>
 
               </div>
-
-              {/* Quantity */}
 
               <div>
 
@@ -180,8 +211,6 @@ export default function BrowseListings() {
 
               </div>
 
-              {/* Price */}
-
               <div>
 
                 <label className="block text-sm font-medium mb-3">
@@ -210,8 +239,6 @@ export default function BrowseListings() {
 
               </div>
 
-              {/* Sort */}
-
               <div>
 
                 <label className="block text-sm font-medium mb-3">
@@ -229,8 +256,6 @@ export default function BrowseListings() {
                 </select>
 
               </div>
-
-              {/* Reset */}
 
               <button
                 onClick={() => {
@@ -252,8 +277,6 @@ export default function BrowseListings() {
           </div>
 
         </div>
-
-        {/* LISTINGS GRID */}
 
         <div className="flex-1">
 
@@ -282,10 +305,10 @@ export default function BrowseListings() {
 
                     <div>
                       <h3 className="font-semibold">
-                        {listing.owner?.name || "Farmer"}
+                        {listing.owner?.name || "Mill Owner"}
                       </h3>
                       <span className="text-xs text-green-500">
-                        ✓ Verified Farmer
+                        ✓ Verified Buyer
                       </span>
                     </div>
 
@@ -309,7 +332,7 @@ export default function BrowseListings() {
 
                     <div>
                       <div className="text-sm text-muted-foreground mb-1">
-                        Price
+                        Offered Price
                       </div>
                       <div className="text-xl font-semibold text-[#22C55E]">
                         Rs {listing.pricePerKg}/kg
@@ -318,7 +341,7 @@ export default function BrowseListings() {
 
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground mb-1">
-                        Available
+                        Requested
                       </div>
                       <div className="text-xl font-semibold">
                         {listing.quantityKg} kg
@@ -327,7 +350,10 @@ export default function BrowseListings() {
 
                   </div>
 
-                  <button className="w-full py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg font-medium">
+                  <button
+                    onClick={() => handleNegotiate(listing)}
+                    className="w-full py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg font-medium"
+                  >
                     Negotiate
                   </button>
 
@@ -345,5 +371,4 @@ export default function BrowseListings() {
 
     </div>
   );
-
 }

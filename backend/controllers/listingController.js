@@ -17,7 +17,6 @@ const createListing = async (req, res) => {
 
     const ownerId = req.user.id;
 
-    // Validation
     if (!listingType || !paddyType || !quantityKg || !pricePerKg || !district) {
       return res.status(400).json({
         message: "All required fields must be provided"
@@ -58,15 +57,17 @@ const createListing = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
 
 
-// GET MY LISTINGS (Farmer Dashboard)
+// GET MY LISTINGS
 const getMyListings = async (req, res) => {
   try {
 
@@ -81,19 +82,25 @@ const getMyListings = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
 
 
-// GET ALL LISTINGS (Marketplace for mill owners)
+// GET MARKETPLACE LISTINGS
+// Mill owners browse farmer SELL listings
 const getAllListings = async (req, res) => {
   try {
 
-    const listings = await Listing.find({ status: "ACTIVE" })
+    const listings = await Listing.find({
+      listingType: "SELL",
+      status: "ACTIVE"
+    })
       .populate("owner", "name email")
       .sort({ createdAt: -1 });
 
@@ -103,16 +110,79 @@ const getAllListings = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
 
 
-// DELETE LISTING
-const deleteListing = async (req, res) => {
+// GET BUY LISTINGS
+// Farmers browse mill owner BUY listings
+const getBuyListings = async (req, res) => {
+
+  try {
+
+    const listings = await Listing.find({
+      listingType: "BUY",
+      status: "ACTIVE"
+    })
+      .populate("owner", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      count: listings.length,
+      listings
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+
+
+// GET SINGLE LISTING
+const getListingById = async (req, res) => {
+
+  try {
+
+    const listing = await Listing.findById(req.params.id)
+      .populate("owner", "name email");
+
+    if (!listing) {
+      return res.status(404).json({
+        message: "Listing not found"
+      });
+    }
+
+    res.status(200).json({
+      listing
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+
+
+// UPDATE LISTING
+const updateListing = async (req, res) => {
+
   try {
 
     const listing = await Listing.findById(req.params.id);
@@ -123,36 +193,10 @@ const deleteListing = async (req, res) => {
       });
     }
 
-    // Check ownership
     if (listing.owner.toString() !== req.user.id) {
       return res.status(403).json({
-        message: "Not authorized to delete this listing"
+        message: "Not authorized to update this listing"
       });
-    }
-
-    await listing.deleteOne();
-
-    res.status(200).json({
-      message: "Listing deleted successfully"
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    });
-  }
-};
-
-
-
-// UPDATE LISTING
-const updateListing = async (req, res) => {
-  try {
-
-    const listing = await Listing.findById(req.params.id);
-
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
     }
 
     listing.paddyType = req.body.paddyType || listing.paddyType;
@@ -168,19 +212,66 @@ const updateListing = async (req, res) => {
 
     const updatedListing = await listing.save();
 
-    res.json({
-      message: "Listing updated",
-      listing: updatedListing,
+    res.status(200).json({
+      message: "Listing updated successfully",
+      listing: updatedListing
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    res.status(500).json({
+      message: error.message
+    });
+
   }
+
 };
+
+
+
+// DELETE LISTING
+const deleteListing = async (req, res) => {
+
+  try {
+
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return res.status(404).json({
+        message: "Listing not found"
+      });
+    }
+
+    if (listing.owner.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Not authorized to delete this listing"
+      });
+    }
+
+    await listing.deleteOne();
+
+    res.status(200).json({
+      message: "Listing deleted successfully"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+
 
 module.exports = {
   createListing,
   getMyListings,
+  getAllListings,
+  getBuyListings,
+  getListingById,
   updateListing,
   deleteListing
 };

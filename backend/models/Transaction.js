@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const transactionSchema = new mongoose.Schema(
   {
+    // Unique order number for UI
+    orderNumber: {
+      type: String,
+      unique: true,
+    },
+
     negotiation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Negotiation",
@@ -41,20 +47,46 @@ const transactionSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Payment status
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "PAID"],
+      default: "PENDING",
+    },
+
+    // Transport required or not
     transportRequired: {
       type: Boolean,
       default: false,
     },
 
+    // Order lifecycle
     status: {
       type: String,
-      enum: ["CONFIRMED", "COMPLETED"],
-      default: "CONFIRMED",
+      enum: [
+        "ORDER_CREATED",
+        "PAYMENT_PENDING",
+        "PAYMENT_COMPLETED",
+        "TRANSPORT_SCHEDULED",
+        "IN_TRANSPORT",
+        "DELIVERED",
+        "COMPLETED",
+      ],
+      default: "ORDER_CREATED",
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Generate order number automatically
+transactionSchema.pre("save", function (next) {
+  if (!this.orderNumber) {
+    const timestamp = Date.now().toString().slice(-6);
+    this.orderNumber = `AGB-${timestamp}`;
+  }
+  next();
+});
 
 module.exports = mongoose.model("Transaction", transactionSchema);

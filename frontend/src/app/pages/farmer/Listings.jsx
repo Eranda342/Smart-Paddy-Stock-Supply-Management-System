@@ -1,7 +1,10 @@
 ﻿import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function FarmerListings() {
+
+  const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
   const [listings, setListings] = useState([]);
@@ -226,24 +229,26 @@ export default function FarmerListings() {
                 <tr key={listing._id} className="border-b border-border">
 
                   <td className="p-4 font-medium">{listing.paddyType}</td>
-
                   <td className="p-4">{listing.quantityKg} kg</td>
-
                   <td className="p-4">Rs {listing.pricePerKg}/kg</td>
-
                   <td className="p-4">{listing.location?.district}</td>
 
                   <td className="p-4">
-
                     <span className="px-3 py-1 rounded-full text-sm bg-green-500/10 text-green-400">
                       {listing.status}
                     </span>
-
                   </td>
 
                   <td className="p-4">
 
                     <div className="flex gap-2">
+
+                      <button
+                        onClick={() => navigate(`/farmer/listings/${listing._id}`)}
+                        className="p-2 hover:bg-muted rounded-lg"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
 
                       <button
                         onClick={() => openEditModal(listing)}
@@ -289,9 +294,7 @@ export default function FarmerListings() {
               <div className="grid grid-cols-2 gap-6">
 
                 <div>
-
                   <label className="block mb-2">Paddy Type</label>
-
                   <select
                     value={paddyType}
                     onChange={(e) => setPaddyType(e.target.value)}
@@ -301,39 +304,30 @@ export default function FarmerListings() {
                       <option key={type}>{type}</option>
                     ))}
                   </select>
-
                 </div>
 
                 <div>
-
                   <label className="block mb-2">Quantity (kg)</label>
-
                   <input
                     type="number"
                     value={quantityKg}
                     onChange={(e) => setQuantityKg(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
                   />
-
                 </div>
 
                 <div>
-
                   <label className="block mb-2">Price (Rs/kg)</label>
-
                   <input
                     type="number"
                     value={pricePerKg}
                     onChange={(e) => setPricePerKg(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
                   />
-
                 </div>
 
                 <div>
-
                   <label className="block mb-2">District</label>
-
                   <select
                     value={district}
                     onChange={(e) => setDistrict(e.target.value)}
@@ -343,35 +337,28 @@ export default function FarmerListings() {
                       <option key={d}>{d}</option>
                     ))}
                   </select>
-
                 </div>
 
               </div>
 
               <div>
-
                 <label className="block mb-2">Address</label>
-
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
                 />
-
               </div>
 
               <div>
-
                 <label className="block mb-2">Description</label>
-
                 <textarea
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
                 />
-
               </div>
 
               <div className="flex gap-4">

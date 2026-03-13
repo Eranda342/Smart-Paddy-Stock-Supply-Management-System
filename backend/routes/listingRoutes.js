@@ -4,7 +4,10 @@ const {
   createListing,
   getMyListings,
   updateListing,
-  deleteListing
+  deleteListing,
+  getListingById,
+  getAllListings,
+  getBuyListings
 } = require("../controllers/listingController");
 
 const {
@@ -30,6 +33,32 @@ router.get(
   protect,
   authorizeRoles("FARMER"),
   getMyListings
+);
+
+
+// GET ALL SELL LISTINGS (Mill Owner marketplace)
+router.get(
+  "/marketplace",
+  protect,
+  authorizeRoles("MILL_OWNER"),
+  getAllListings
+);
+
+
+// GET BUY LISTINGS (Farmers browse mill owner requests)
+router.get(
+  "/buy-listings",
+  protect,
+  authorizeRoles("FARMER"),
+  getBuyListings
+);
+
+
+// GET SINGLE LISTING
+router.get(
+  "/:id",
+  protect,
+  getListingById
 );
 
 

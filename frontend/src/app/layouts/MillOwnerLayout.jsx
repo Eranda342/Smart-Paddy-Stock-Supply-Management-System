@@ -15,6 +15,7 @@ export default function MillOwnerLayout() {
     { path: '/mill-owner/transport', icon: Truck, label: 'Transport' },
     { path: '/mill-owner/vehicles', icon: TruckIcon, label: 'Vehicles' },
     { path: '/mill-owner/profile', icon: User, label: 'Profile' },
+    { path: "/mill-owner/listings", icon: List, label: "Buy Requests" },
   ];
 
   const isActive = (path, exact = false) => {
