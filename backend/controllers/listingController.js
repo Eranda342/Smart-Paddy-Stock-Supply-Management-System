@@ -2,7 +2,7 @@ const Listing = require("../models/Listing");
 
 
 // CREATE LISTING
-const createListing = async (req, res) => {
+const createListing = async (req, res, next) => {
   try {
 
     const {
@@ -49,26 +49,22 @@ const createListing = async (req, res) => {
       description
     });
 
-    await newListing.save();
+    const savedListing = await newListing.save();
 
     res.status(201).json({
       message: "Listing created successfully",
-      listing: newListing
+      listing: savedListing
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    next(error);
   }
 };
 
 
 
 // GET MY LISTINGS
-const getMyListings = async (req, res) => {
+const getMyListings = async (req, res, next) => {
   try {
 
     const ownerId = req.user.id;
@@ -82,11 +78,7 @@ const getMyListings = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    next(error);
   }
 };
 
@@ -94,14 +86,14 @@ const getMyListings = async (req, res) => {
 
 // GET MARKETPLACE LISTINGS
 // Mill owners browse farmer SELL listings
-const getAllListings = async (req, res) => {
+const getAllListings = async (req, res, next) => {
   try {
 
     const listings = await Listing.find({
       listingType: "SELL",
       status: "ACTIVE"
     })
-      .populate("owner", "name email")
+      .populate("owner", "fullName email")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -110,11 +102,7 @@ const getAllListings = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    next(error);
   }
 };
 
@@ -122,7 +110,7 @@ const getAllListings = async (req, res) => {
 
 // GET BUY LISTINGS
 // Farmers browse mill owner BUY listings
-const getBuyListings = async (req, res) => {
+const getBuyListings = async (req, res, next) => {
 
   try {
 
@@ -130,7 +118,7 @@ const getBuyListings = async (req, res) => {
       listingType: "BUY",
       status: "ACTIVE"
     })
-      .populate("owner", "name email")
+      .populate("owner", "fullName email businessDetails")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -139,11 +127,7 @@ const getBuyListings = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    next(error);
   }
 
 };
@@ -151,12 +135,12 @@ const getBuyListings = async (req, res) => {
 
 
 // GET SINGLE LISTING
-const getListingById = async (req, res) => {
+const getListingById = async (req, res, next) => {
 
   try {
 
     const listing = await Listing.findById(req.params.id)
-      .populate("owner", "name email");
+      .populate("owner", "fullName email");
 
     if (!listing) {
       return res.status(404).json({
@@ -169,11 +153,7 @@ const getListingById = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    next(error);
   }
 
 };
@@ -181,7 +161,7 @@ const getListingById = async (req, res) => {
 
 
 // UPDATE LISTING
-const updateListing = async (req, res) => {
+const updateListing = async (req, res, next) => {
 
   try {
 
@@ -204,6 +184,10 @@ const updateListing = async (req, res) => {
     listing.pricePerKg = req.body.pricePerKg || listing.pricePerKg;
     listing.description = req.body.description || listing.description;
 
+    if (!listing.location) {
+      listing.location = {};
+    }
+
     listing.location.district =
       req.body.district || listing.location.district;
 
@@ -218,11 +202,7 @@ const updateListing = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    next(error);
   }
 
 };
@@ -230,7 +210,7 @@ const updateListing = async (req, res) => {
 
 
 // DELETE LISTING
-const deleteListing = async (req, res) => {
+const deleteListing = async (req, res, next) => {
 
   try {
 
@@ -255,11 +235,7 @@ const deleteListing = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
+    next(error);
   }
 
 };

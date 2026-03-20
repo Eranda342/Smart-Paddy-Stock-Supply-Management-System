@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
   password: {
     type: String,
     required: true,
-    select: false // Hide password from queries
+    select: false
   },
 
   role: {
@@ -63,8 +63,14 @@ const userSchema = new mongoose.Schema(
       type: Number
     },
 
-    landVerificationDocument: {
+    landDocument: {
       type: String
+    },
+
+    verificationStatus: {
+      type: String,
+      enum: ["PENDING", "APPROVED", "REJECTED"],
+      default: "PENDING"
     }
 
   },
@@ -85,7 +91,7 @@ const userSchema = new mongoose.Schema(
       type: String
     },
 
-    verificationDocument: {
+    businessDocument: {
       type: String
     },
 

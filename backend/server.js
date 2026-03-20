@@ -70,6 +70,14 @@ io.on("connection", (socket) => {
   // Register logged user
   socket.on("registerUser", (userId) => {
     onlineUsers[userId] = socket.id;
+    io.emit("userOnline", userId); // broadcast online
+  });
+
+  // Check online status
+  socket.on("checkOnlineStatus", (userId) => {
+    if (onlineUsers[userId]) {
+      socket.emit("userOnline", userId);
+    }
   });
 
   // Join negotiation room
@@ -79,36 +87,44 @@ io.on("connection", (socket) => {
 
   // Send negotiation message
   socket.on("sendMessage", ({ negotiationId, message }) => {
-
     io.to(negotiationId).emit("receiveMessage", {
       negotiationId,
       ...message,
     });
+  });
 
+  // Mark all as read
+  socket.on("markAsRead", ({ negotiationId, userId }) => {
+    io.to(negotiationId).emit("messagesRead", { negotiationId, readerId: userId });
+  });
+
+  // Delete message event
+  socket.on("deleteMessage", ({ negotiationId, messageId }) => {
+    io.to(negotiationId).emit("messageDeleted", { negotiationId, messageId });
+  });
+
+  // Edit message event
+  socket.on("editMessage", ({ negotiationId, messageId, newText }) => {
+    io.to(negotiationId).emit("messageEdited", { negotiationId, messageId, newText });
   });
 
   // Send notification to specific user
   socket.on("sendNotification", ({ userId, notification }) => {
-
     const socketId = onlineUsers[userId];
-
     if (socketId) {
       io.to(socketId).emit("receiveNotification", notification);
     }
-
   });
 
   socket.on("disconnect", () => {
-
     console.log("🔴 User disconnected:", socket.id);
-
     for (let userId in onlineUsers) {
       if (onlineUsers[userId] === socket.id) {
         delete onlineUsers[userId];
+        io.emit("userOffline", userId); // broadcast offline
         break;
       }
     }
-
   });
 
 });

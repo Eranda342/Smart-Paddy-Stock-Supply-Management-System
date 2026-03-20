@@ -18,7 +18,13 @@ const {
 const router = express.Router();
 
 
-// CREATE LISTING
+/*
+============================================
+CREATE LISTING
+Farmers -> SELL listings
+Mill Owners -> BUY listings
+============================================
+*/
 router.post(
   "/",
   protect,
@@ -27,16 +33,27 @@ router.post(
 );
 
 
-// GET FARMER LISTINGS
+/*
+============================================
+GET MY LISTINGS
+Farmer -> their SELL listings
+Mill Owner -> their BUY listings
+============================================
+*/
 router.get(
   "/my",
   protect,
-  authorizeRoles("FARMER"),
+  authorizeRoles("FARMER", "MILL_OWNER"),
   getMyListings
 );
 
 
-// GET ALL SELL LISTINGS (Mill Owner marketplace)
+/*
+============================================
+MARKETPLACE
+Mill owners browse farmer SELL listings
+============================================
+*/
 router.get(
   "/marketplace",
   protect,
@@ -45,7 +62,12 @@ router.get(
 );
 
 
-// GET BUY LISTINGS (Farmers browse mill owner requests)
+/*
+============================================
+BUY LISTINGS
+Farmers browse mill owner BUY listings
+============================================
+*/
 router.get(
   "/buy-listings",
   protect,
@@ -54,7 +76,11 @@ router.get(
 );
 
 
-// GET SINGLE LISTING
+/*
+============================================
+GET SINGLE LISTING
+============================================
+*/
 router.get(
   "/:id",
   protect,
@@ -62,7 +88,12 @@ router.get(
 );
 
 
-// UPDATE LISTING
+/*
+============================================
+UPDATE LISTING
+Only owner farmer can update SELL listings
+============================================
+*/
 router.put(
   "/:id",
   protect,
@@ -71,12 +102,18 @@ router.put(
 );
 
 
-// DELETE LISTING
+/*
+============================================
+DELETE LISTING
+Only owner farmer can delete
+============================================
+*/
 router.delete(
   "/:id",
   protect,
   authorizeRoles("FARMER"),
   deleteListing
 );
+
 
 module.exports = router;

@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 // ================= REGISTER USER =================
 
 const registerUser = async (req, res) => {
-
   try {
 
     const {
@@ -31,6 +30,11 @@ const registerUser = async (req, res) => {
     } = req.body;
 
 
+    // ================= NORMALIZE ROLE =================
+
+    const normalizedRole = role?.toUpperCase();
+
+
     // ================= CHECK EXISTING USER =================
 
     const existingUser = await User.findOne({ email });
@@ -48,7 +52,7 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
 
-    // ================= CREATE USER OBJECT =================
+    // ================= BASE USER OBJECT =================
 
     let userData = {
       fullName,
@@ -56,26 +60,23 @@ const registerUser = async (req, res) => {
       phone,
       nic,
       password: hashedPassword,
-      role
+      role: normalizedRole,
+      isVerified: false
     };
 
 
     // ================= FARMER REGISTRATION =================
 
-    if (role === "FARMER") {
+    if (normalizedRole === "FARMER") {
 
       let parsedPaddyTypes = [];
 
       if (paddyTypesCultivated) {
 
         try {
-
           parsedPaddyTypes = JSON.parse(paddyTypesCultivated);
-
         } catch {
-
           parsedPaddyTypes = [paddyTypesCultivated];
-
         }
 
       }
@@ -90,8 +91,9 @@ const registerUser = async (req, res) => {
 
         estimatedMonthlyStock: Number(estimatedMonthlyStock),
 
-        // store uploaded filename
-        landDocument: req.file ? req.file.filename : null
+        landDocument: req.file ? req.file.filename : null,
+
+        verificationStatus: "PENDING"
 
       };
 
@@ -100,7 +102,7 @@ const registerUser = async (req, res) => {
 
     // ================= MILL OWNER REGISTRATION =================
 
-    if (role === "MILL_OWNER") {
+    if (normalizedRole === "MILL_OWNER") {
 
       userData.businessDetails = {
 
@@ -110,8 +112,9 @@ const registerUser = async (req, res) => {
 
         millLocation,
 
-        // store uploaded filename
-        businessDocument: req.file ? req.file.filename : null
+        businessDocument: req.file ? req.file.filename : null,
+
+        verificationStatus: "PENDING"
 
       };
 
@@ -126,11 +129,8 @@ const registerUser = async (req, res) => {
 
 
     res.status(201).json({
-
       message: "User registered successfully",
-
       user: newUser
-
     });
 
   } catch (error) {
@@ -142,7 +142,6 @@ const registerUser = async (req, res) => {
     });
 
   }
-
 };
 
 
@@ -162,6 +161,7 @@ const loginUser = async (req, res) => {
         message: "Invalid credentials"
       });
     }
+
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -195,8 +195,8 @@ const loginUser = async (req, res) => {
         role: user.role,
         isVerified: user.isVerified,
 
-        farmDetails: user.farmDetails,
-        businessDetails: user.businessDetails
+        farmDetails: user.farmDetails || null,
+        businessDetails: user.businessDetails || null
       }
 
     });

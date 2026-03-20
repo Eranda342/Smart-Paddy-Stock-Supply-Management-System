@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, User, Package } from "lucide-react";
 
 export default function BrowseListings() {
@@ -282,7 +282,7 @@ export default function BrowseListings() {
 
                     <div>
                       <h3 className="font-semibold">
-                        {listing.owner?.name || "Farmer"}
+                        {listing.owner?.fullName || "Farmer"}
                       </h3>
                       <span className="text-xs text-green-500">
                         ✓ Verified Farmer

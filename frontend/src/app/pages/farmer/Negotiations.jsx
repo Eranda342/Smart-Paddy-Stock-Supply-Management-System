@@ -1,27 +1,85 @@
-﻿import { useState, useEffect, useRef } from "react";
-import { Send } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { Send, CheckCircle2, Building2, Check, CheckCheck, Trash2, Ban, Pencil } from "lucide-react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket=io("http://localhost:5000");
 
-export default function FarmerNegotiations() {
+export default function FarmerNegotiations(){
 
 const [negotiations,setNegotiations]=useState([]);
 const [selected,setSelected]=useState(null);
 const [message,setMessage]=useState("");
 const [counterPrice,setCounterPrice]=useState("");
-const [unread,setUnread]=useState({});
+const [typing,setTyping]=useState(false);
+const [onlineUsersMap, setOnlineUsersMap] = useState({});
+const [editingMessageId, setEditingMessageId] = useState(null);
 
-const bottomRef=useRef(null);
 const token=localStorage.getItem("token");
+const { id } = useParams();
+const decodedUser = token ? JSON.parse(atob(token.split('.')[1])) : null;
+const bottomRef=useRef(null);
 
-const scrollToBottom=()=>{
-setTimeout(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},100);
+const scrollBottom=()=>{
+setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),100);
 };
 
-const getOfferHistory=()=>{
-if(!selected) return [];
-return selected.messages.filter(msg=>msg.offeredPrice);
+useEffect(() => {
+  if (decodedUser) {
+    socket.emit("registerUser", decodedUser.id);
+  }
+
+  const handleUserOnline = (userId) => setOnlineUsersMap(prev => ({...prev, [userId]: true}));
+  const handleUserOffline = (userId) => setOnlineUsersMap(prev => ({...prev, [userId]: false}));
+
+  socket.on("userOnline", handleUserOnline);
+  socket.on("userOffline", handleUserOffline);
+
+  return () => {
+    socket.off("userOnline", handleUserOnline);
+    socket.off("userOffline", handleUserOffline);
+  };
+}, []);
+
+const markAsRead = async (negotiationId) => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/negotiations/${negotiationId}/read`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok && decodedUser) {
+      socket.emit("markAsRead", { negotiationId, userId: decodedUser.id });
+    }
+  } catch (err) {}
+};
+
+const deleteMessageServer = async (msgId) => {
+  if (!selected) return;
+  try {
+    const res = await fetch(`http://localhost:5000/api/negotiations/${selected._id}/message/${msgId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      socket.emit("deleteMessage", { negotiationId: selected._id, messageId: msgId });
+      setSelected(prev => ({
+        ...prev,
+        messages: prev.messages.map(m => m._id === msgId ? { ...m, isDeleted: true } : m)
+      }));
+    }
+  } catch (err) {}
+};
+
+const getMillBusiness=(neg)=>{
+
+if(!neg?.millOwner) return "Rice Mill";
+
+return (
+neg.millOwner.businessDetails?.businessName ||
+neg.millOwner.fullName ||
+"Rice Mill"
+);
+
 };
 
 const fetchNegotiations=async()=>{
@@ -36,45 +94,115 @@ const data=await res.json();
 
 if(res.ok){
 
-setNegotiations(data.negotiations);
+// farmers only see mill owners
+const filtered=data.negotiations.filter(n=>n.millOwner);
 
-if(data.negotiations.length>0){
+setNegotiations(filtered);
 
-setSelected(data.negotiations[0]);
-socket.emit("joinNegotiation",data.negotiations[0]._id);
+if(filtered.length>0){
 
+setSelected(prev=>{
+if(prev){
+return filtered.find(n=>n._id===prev._id)||filtered[0];
+}
+return filtered[0];
+});
+
+if (!id) {
+  socket.emit("joinNegotiation", filtered[0]._id);
 }
 
 }
 
-}catch(err){console.error(err)}
+}
+
+}catch(err){console.log(err)}
 
 };
 
-useEffect(()=>{fetchNegotiations()},[]);
+useEffect(() => {
+
+  if (id) {
+    // Open specific chat directly
+    openConversation(id);
+  } else {
+    // Load all negotiations normally
+    fetchNegotiations();
+  }
+
+}, [id]);
 
 useEffect(()=>{
 
-socket.on("receiveMessage",(msg)=>{
+const receiveHandler=(msg)=>{
 
 if(selected && msg.negotiationId===selected._id){
 
-setSelected(prev=>({...prev,messages:[...prev.messages,msg]}));
-scrollToBottom();
+setSelected(prev=>{
+  const exists = prev.messages.some(m => m._id === msg.message._id);
+  if (exists) return prev;
+  return {
+    ...prev,
+    messages: [...prev.messages, msg.message]
+  };
+});
 
-}else{
-
-setUnread(prev=>({...prev,[msg.negotiationId]:true}));
+scrollBottom();
 
 }
 
-});
+};
 
-return()=>socket.off("receiveMessage");
+  const handleMessagesRead = ({ negotiationId, readerId }) => {
+    if (selected && selected._id === negotiationId && decodedUser) {
+      if (readerId !== decodedUser.id) {
+        setSelected(prev => ({
+          ...prev,
+          messages: prev.messages.map(m => {
+            const senderId = m.sender?._id || m.sender;
+            if (String(senderId) === decodedUser.id && m.status !== "READ") {
+              return { ...m, status: "READ" };
+            }
+            return m;
+          })
+        }));
+      }
+    }
+  };
+
+  const handleMessageDeleted = ({ negotiationId, messageId }) => {
+    if (selected && selected._id === negotiationId) {
+      setSelected(prev => ({
+        ...prev,
+        messages: prev.messages.map(m => m._id === messageId ? { ...m, isDeleted: true } : m)
+      }));
+    }
+  };
+
+  const handleMessageEdited = ({ negotiationId, messageId, newText }) => {
+    if (selected && selected._id === negotiationId) {
+      setSelected(prev => ({
+        ...prev,
+        messages: prev.messages.map(m => m._id === messageId ? { ...m, message: newText, isEdited: true } : m)
+      }));
+    }
+  };
+
+  socket.on("receiveMessage",receiveHandler);
+  socket.on("messagesRead", handleMessagesRead);
+  socket.on("messageDeleted", handleMessageDeleted);
+  socket.on("messageEdited", handleMessageEdited);
+
+  return()=>{
+    socket.off("receiveMessage",receiveHandler);
+    socket.off("messagesRead", handleMessagesRead);
+    socket.off("messageDeleted", handleMessageDeleted);
+    socket.off("messageEdited", handleMessageEdited);
+  };
 
 },[selected]);
 
-useEffect(()=>{scrollToBottom()},[selected]);
+useEffect(()=>scrollBottom(),[selected]);
 
 const openConversation=async(id)=>{
 
@@ -90,24 +218,46 @@ if(res.ok){
 
 setSelected(data.negotiation);
 socket.emit("joinNegotiation",id);
+markAsRead(id);
 
-setUnread(prev=>{
-const copy={...prev};
-delete copy[id];
-return copy;
-});
-
-scrollToBottom();
+// Check online status of the other user
+const otherUserId = data.negotiation.millOwner._id === decodedUser?.id 
+  ? data.negotiation.farmer._id 
+  : data.negotiation.millOwner._id;
+socket.emit("checkOnlineStatus", otherUserId);
 
 }
 
-}catch(err){console.error(err)}
+}catch(err){console.log(err)}
 
 };
 
 const sendMessage=async()=>{
 
-if(!message.trim()) return;
+if(!message.trim())return;
+
+if (editingMessageId) {
+  try {
+    const res = await fetch(`http://localhost:5000/api/negotiations/${selected._id}/message/${editingMessageId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ newText: message })
+    });
+    if (res.ok) {
+      socket.emit("editMessage", { negotiationId: selected._id, messageId: editingMessageId, newText: message });
+      setSelected(prev => ({
+        ...prev,
+        messages: prev.messages.map(m => m._id === editingMessageId ? { ...m, message: message, isEdited: true } : m)
+      }));
+      setMessage("");
+      setEditingMessageId(null);
+    }
+  } catch (err) {}
+  return;
+}
 
 try{
 
@@ -133,17 +283,17 @@ socket.emit("sendMessage",{negotiationId:selected._id,message:last});
 
 setSelected(data.negotiation);
 setMessage("");
-scrollToBottom();
+scrollBottom();
 
 }
 
-}catch(err){console.error(err)}
+}catch(err){console.log(err)}
 
 };
 
 const sendCounterOffer=async()=>{
 
-if(!counterPrice) return;
+if(!counterPrice)return;
 
 try{
 
@@ -156,8 +306,8 @@ headers:{
 Authorization:`Bearer ${token}`
 },
 body:JSON.stringify({
-message:"Counter offer",
-offeredPrice:counterPrice
+message:"Counter Offer",
+offeredPrice:Number(counterPrice)
 })
 }
 );
@@ -172,11 +322,11 @@ socket.emit("sendMessage",{negotiationId:selected._id,message:last});
 
 setSelected(data.negotiation);
 setCounterPrice("");
-scrollToBottom();
+scrollBottom();
 
 }
 
-}catch(err){console.error(err)}
+}catch(err){console.log(err)}
 
 };
 
@@ -198,10 +348,20 @@ body:JSON.stringify({status})
 
 const data=await res.json();
 
-if(res.ok){setSelected(data.negotiation)}
+if(res.ok){
 
-}catch(err){console.error(err)}
+setSelected(data.negotiation);
+fetchNegotiations();
 
+}
+
+}catch(err){console.log(err)}
+
+};
+
+const getOffers=()=>{
+if(!selected)return[];
+return selected.messages.filter(m=>m.offeredPrice);
 };
 
 return(
@@ -215,50 +375,52 @@ return(
 
 <div className="grid grid-cols-3 gap-6 h-[calc(100vh-280px)]">
 
-{/* Conversations */}
+{/* CONVERSATION LIST */}
 
-<div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col">
+<div className="bg-card border border-border rounded-2xl flex flex-col overflow-hidden min-h-0">
 
-<div className="p-4 border-b border-border">
-<h2 className="font-semibold">Conversations</h2>
+<div className="p-4 border-b border-border font-semibold shrink-0">
+Conversations
 </div>
 
 <div className="flex-1 overflow-y-auto">
 
 {negotiations.map((neg)=>{
 
-const active=selected?._id===neg._id;
+const mill=getMillBusiness(neg);
 
 return(
 
 <button
 key={neg._id}
 onClick={()=>openConversation(neg._id)}
-className={`w-full p-4 border-b border-border text-left transition-all
-${active?"bg-[#22C55E]/10 border-l-4 border-[#22C55E]":"hover:bg-muted/50"}
-`}
+className={`w-full text-left p-4 border-b border-border hover:bg-muted/40 transition-colors border-l-4
+${selected?._id===neg._id ? "bg-[#22C55E]/10 border-l-[#22C55E]" : "border-l-transparent"}`}
 >
-
-<div className="flex justify-between items-center">
 
 <div className="flex items-center gap-3">
 
 <div className="w-9 h-9 rounded-full bg-[#22C55E] flex items-center justify-center text-black font-bold">
-{neg.millOwner?.name?.charAt(0)||"M"}
+{mill.charAt(0)}
 </div>
 
 <div>
-<h3 className="font-medium">{neg.millOwner?.name||"Mill Owner"}</h3>
+
+<div className="flex items-center gap-1.5 mb-0.5">
+
+<h3 className="font-medium text-sm truncate">{mill}</h3>
+
+{neg.millOwner?.businessDetails?.businessName && (
+  <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+)}
+
+</div>
+
 <p className="text-xs text-muted-foreground">
 {neg.listing?.paddyType} • {neg.listing?.quantityKg} kg
 </p>
-</div>
 
 </div>
-
-{unread[neg._id]&&(
-<div className="w-2 h-2 bg-[#22C55E] rounded-full"></div>
-)}
 
 </div>
 
@@ -272,28 +434,49 @@ ${active?"bg-[#22C55E]/10 border-l-4 border-[#22C55E]":"hover:bg-muted/50"}
 
 </div>
 
-{/* Chat */}
+{/* CHAT PANEL */}
 
-<div className="col-span-2 bg-card border border-border rounded-2xl flex flex-col">
+<div className="col-span-2 bg-card border border-border rounded-2xl flex flex-col overflow-hidden min-h-0">
 
 {selected ? (
 
 <>
 
-<div className="p-4 border-b border-border flex justify-between items-center">
-
-<div className="flex items-center gap-3">
-
-<div className="w-10 h-10 rounded-full bg-[#22C55E] flex items-center justify-center text-black font-bold">
-{selected.millOwner?.name?.charAt(0)}
-</div>
+<div className="p-4 border-b border-border flex justify-between">
 
 <div>
-<h2 className="font-semibold text-lg">{selected.millOwner?.name}</h2>
+
+<div className="flex items-center gap-2 mb-1">
+
+  <Building2 className="w-5 h-5 text-muted-foreground" />
+  <div className="flex flex-col">
+    <div className="flex items-center gap-2">
+      <h2 className="font-semibold text-lg leading-tight">
+        {getMillBusiness(selected)}
+      </h2>
+      {selected.millOwner?.businessDetails?.businessName && (
+        <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full flex items-center gap-1 font-medium border border-blue-500/20">
+          <CheckCircle2 className="w-3 h-3" /> VERIFIED MILL
+        </span>
+      )}
+    </div>
+    {(() => {
+      const otherUserId = selected.millOwner._id === decodedUser?.id ? selected.farmer._id : selected.millOwner._id;
+      return onlineUsersMap[otherUserId] ? (
+        <span className="text-xs text-[#22C55E] font-medium flex items-center gap-1">
+          <span className="w-1.5 h-1.5 bg-[#22C55E] rounded-full animate-pulse"></span> Online
+        </span>
+      ) : (
+        <span className="text-xs text-muted-foreground">Offline</span>
+      );
+    })()}
+  </div>
+
+</div>
+
 <p className="text-xs text-muted-foreground">
 {selected.listing?.paddyType} • {selected.listing?.quantityKg} kg
 </p>
-</div>
 
 </div>
 
@@ -303,25 +486,32 @@ Status: {selected.status}
 
 </div>
 
-{/* Price Timeline */}
+{/* PRICE TIMELINE */}
 
-{getOfferHistory().length>0 &&(
+{getOffers().length>0 &&(
 
 <div className="p-4 border-b border-border bg-muted/20">
 
-<h3 className="text-sm font-semibold mb-2">Price Negotiation Timeline</h3>
+<h3 className="text-sm font-semibold mb-2">Price Timeline</h3>
 
-<div className="flex flex-wrap gap-2">
+<div className="flex gap-2 flex-wrap">
 
-{getOfferHistory().map((offer,index)=>{
+{getOffers().map((offer,i)=>{
 
-const sender=offer.sender===selected.farmer?"You":"Mill";
+const senderId = offer.sender?._id || offer.sender;
+const farmerId = selected.farmer?._id || selected.farmer;
+const isMe = String(senderId) === String(farmerId);
 
 return(
-<div key={index}
-className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-sm">
-{sender}: Rs {offer.offeredPrice}
+
+<div
+key={i}
+className={`px-3 py-1 border rounded-full text-sm font-medium
+${isMe ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500"}`}
+>
+{isMe ? "You" : "Mill"}: Rs {offer.offeredPrice}
 </div>
+
 );
 
 })}
@@ -332,66 +522,94 @@ className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-full t
 
 )}
 
-{/* Deal Summary */}
+{/* MESSAGES */}
 
-{selected.status==="AGREED" && (
+<div className="flex-1 overflow-y-auto p-6 space-y-4">
 
-<div className="p-4 border-b border-green-500/20 bg-green-500/10">
+{selected.messages.map((msg,i)=>{
 
-<h3 className="font-semibold text-green-500 mb-2">
-Deal Confirmed
-</h3>
-
-<p className="text-sm">
-Buyer: {selected.millOwner?.name}
-</p>
-
-<p className="text-sm">
-Paddy: {selected.listing?.paddyType}
-</p>
-
-<p className="text-sm">
-Quantity: {selected.listing?.quantityKg} kg
-</p>
-
-<p className="text-sm">
-Final Price: Rs {getOfferHistory().slice(-1)[0]?.offeredPrice || "-"} /kg
-</p>
-
-</div>
-
-)}
-
-{/* Messages */}
-
-<div className="flex-1 p-6 overflow-y-auto space-y-4">
-
-{selected.messages.map((msg,index)=>{
-
-const isMe=msg.sender===selected.farmer;
+const senderId = msg.sender?._id || msg.sender;
+const farmerId = selected.farmer?._id || selected.farmer;
+const isMe = String(senderId) === String(farmerId);
 
 return(
 
-<div key={index} className={`flex ${isMe?"justify-end":"justify-start"}`}>
+<div key={i} className={`flex ${isMe?"justify-end":"justify-start"}`}>
 
-<div className={`rounded-xl p-3 max-w-md shadow-sm
-${isMe?"bg-[#22C55E]/20":"bg-muted"}
-`}>
+<div className={`relative group flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[80%]`}>
+  <div className={`rounded-2xl px-4 py-2.5 shadow-sm
+    ${isMe
+      ? msg.type === "COUNTER"
+        ? "bg-amber-500 text-black rounded-br-sm"
+        : msg.type === "OFFER"
+        ? "bg-emerald-500 text-black rounded-br-sm"
+        : "bg-[#22C55E] text-black rounded-br-sm"
+      : msg.type === "COUNTER"
+      ? "bg-amber-500/10 border border-amber-500/20 text-foreground rounded-bl-sm"
+      : "bg-[#2A2E33] border border-border text-foreground rounded-bl-sm"
+    }`}
+  >
+    {msg.isDeleted ? (
+      <p className={`text-[15px] italic flex items-center gap-1.5 opacity-60 ${isMe ? "text-black" : "text-muted-foreground"}`}>
+        <Ban className="w-4 h-4" /> This message was deleted
+      </p>
+    ) : msg.type === "OFFER" || msg.type === "COUNTER" ? (
+      <div>
+        <span className={`text-[10px] font-bold tracking-wider uppercase mb-1 block ${isMe ? "text-black/60" : msg.type === "COUNTER" ? "text-amber-500" : "text-[#22C55E]"}`}>
+          {msg.type}
+        </span>
+        <p className="font-semibold text-lg">Rs {msg.offeredPrice} / kg</p>
+        <p className={`text-sm mt-1 ${isMe ? "text-black/80" : "text-muted-foreground"}`}>{msg.message}</p>
+      </div>
+    ) : msg.type === "SYSTEM" ? (
+      <p className="text-sm font-medium italic opacity-80">{msg.message}</p>
+    ) : (
+      <p className="text-[15px] leading-relaxed">{msg.message}</p>
+    )}
+  </div>
+  
+  <div className={`flex items-center gap-1.5 mt-1.5 font-medium ${isMe ? "mr-1" : "ml-1"}`}>
+    <span className="text-[10px] text-muted-foreground flex gap-1 items-center">
+      {msg.isEdited && <span className="italic mr-0.5">(edited)</span>}
+      {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+    </span>
+    {isMe && !msg.isDeleted && (
+      <span className="inline-flex items-center">
+        {msg.status === "READ" ? (
+          <CheckCheck className="w-3.5 h-3.5 text-blue-500" />
+        ) : msg.status === "DELIVERED" ? (
+          <CheckCheck className="w-3.5 h-3.5 text-muted-foreground" />
+        ) : (
+          <Check className="w-3.5 h-3.5 text-muted-foreground" />
+        )}
+      </span>
+    )}
+  </div>
 
-{msg.offeredPrice ? (
-
-<div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2">
-<p className="text-sm font-semibold text-yellow-500">
-Offer: Rs {msg.offeredPrice}/kg
-</p>
-</div>
-
-):( <p className="text-sm">{msg.message}</p> )}
-
-<p className="text-xs text-muted-foreground mt-1">
-{new Date(msg.createdAt).toLocaleTimeString()}
-</p>
-
+  {/* Delete/Edit Context Action */}
+  {isMe && !msg.isDeleted && (
+    <div className="absolute top-1/2 -translate-y-1/2 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+      {msg.type === "MESSAGE" && (
+        <button
+          onClick={() => {
+            setEditingMessageId(msg._id);
+            setMessage(msg.message);
+          }}
+          className="p-1.5 bg-blue-500/10 text-blue-500 rounded-full hover:bg-blue-500 hover:text-white"
+          title="Edit Message"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+      )}
+      <button
+        onClick={() => deleteMessageServer(msg._id)}
+        className="p-1.5 bg-red-500/10 text-red-500 rounded-full hover:bg-red-500 hover:text-white"
+        title="Delete Message"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  )}
 </div>
 
 </div>
@@ -404,24 +622,37 @@ Offer: Rs {msg.offeredPrice}/kg
 
 </div>
 
-{/* Message Input */}
+{/* MESSAGE INPUT */}
 
-<div className="p-4 border-t border-border">
+{selected.status==="OPEN" &&(
+
+<div className="p-4 border-t border-border relative">
+
+{editingMessageId && (
+  <div className="absolute top-0 right-4 -translate-y-[120%] bg-blue-500/10 text-blue-500 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2">
+    <Pencil className="w-3 h-3" /> Editing message
+    <button 
+      onClick={() => { setEditingMessageId(null); setMessage(""); }}
+      className="text-muted-foreground hover:text-red-500 ml-2"
+    >
+      Cancel
+    </button>
+  </div>
+)}
 
 <div className="flex gap-2">
 
 <input
-type="text"
-placeholder="Type your message..."
 value={message}
 onChange={(e)=>setMessage(e.target.value)}
-onKeyDown={(e)=>{if(e.key==="Enter") sendMessage()}}
+onKeyDown={(e)=>{if(e.key==="Enter")sendMessage()}}
+placeholder="Type message..."
 className="flex-1 px-4 py-3 bg-[#161a20] border border-input rounded-lg"
 />
 
 <button
 onClick={sendMessage}
-className="px-6 py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg"
+className="px-6 py-3 bg-[#22C55E] text-black rounded-lg"
 >
 <Send className="w-5 h-5"/>
 </button>
@@ -432,7 +663,7 @@ className="px-6 py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg"
 
 <input
 type="number"
-placeholder="Counter price Rs/kg"
+placeholder="Counter price"
 value={counterPrice}
 onChange={(e)=>setCounterPrice(e.target.value)}
 className="px-3 py-2 border rounded-lg bg-[#161a20]"
@@ -440,21 +671,21 @@ className="px-3 py-2 border rounded-lg bg-[#161a20]"
 
 <button
 onClick={sendCounterOffer}
-className="px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 rounded-lg text-sm"
+className="px-4 py-2 bg-yellow-500/10 text-yellow-500 rounded-lg text-sm"
 >
 Counter Offer
 </button>
 
 <button
-onClick={()=>updateStatus("AGREED")}
-className="px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-lg text-sm"
+onClick={()=>updateStatus("ACCEPTED")}
+className="px-4 py-2 bg-green-500/10 text-green-500 rounded-lg text-sm"
 >
 Accept
 </button>
 
 <button
 onClick={()=>updateStatus("REJECTED")}
-className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm"
+className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm"
 >
 Reject
 </button>
@@ -463,15 +694,11 @@ Reject
 
 </div>
 
+)}
+
 </>
 
-):( 
-
-<div className="flex items-center justify-center h-full text-muted-foreground">
-Select a conversation
-</div>
-
-)}
+):( <div className="flex items-center justify-center h-full">Select conversation</div> )}
 
 </div>
 

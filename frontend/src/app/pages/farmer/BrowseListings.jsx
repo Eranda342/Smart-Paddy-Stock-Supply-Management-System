@@ -111,13 +111,11 @@ export default function BrowseListings() {
 
       if (res.ok) {
 
-        alert("Negotiation started");
+  navigate(`/farmer/negotiations/${data.negotiation._id}`);
 
-        navigate("/farmer/negotiations");
+} else {
 
-      } else {
-
-        alert(data.message);
+        console.log(data.message);
 
       }
 
@@ -305,7 +303,7 @@ export default function BrowseListings() {
 
                     <div>
                       <h3 className="font-semibold">
-                        {listing.owner?.name || "Mill Owner"}
+                        {listing.owner?.businessDetails?.businessName || listing.owner?.fullName || "Mill Owner"}
                       </h3>
                       <span className="text-xs text-green-500">
                         ✓ Verified Buyer

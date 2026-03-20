@@ -63,6 +63,7 @@ export const router = createBrowserRouter([
     element: <RegistrationSuccessPage />,
   },
 
+  // ================= FARMER =================
   {
     path: "/farmer",
     element: (
@@ -72,17 +73,25 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <FarmerDashboard /> },
+
       { path: "listings", element: <FarmerListings /> },
       { path: "listings/:id", element: <ListingDetails /> },
+
       { path: "browse", element: <FarmerBrowseListings /> },
+
+      // ✅ FIXED NEGOTIATION ROUTES
       { path: "negotiations", element: <FarmerNegotiations /> },
+      { path: "negotiations/:id", element: <FarmerNegotiations /> },
+
       { path: "transactions", element: <FarmerTransactions /> },
       { path: "transactions/:id", element: <TransactionDetails /> },
+
       { path: "transport", element: <FarmerTransport /> },
       { path: "profile", element: <FarmerProfile /> },
     ],
   },
 
+  // ================= MILL OWNER =================
   {
     path: "/mill-owner",
     element: (
@@ -92,17 +101,24 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <MillOwnerDashboard /> },
+
       { path: "browse", element: <MillOwnerBrowseListings /> },
       { path: "listings", element: <MillOwnerListings /> },
+
+      // ✅ FIXED NEGOTIATION ROUTES
       { path: "negotiations", element: <MillOwnerNegotiations /> },
+      { path: "negotiations/:id", element: <MillOwnerNegotiations /> },
+
       { path: "transactions", element: <MillOwnerTransactions /> },
       { path: "transactions/:id", element: <TransactionDetails /> },
+
       { path: "transport", element: <MillOwnerTransport /> },
       { path: "vehicles", element: <MillOwnerVehicles /> },
       { path: "profile", element: <MillOwnerProfile /> },
     ],
   },
 
+  // ================= ADMIN =================
   {
     path: "/admin",
     element: (
