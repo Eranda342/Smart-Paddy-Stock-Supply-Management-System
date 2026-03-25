@@ -21,21 +21,19 @@ const notificationRoutes = require("./routes/NotificationRoutes");
 const app = express();
 const server = http.createServer(app);
 
-// ================= DATABASE CONNECTION =================
+// ================= CONNECT DB =================
 connectDB();
 
 // ================= MIDDLEWARE =================
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
+app.use(cors({
+  origin: "http://localhost:5173", // 🔥 IMPORTANT (your frontend)
+  credentials: true
+}));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ================= STATIC FILES =================
-// This allows access to uploaded documents
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ================= HEALTH CHECK =================
@@ -55,60 +53,61 @@ app.use("/api/notifications", notificationRoutes);
 // ================= SOCKET.IO =================
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
 });
 
-// Track online users
 const onlineUsers = {};
 
 io.on("connection", (socket) => {
 
   console.log("🟢 User connected:", socket.id);
 
-  // Register logged user
   socket.on("registerUser", (userId) => {
     onlineUsers[userId] = socket.id;
-    io.emit("userOnline", userId); // broadcast online
+    io.emit("userOnline", userId);
   });
 
-  // Check online status
   socket.on("checkOnlineStatus", (userId) => {
     if (onlineUsers[userId]) {
       socket.emit("userOnline", userId);
     }
   });
 
-  // Join negotiation room
   socket.on("joinNegotiation", (negotiationId) => {
     socket.join(negotiationId);
   });
 
-  // Send negotiation message
   socket.on("sendMessage", ({ negotiationId, message }) => {
     io.to(negotiationId).emit("receiveMessage", {
       negotiationId,
-      ...message,
+      ...message
     });
   });
 
-  // Mark all as read
   socket.on("markAsRead", ({ negotiationId, userId }) => {
-    io.to(negotiationId).emit("messagesRead", { negotiationId, readerId: userId });
+    io.to(negotiationId).emit("messagesRead", {
+      negotiationId,
+      readerId: userId
+    });
   });
 
-  // Delete message event
   socket.on("deleteMessage", ({ negotiationId, messageId }) => {
-    io.to(negotiationId).emit("messageDeleted", { negotiationId, messageId });
+    io.to(negotiationId).emit("messageDeleted", {
+      negotiationId,
+      messageId
+    });
   });
 
-  // Edit message event
   socket.on("editMessage", ({ negotiationId, messageId, newText }) => {
-    io.to(negotiationId).emit("messageEdited", { negotiationId, messageId, newText });
+    io.to(negotiationId).emit("messageEdited", {
+      negotiationId,
+      messageId,
+      newText
+    });
   });
 
-  // Send notification to specific user
   socket.on("sendNotification", ({ userId, notification }) => {
     const socketId = onlineUsers[userId];
     if (socketId) {
@@ -118,10 +117,11 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("🔴 User disconnected:", socket.id);
+
     for (let userId in onlineUsers) {
       if (onlineUsers[userId] === socket.id) {
         delete onlineUsers[userId];
-        io.emit("userOffline", userId); // broadcast offline
+        io.emit("userOffline", userId);
         break;
       }
     }
@@ -129,7 +129,15 @@ io.on("connection", (socket) => {
 
 });
 
-// ================= SERVER =================
+// ================= ERROR HANDLER (NEW) =================
+app.use((err, req, res, next) => {
+  console.error("SERVER ERROR:", err);
+  res.status(500).json({
+    message: "Internal Server Error"
+  });
+});
+
+// ================= START SERVER =================
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {

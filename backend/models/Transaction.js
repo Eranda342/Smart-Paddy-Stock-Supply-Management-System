@@ -47,31 +47,29 @@ const transactionSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Payment status
+    // ================= PAYMENT =================
     paymentStatus: {
       type: String,
       enum: ["PENDING", "PAID"],
       default: "PENDING",
     },
 
-    // Transport required or not
+    // ================= TRANSPORT =================
     transportRequired: {
       type: Boolean,
       default: false,
     },
 
-    // Order lifecycle
+    transportStatus: {
+      type: String,
+      enum: ["NOT_REQUIRED", "PENDING", "IN_PROGRESS", "DELIVERED"],
+      default: "NOT_REQUIRED",
+    },
+
+    // ================= ORDER STATUS =================
     status: {
       type: String,
-      enum: [
-        "ORDER_CREATED",
-        "PAYMENT_PENDING",
-        "PAYMENT_COMPLETED",
-        "TRANSPORT_SCHEDULED",
-        "IN_TRANSPORT",
-        "DELIVERED",
-        "COMPLETED",
-      ],
+      enum: ["ORDER_CREATED", "IN_PROGRESS", "COMPLETED"],
       default: "ORDER_CREATED",
     },
   },
@@ -80,7 +78,7 @@ const transactionSchema = new mongoose.Schema(
   }
 );
 
-// Generate order number automatically
+// ================= GENERATE ORDER NUMBER =================
 transactionSchema.pre("save", function () {
   if (!this.orderNumber) {
     const timestamp = Date.now().toString().slice(-6);

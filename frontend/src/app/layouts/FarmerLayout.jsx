@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Sprout,
@@ -19,6 +20,49 @@ export default function FarmerLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        // Initial fallback to local storage for speed
+        const localUser = localStorage.getItem("user");
+        if (localUser) setUser(JSON.parse(localUser));
+
+        const res = await fetch("http://localhost:5000/api/users/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setUser(data.user);
+          localStorage.setItem("user", JSON.stringify(data.user)); // Update local cache
+        }
+      } catch (err) {
+        console.error("Failed to load user info:", err);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const getInitials = (name) => {
+    if (!name) return "??";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const formatRole = (role) => {
+    if (!role) return "";
+    return role.split("_")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
 
   const menuItems = [
     { name: "Dashboard", path: "/farmer", icon: LayoutDashboard },
@@ -164,12 +208,16 @@ export default function FarmerLayout() {
             <div className="flex items-center gap-3 pl-4 border-l border-border">
 
               <div className="w-10 h-10 bg-[#22C55E] rounded-full flex items-center justify-center font-medium text-[#0F1115]">
-                JD
+                {user ? getInitials(user.fullName) : "..."}
               </div>
 
               <div>
-                <div className="text-sm font-medium">John Doe</div>
-                <div className="text-xs text-muted-foreground">Farmer</div>
+                <div className="text-sm font-medium">
+                  {user ? user.fullName : "Loading..."}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {user ? formatRole(user.role) : "Loading..."}
+                </div>
               </div>
 
             </div>
