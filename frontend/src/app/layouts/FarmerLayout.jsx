@@ -67,7 +67,7 @@ export default function FarmerLayout() {
   const menuItems = [
     { name: "Dashboard", path: "/farmer", icon: LayoutDashboard },
     { name: "My Listings", path: "/farmer/listings", icon: Package },
-    { name: "Browse Listings", path: "/farmer/browse", icon: Search },
+    { name: "Browse Listings", path: "/farmer/browse-listings", icon: Search },
     { name: "Negotiations", path: "/farmer/negotiations", icon: Handshake },
     { name: "Transactions", path: "/farmer/transactions", icon: Package },
     { name: "Transport", path: "/farmer/transport", icon: Truck },

@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
+// ================= PUBLIC =================
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RoleSelectionPage from "./pages/RoleSelectionPage";
@@ -7,10 +8,12 @@ import AccountInfoPage from "./pages/AccountInfoPage";
 import BusinessDetailsPage from "./pages/BusinessDetailsPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 
+// ================= LAYOUTS =================
 import FarmerLayout from "./layouts/FarmerLayout";
 import MillOwnerLayout from "./layouts/MillOwnerLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
+// ================= FARMER =================
 import FarmerDashboard from "./pages/farmer/Dashboard";
 import FarmerListings from "./pages/farmer/Listings";
 import FarmerNegotiations from "./pages/farmer/Negotiations";
@@ -19,8 +22,8 @@ import FarmerTransport from "./pages/farmer/Transport";
 import FarmerProfile from "./pages/farmer/Profile";
 import ListingDetails from "./pages/farmer/ListingDetails";
 import FarmerBrowseListings from "./pages/farmer/BrowseListings";
-import TransactionDetails from "./pages/farmer/TransactionDetails";
 
+// ================= MILL OWNER =================
 import MillOwnerDashboard from "./pages/mill-owner/Dashboard";
 import MillOwnerBrowseListings from "./pages/mill-owner/BrowseListings";
 import MillOwnerNegotiations from "./pages/mill-owner/Negotiations";
@@ -30,11 +33,16 @@ import MillOwnerVehicles from "./pages/mill-owner/Vehicles";
 import MillOwnerProfile from "./pages/mill-owner/Profile";
 import MillOwnerListings from "./pages/mill-owner/MillOwnerListings";
 
+// ================= ADMIN =================
 import AdminDashboard from "./pages/admin/Dashboard";
 import PendingVerifications from "./pages/admin/PendingVerifications";
 import AdminUsers from "./pages/admin/Users";
 import AdminReports from "./pages/admin/Reports";
 
+// ================= SHARED =================
+import TransactionDetails from "./pages/common/TransactionDetails";
+
+// ================= AUTH =================
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -79,7 +87,7 @@ export const router = createBrowserRouter([
       { path: "listings", element: <FarmerListings /> },
       { path: "listings/:id", element: <ListingDetails /> },
 
-      { path: "browse", element: <FarmerBrowseListings /> },
+      { path: "browse-listings", element: <FarmerBrowseListings /> },
 
       // Negotiations
       { path: "negotiations", element: <FarmerNegotiations /> },
@@ -92,7 +100,6 @@ export const router = createBrowserRouter([
       { path: "transport", element: <FarmerTransport /> },
       { path: "profile", element: <FarmerProfile /> },
 
-      // fallback
       { path: "*", element: <FarmerDashboard /> }
     ],
   },
@@ -108,7 +115,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <MillOwnerDashboard /> },
 
-      { path: "browse", element: <MillOwnerBrowseListings /> },
+      { path: "browse-listings", element: <MillOwnerBrowseListings /> },
       { path: "listings", element: <MillOwnerListings /> },
 
       // Negotiations
@@ -123,7 +130,6 @@ export const router = createBrowserRouter([
       { path: "vehicles", element: <MillOwnerVehicles /> },
       { path: "profile", element: <MillOwnerProfile /> },
 
-      // fallback
       { path: "*", element: <MillOwnerDashboard /> }
     ],
   },
@@ -142,7 +148,6 @@ export const router = createBrowserRouter([
       { path: "users", element: <AdminUsers /> },
       { path: "reports", element: <AdminReports /> },
 
-      // fallback
       { path: "*", element: <AdminDashboard /> }
     ],
   },

@@ -55,21 +55,42 @@ const transactionSchema = new mongoose.Schema(
     },
 
     // ================= TRANSPORT =================
+
+    // Farmer decision
     transportRequired: {
       type: Boolean,
-      default: false,
+      default: null, // null = not decided yet
     },
 
+    // Transport lifecycle
     transportStatus: {
       type: String,
-      enum: ["NOT_REQUIRED", "PENDING", "IN_PROGRESS", "DELIVERED"],
-      default: "NOT_REQUIRED",
+      enum: [
+        "NOT_DECIDED",   // waiting for farmer decision
+        "NOT_REQUIRED",  // farmer said NO
+        "PENDING",       // farmer said YES, waiting for vehicle
+        "ASSIGNED",      // vehicle assigned
+        "PICKED_UP",     // collected from farmer
+        "DELIVERED"      // delivered to mill
+      ],
+      default: "NOT_DECIDED",
+    },
+
+    vehicleDetails: {
+      vehicleNumber: String,
+      vehicleType: String
     },
 
     // ================= ORDER STATUS =================
     status: {
       type: String,
-      enum: ["ORDER_CREATED", "IN_PROGRESS", "COMPLETED"],
+      enum: [
+        "ORDER_CREATED",
+        "PAYMENT_COMPLETED",
+        "DELIVERY_IN_PROGRESS",
+        "DELIVERED",
+        "COMPLETED"
+      ],
       default: "ORDER_CREATED",
     },
   },

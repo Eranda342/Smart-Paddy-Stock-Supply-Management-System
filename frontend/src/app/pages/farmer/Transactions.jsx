@@ -23,12 +23,17 @@ export default function FarmerTransactions() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        setTransactions(data.transactions || []);
+      if (!res.ok) {
+        console.error("Failed to fetch transactions:", data.message);
+        setTransactions([]);
+        return;
       }
 
+      setTransactions(data.transactions || []);
+
     } catch (error) {
-      console.error(error);
+      console.error("Fetch error:", error);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -60,7 +65,7 @@ export default function FarmerTransactions() {
 
   };
 
-  // ✅ FIXED: Proper mill name
+  // ✅ Buyer name fix
   const getBuyerName = (txn) => {
 
     if (txn?.millOwner?.businessDetails?.businessName) {
@@ -77,7 +82,7 @@ export default function FarmerTransactions() {
 
   const formatMoney = (value) => {
 
-    if (!value) return "-";
+    if (!value && value !== 0) return "-";
 
     return `Rs ${Number(value).toLocaleString()}`;
 
@@ -126,7 +131,7 @@ export default function FarmerTransactions() {
 
             <tbody>
 
-              {/* 🔄 LOADING STATE */}
+              {/* 🔄 LOADING */}
               {loading && (
 
                 <tr>
@@ -196,15 +201,13 @@ export default function FarmerTransactions() {
 
               ))}
 
-              {/* 📭 EMPTY STATE */}
+              {/* 📭 EMPTY */}
               {!loading && transactions.length === 0 && (
 
                 <tr>
-
                   <td colSpan="8" className="text-center py-10 text-muted-foreground">
                     No transactions yet
                   </td>
-
                 </tr>
 
               )}

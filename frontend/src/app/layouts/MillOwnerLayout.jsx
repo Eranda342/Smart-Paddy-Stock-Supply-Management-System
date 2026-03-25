@@ -1,3 +1,4 @@
+import { List } from "lucide-react";
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Sprout, LayoutDashboard, Search as SearchIcon, MessageSquare, Receipt, Truck, TruckIcon, User, LogOut, Search, Bell, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -9,7 +10,7 @@ export default function MillOwnerLayout() {
 
   const menuItems = [
     { path: '/mill-owner', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-    { path: '/mill-owner/browse', icon: SearchIcon, label: 'Browse Listings' },
+    { path: '/mill-owner/browse-listings', icon: SearchIcon, label: 'Browse Listings' },
     { path: '/mill-owner/negotiations', icon: MessageSquare, label: 'Negotiations' },
     { path: '/mill-owner/transactions', icon: Receipt, label: 'Transactions' },
     { path: '/mill-owner/transport', icon: Truck, label: 'Transport' },
