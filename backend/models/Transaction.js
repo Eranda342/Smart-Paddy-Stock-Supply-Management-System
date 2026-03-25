@@ -81,12 +81,11 @@ const transactionSchema = new mongoose.Schema(
 );
 
 // Generate order number automatically
-transactionSchema.pre("save", function (next) {
+transactionSchema.pre("save", function () {
   if (!this.orderNumber) {
     const timestamp = Date.now().toString().slice(-6);
     this.orderNumber = `AGB-${timestamp}`;
   }
-  next();
 });
 
 module.exports = mongoose.model("Transaction", transactionSchema);

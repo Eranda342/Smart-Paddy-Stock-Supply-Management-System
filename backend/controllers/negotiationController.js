@@ -105,7 +105,7 @@ const getNegotiations = async (req, res) => {
     })
       .populate("farmer", "fullName")
       .populate("millOwner", "fullName businessDetails")
-      .populate("listing", "paddyType quantityKg pricePerKg location")
+      .populate("listing", "paddyType quantityKg availableQuantityKg pricePerKg location status")
       .sort({ updatedAt: -1 });
 
     res.status(200).json({ negotiations });
@@ -247,12 +247,23 @@ const updateNegotiationStatus = async (req, res) => {
 
       const listing = await Listing.findById(negotiation.listing._id);
 
+      const existingTransaction = await Transaction.findOne({ listing: listing._id });
+      if (existingTransaction) {
+        return res.status(400).json({
+          message: "This listing is already sold"
+        });
+      }
+
       const lastOffer = negotiation.messages
         .filter(m => m.offeredPrice)
         .slice(-1)[0];
 
+      const latestQuantityOffer = negotiation.messages
+        .slice().reverse()
+        .find(m => m.quantityKg);
+
       const finalPrice = lastOffer?.offeredPrice || listing.pricePerKg;
-      const quantity = lastOffer?.quantityKg || listing.availableQuantityKg;
+      const quantity = lastOffer?.quantityKg || latestQuantityOffer?.quantityKg || listing.availableQuantityKg;
 
       if (quantity > listing.availableQuantityKg) {
         return res.status(400).json({
@@ -265,9 +276,7 @@ const updateNegotiationStatus = async (req, res) => {
       // Reduce listing stock
       listing.availableQuantityKg -= quantity;
 
-      if (listing.availableQuantityKg <= 0) {
-        listing.status = "CLOSED";
-      }
+      listing.status = "CLOSED";
 
       await listing.save();
 
@@ -280,15 +289,11 @@ const updateNegotiationStatus = async (req, res) => {
         finalPricePerKg: finalPrice,
         quantityKg: quantity,
         totalAmount: totalAmount,
-        status: "CONFIRMED"
+        status: "ORDER_CREATED"
       });
 
       // Create transport request
-      await Transport.create({
-        transactions: [transaction._id],
-        pickupDistrict: listing.location?.district,
-        status: "SCHEDULED"
-      });
+      
 
       // Notifications
       await Notification.create({
@@ -306,6 +311,8 @@ const updateNegotiationStatus = async (req, res) => {
     }
 
     await negotiation.save();
+    await negotiation.populate("farmer millOwner listing");
+    
 
     res.status(200).json({
       message: "Negotiation status updated",

@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function FarmerTransactions() {
 
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   const fetchTransactions = async () => {
 
     try {
+
+      setLoading(true);
 
       const res = await fetch("http://localhost:5000/api/transactions", {
         headers: {
@@ -25,6 +29,8 @@ export default function FarmerTransactions() {
 
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
 
   };
@@ -33,43 +39,33 @@ export default function FarmerTransactions() {
     fetchTransactions();
   }, []);
 
+  // ================= UI HELPERS =================
+
   const getPaymentColor = (status) => {
 
-    if (status === "PAID") {
-      return "text-green-500 bg-green-500/10";
-    }
-
-    if (status === "PENDING") {
-      return "text-yellow-500 bg-yellow-500/10";
-    }
+    if (status === "PAID") return "text-green-500 bg-green-500/10";
+    if (status === "PENDING") return "text-yellow-500 bg-yellow-500/10";
 
     return "text-gray-400 bg-gray-400/10";
 
   };
 
-  const getTransportColor = (status) => {
+  const getStatusColor = (status) => {
 
-    if (status === "COMPLETED") {
-      return "text-green-500 bg-green-500/10";
-    }
-
-    if (status === "IN_TRANSPORT") {
-      return "text-blue-500 bg-blue-500/10";
-    }
-
-    if (status === "DELIVERED") {
-      return "text-purple-500 bg-purple-500/10";
-    }
-
-    if (status === "ORDER_CREATED") {
-      return "text-yellow-500 bg-yellow-500/10";
-    }
+    if (status === "CONFIRMED") return "text-green-500 bg-green-500/10";
+    if (status === "ORDER_CREATED") return "text-yellow-500 bg-yellow-500/10";
+    if (status === "DELIVERED") return "text-purple-500 bg-purple-500/10";
 
     return "text-gray-400 bg-gray-400/10";
 
   };
 
+  // ✅ FIXED: Proper mill name
   const getBuyerName = (txn) => {
+
+    if (txn?.millOwner?.businessDetails?.businessName) {
+      return txn.millOwner.businessDetails.businessName;
+    }
 
     if (txn?.millOwner?.fullName) {
       return txn.millOwner.fullName;
@@ -86,6 +82,8 @@ export default function FarmerTransactions() {
     return `Rs ${Number(value).toLocaleString()}`;
 
   };
+
+  // ================= UI =================
 
   return (
 
@@ -113,37 +111,14 @@ export default function FarmerTransactions() {
 
               <tr className="border-b border-border bg-muted/50">
 
-                <th className="text-left p-4 text-sm font-medium">
-                  Buyer
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium">
-                  Paddy Type
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium">
-                  Quantity
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium">
-                  Price / Kg
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium">
-                  Total
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium">
-                  Payment
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium">
-                  Transport
-                </th>
-
-                <th className="text-left p-4 text-sm font-medium">
-                  Action
-                </th>
+                <th className="text-left p-4 text-sm font-medium">Buyer</th>
+                <th className="text-left p-4 text-sm font-medium">Paddy Type</th>
+                <th className="text-left p-4 text-sm font-medium">Quantity</th>
+                <th className="text-left p-4 text-sm font-medium">Price / Kg</th>
+                <th className="text-left p-4 text-sm font-medium">Total</th>
+                <th className="text-left p-4 text-sm font-medium">Payment</th>
+                <th className="text-left p-4 text-sm font-medium">Status</th>
+                <th className="text-left p-4 text-sm font-medium">Action</th>
 
               </tr>
 
@@ -151,7 +126,19 @@ export default function FarmerTransactions() {
 
             <tbody>
 
-              {transactions.map((txn) => (
+              {/* 🔄 LOADING STATE */}
+              {loading && (
+
+                <tr>
+                  <td colSpan="8" className="text-center py-10 text-muted-foreground">
+                    Loading transactions...
+                  </td>
+                </tr>
+
+              )}
+
+              {/* 📦 DATA */}
+              {!loading && transactions.map((txn) => (
 
                 <tr
                   key={txn._id}
@@ -180,24 +167,16 @@ export default function FarmerTransactions() {
 
                   <td className="p-4">
 
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${getPaymentColor(txn?.paymentStatus)}`}
-                    >
-
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm ${getPaymentColor(txn?.paymentStatus)}`}>
                       {txn?.paymentStatus || "PENDING"}
-
                     </span>
 
                   </td>
 
                   <td className="p-4">
 
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${getTransportColor(txn?.status)}`}
-                    >
-
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm ${getStatusColor(txn?.status)}`}>
                       {txn?.status || "ORDER_CREATED"}
-
                     </span>
 
                   </td>
@@ -217,17 +196,13 @@ export default function FarmerTransactions() {
 
               ))}
 
-              {transactions.length === 0 && (
+              {/* 📭 EMPTY STATE */}
+              {!loading && transactions.length === 0 && (
 
                 <tr>
 
-                  <td
-                    colSpan="8"
-                    className="text-center py-10 text-muted-foreground"
-                  >
-
+                  <td colSpan="8" className="text-center py-10 text-muted-foreground">
                     No transactions yet
-
                   </td>
 
                 </tr>

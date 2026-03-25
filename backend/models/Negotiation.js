@@ -79,7 +79,7 @@ const negotiationSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["OPEN", "AGREED", "REJECTED", "CANCELLED"],
+      enum: ["OPEN", "AGREED", "ACCEPTED", "REJECTED", "CANCELLED"],
       default: "OPEN",
     },
   },

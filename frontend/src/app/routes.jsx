@@ -38,6 +38,8 @@ import AdminReports from "./pages/admin/Reports";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
+
+  // ================= PUBLIC =================
   {
     path: "/",
     element: <LandingPage />,
@@ -67,7 +69,7 @@ export const router = createBrowserRouter([
   {
     path: "/farmer",
     element: (
-      <ProtectedRoute role="farmer">
+      <ProtectedRoute role="FARMER">
         <FarmerLayout />
       </ProtectedRoute>
     ),
@@ -79,15 +81,19 @@ export const router = createBrowserRouter([
 
       { path: "browse", element: <FarmerBrowseListings /> },
 
-      // ✅ FIXED NEGOTIATION ROUTES
+      // Negotiations
       { path: "negotiations", element: <FarmerNegotiations /> },
       { path: "negotiations/:id", element: <FarmerNegotiations /> },
 
+      // Transactions
       { path: "transactions", element: <FarmerTransactions /> },
       { path: "transactions/:id", element: <TransactionDetails /> },
 
       { path: "transport", element: <FarmerTransport /> },
       { path: "profile", element: <FarmerProfile /> },
+
+      // fallback
+      { path: "*", element: <FarmerDashboard /> }
     ],
   },
 
@@ -95,7 +101,7 @@ export const router = createBrowserRouter([
   {
     path: "/mill-owner",
     element: (
-      <ProtectedRoute role="mill_owner">
+      <ProtectedRoute role="MILL_OWNER">
         <MillOwnerLayout />
       </ProtectedRoute>
     ),
@@ -105,16 +111,20 @@ export const router = createBrowserRouter([
       { path: "browse", element: <MillOwnerBrowseListings /> },
       { path: "listings", element: <MillOwnerListings /> },
 
-      // ✅ FIXED NEGOTIATION ROUTES
+      // Negotiations
       { path: "negotiations", element: <MillOwnerNegotiations /> },
       { path: "negotiations/:id", element: <MillOwnerNegotiations /> },
 
+      // Transactions
       { path: "transactions", element: <MillOwnerTransactions /> },
       { path: "transactions/:id", element: <TransactionDetails /> },
 
       { path: "transport", element: <MillOwnerTransport /> },
       { path: "vehicles", element: <MillOwnerVehicles /> },
       { path: "profile", element: <MillOwnerProfile /> },
+
+      // fallback
+      { path: "*", element: <MillOwnerDashboard /> }
     ],
   },
 
@@ -122,7 +132,7 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <ProtectedRoute role="admin">
+      <ProtectedRoute role="ADMIN">
         <AdminLayout />
       </ProtectedRoute>
     ),
@@ -131,6 +141,10 @@ export const router = createBrowserRouter([
       { path: "verifications", element: <PendingVerifications /> },
       { path: "users", element: <AdminUsers /> },
       { path: "reports", element: <AdminReports /> },
+
+      // fallback
+      { path: "*", element: <AdminDashboard /> }
     ],
   },
+
 ]);

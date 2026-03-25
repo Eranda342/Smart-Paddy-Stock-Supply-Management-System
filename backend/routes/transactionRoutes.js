@@ -1,7 +1,6 @@
 const express = require("express");
 
 const {
-  confirmTransaction,
   getMyTransactions,
   getTransactionById
 } = require("../controllers/transactionController");
@@ -11,16 +10,12 @@ const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 
-// GET all transactions for logged user
+// ================= GET ALL USER TRANSACTIONS =================
 router.get("/", protect, getMyTransactions);
 
 
-// GET single transaction details
+// ================= GET SINGLE TRANSACTION =================
 router.get("/:id", protect, getTransactionById);
-
-
-// Confirm transaction (create order)
-router.post("/confirm", protect, confirmTransaction);
 
 
 module.exports = router;

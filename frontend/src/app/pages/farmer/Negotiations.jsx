@@ -11,6 +11,7 @@ const [negotiations,setNegotiations]=useState([]);
 const [selected,setSelected]=useState(null);
 const [message,setMessage]=useState("");
 const [counterPrice,setCounterPrice]=useState("");
+const [counterQuantity,setCounterQuantity]=useState("");
 const [typing,setTyping]=useState(false);
 const [onlineUsersMap, setOnlineUsersMap] = useState({});
 const [editingMessageId, setEditingMessageId] = useState(null);
@@ -297,6 +298,15 @@ if(!counterPrice)return;
 
 try{
 
+const payload = {
+  message: "Counter Offer",
+  offeredPrice: Number(counterPrice)
+};
+
+if (counterQuantity) {
+  payload.quantityKg = Number(counterQuantity);
+}
+
 const res=await fetch(
 `http://localhost:5000/api/negotiations/${selected._id}/message`,
 {
@@ -305,10 +315,7 @@ headers:{
 "Content-Type":"application/json",
 Authorization:`Bearer ${token}`
 },
-body:JSON.stringify({
-message:"Counter Offer",
-offeredPrice:Number(counterPrice)
-})
+body:JSON.stringify(payload)
 }
 );
 
@@ -322,6 +329,7 @@ socket.emit("sendMessage",{negotiationId:selected._id,message:last});
 
 setSelected(data.negotiation);
 setCounterPrice("");
+setCounterQuantity("");
 scrollBottom();
 
 }
@@ -334,8 +342,10 @@ const updateStatus=async(status)=>{
 
 try{
 
+const endpoint = status === "ACCEPTED" ? "accept" : status === "REJECTED" ? "reject" : "status";
+
 const res=await fetch(
-`http://localhost:5000/api/negotiations/${selected._id}/status`,
+`http://localhost:5000/api/negotiations/${selected._id}/${endpoint}`,
 {
 method:"PUT",
 headers:{
@@ -348,6 +358,11 @@ body:JSON.stringify({status})
 
 const data=await res.json();
 
+if(!res.ok){
+  alert("Backend Error: " + data.message);
+  console.error("Failed to update negotiation status", data);
+}
+
 if(res.ok){
 
 setSelected(data.negotiation);
@@ -355,7 +370,9 @@ fetchNegotiations();
 
 }
 
-}catch(err){console.log(err)}
+}catch(err){
+  console.error("updateStatus error", err);
+}
 
 };
 
@@ -363,6 +380,16 @@ const getOffers=()=>{
 if(!selected)return[];
 return selected.messages.filter(m=>m.offeredPrice);
 };
+
+const getLatestQuantity = () => {
+  if (!selected) return 0;
+  const latestWithQty = selected.messages.slice().reverse().find(m => m.quantityKg);
+  return latestWithQty?.quantityKg || selected.listing?.availableQuantityKg || 0;
+};
+
+const latestQty = getLatestQuantity();
+const availableQty = selected?.listing?.availableQuantityKg || 0;
+const isQuantityInvalid = latestQty > availableQty;
 
 return(
 
@@ -524,7 +551,7 @@ ${isMe ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-yellow-500/1
 
 {/* MESSAGES */}
 
-<div className="flex-1 overflow-y-auto p-6 space-y-4">
+<div className="flex-1 overflow-y-auto p-6 space-y-4 relative z-0">
 
 {selected.messages.map((msg,i)=>{
 
@@ -558,7 +585,7 @@ return(
         <span className={`text-[10px] font-bold tracking-wider uppercase mb-1 block ${isMe ? "text-black/60" : msg.type === "COUNTER" ? "text-amber-500" : "text-[#22C55E]"}`}>
           {msg.type}
         </span>
-        <p className="font-semibold text-lg">Rs {msg.offeredPrice} / kg</p>
+        <p className="font-semibold text-lg">Rs {msg.offeredPrice} / kg{msg.quantityKg ? ` • ${msg.quantityKg} kg` : ""}</p>
         <p className={`text-sm mt-1 ${isMe ? "text-black/80" : "text-muted-foreground"}`}>{msg.message}</p>
       </div>
     ) : msg.type === "SYSTEM" ? (
@@ -624,9 +651,9 @@ return(
 
 {/* MESSAGE INPUT */}
 
-{selected.status==="OPEN" &&(
+{selected?.status?.toUpperCase() === "OPEN" && (
 
-<div className="p-4 border-t border-border relative">
+<div className="p-4 border-t border-border relative z-10">
 
 {editingMessageId && (
   <div className="absolute top-0 right-4 -translate-y-[120%] bg-blue-500/10 text-blue-500 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2">
@@ -659,7 +686,15 @@ className="px-6 py-3 bg-[#22C55E] text-black rounded-lg"
 
 </div>
 
-<div className="flex gap-2 mt-3">
+<div className="flex flex-col gap-2 mt-3">
+
+{isQuantityInvalid && (
+  <div className="text-red-500 text-[13px] font-medium bg-red-500/10 px-3 py-2 border border-red-500/20 rounded-lg self-start flex items-center gap-1">
+    ⚠️ Warning: Negotiated quantity ({latestQty} kg) exceeds available stock. Only {availableQty} kg available!
+  </div>
+)}
+
+<div className="flex gap-2">
 
 <input
 type="number"
@@ -669,27 +704,51 @@ onChange={(e)=>setCounterPrice(e.target.value)}
 className="px-3 py-2 border rounded-lg bg-[#161a20]"
 />
 
+<input
+  type="number"
+  placeholder={`Qty (max ${availableQty || selected?.listing?.quantityKg || 0} kg)`}
+  min="1"
+  max={availableQty || selected?.listing?.quantityKg || 1}
+  value={counterQuantity}
+  onChange={(e) => {
+    const val = Number(e.target.value);
+    const max = availableQty || selected?.listing?.quantityKg || 0;
+    if (val > max && max > 0) {
+      setCounterQuantity(String(max));
+    } else {
+      setCounterQuantity(e.target.value);
+    }
+  }}
+  className="px-3 py-2 border rounded-lg bg-[#161a20]"
+/>
+
 <button
 onClick={sendCounterOffer}
-className="px-4 py-2 bg-yellow-500/10 text-yellow-500 rounded-lg text-sm"
+className="px-4 py-2 bg-yellow-500/10 text-yellow-500 rounded-lg text-sm transition-colors hover:bg-yellow-500/20"
 >
 Counter Offer
 </button>
 
 <button
-onClick={()=>updateStatus("ACCEPTED")}
-className="px-4 py-2 bg-green-500/10 text-green-500 rounded-lg text-sm"
+  disabled={isQuantityInvalid}
+  onClick={() => updateStatus("ACCEPTED")}
+  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+    isQuantityInvalid 
+      ? "bg-red-500/10 text-red-500/50 cursor-not-allowed border border-red-500/10" 
+      : "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+  }`}
 >
 Accept
 </button>
 
 <button
 onClick={()=>updateStatus("REJECTED")}
-className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm"
+className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm transition-colors hover:bg-red-500/20"
 >
 Reject
 </button>
 
+</div>
 </div>
 
 </div>
