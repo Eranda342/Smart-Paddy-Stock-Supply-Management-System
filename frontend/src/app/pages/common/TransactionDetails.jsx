@@ -106,14 +106,14 @@ export default function TransactionDetails() {
 
   const handleFarmerDelivered = () => handleAction("farmer-delivered");
   const handleConfirmDelivery = () => handleAction("confirm-delivery");
-  const handlePickedUp = () => handleAction("picked-up");
-  const handleTransportDelivered = () => handleAction("transport-delivered");
+  const handlePickedUp = () => handleAction("pickup");
+  const handleTransportDelivered = () => handleAction("deliver");
 
   const handleAssignTransport = async () => {
     try {
       setActionLoading(true);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}/assign-transport`, {
+      const res = await fetch(`http://localhost:5000/api/transactions/${id}/assign-vehicle`, {
         method: "PUT",
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -199,7 +199,7 @@ export default function TransactionDetails() {
   const isFarmer = user?.id === farmerId;
 
   const renderActions = () => {
-    const { status, paymentStatus, transportStatus } = transaction;
+    const { status, paymentStatus, transportStatus, transportRequired, pickupConfirmed, vehicleDetails } = transaction;
 
     if (status === "COMPLETED") {
       return (
@@ -232,47 +232,41 @@ export default function TransactionDetails() {
       }
     }
 
-    // ================= TRANSPORT DECISION (FARMER) =================
-    if (paymentStatus === "PAID" && transaction.transportRequired === null && isFarmer) {
-      return (
-        <div className="flex flex-col gap-3 w-full">
-          <div className="flex gap-3">
-            <button 
-              onClick={() => handleTransportDecision(true)}
-              disabled={actionLoading}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
-            >
-              <Truck className="w-5 h-5" />
-              {actionLoading ? "Processing..." : "Yes, Need Transport"}
-            </button>
-            <button 
-              onClick={() => handleTransportDecision(false)}
-              disabled={actionLoading}
-              className="flex-1 flex items-center justify-center gap-2 bg-transparent border border-border text-foreground px-4 py-3 rounded-lg font-semibold hover:bg-muted transition disabled:opacity-50"
-            >
-              {actionLoading ? "Processing..." : "No, I'll Deliver Myself"}
-            </button>
+    // ================= TRANSPORT DECISION =================
+    if (paymentStatus === "PAID" && transportRequired === null) {
+      if (isFarmer) {
+        return (
+          <div className="flex flex-col gap-3 w-full">
+            <div className="flex gap-3">
+              <button 
+                onClick={() => handleTransportDecision(true)}
+                disabled={actionLoading}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
+              >
+                <Truck className="w-5 h-5" />
+                {actionLoading ? "Processing..." : "Yes, Need Transport"}
+              </button>
+              <button 
+                onClick={() => handleTransportDecision(false)}
+                disabled={actionLoading}
+                className="flex-1 flex items-center justify-center gap-2 bg-transparent border border-border text-foreground px-4 py-3 rounded-lg font-semibold hover:bg-muted transition disabled:opacity-50"
+              >
+                {actionLoading ? "Processing..." : "No, I'll Deliver Myself"}
+              </button>
+            </div>
           </div>
-        </div>
-      );
-    }
-
-    // ================= TRANSPORT =================
-    if (paymentStatus === "PAID" && transportStatus === "NOT_REQUIRED") {
-      return (
-        <button 
-          onClick={() => handleAction("transport")}
-          disabled={actionLoading}
-          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-black px-4 py-3 rounded-lg font-semibold hover:bg-yellow-500/90 transition disabled:opacity-50"
-        >
-          <Truck className="w-5 h-5" />
-          {actionLoading ? "Processing..." : "Request Transport"}
-        </button>
-      );
+        );
+      } else if (isBuyer) {
+        return (
+          <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
+            ⏳ Waiting for farmer decision
+          </div>
+        );
+      }
     }
 
     // ================= ASSIGN TRANSPORT (MILL OWNER) =================
-    if (transportStatus === "PENDING") {
+    if (transportRequired === true && transportStatus === "PENDING") {
       if (isBuyer) {
         return (
           <div className="flex flex-col gap-3 w-full bg-card p-5 rounded-xl border border-border mt-4">
@@ -313,57 +307,58 @@ export default function TransactionDetails() {
     }
 
     // ================= START TRANSPORT / PICK UP =================
-    if (transportStatus === "ASSIGNED") {
+    if (transportRequired === true && transportStatus === "IN_PROGRESS" && !pickupConfirmed) {
       if (isFarmer) {
         return (
-          <button 
-            onClick={handlePickedUp}
-            disabled={actionLoading}
-            className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
-          >
-            <Truck className="w-5 h-5" />
-            {actionLoading ? "Processing..." : "Mark as Picked Up"}
-          </button>
+          <div className="flex flex-col gap-3 w-full bg-card p-5 rounded-xl border border-border mt-4">
+            <p className="text-sm font-semibold mb-1">Vehicle Appointed</p>
+            <div className="bg-muted p-3 rounded-lg text-sm mb-4 text-muted-foreground">
+              <p><strong className="text-foreground">Vehicle Number:</strong> {vehicleDetails?.vehicleNumber || vehicleNumber || "N/A"}</p>
+              <p><strong className="text-foreground">Vehicle Type/Driver:</strong> {vehicleDetails?.vehicleType || vehicleType || vehicleDetails?.driverName || "N/A"}</p>
+            </div>
+            <button 
+              onClick={() => handleAction("pickup")}
+              disabled={actionLoading}
+              className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
+            >
+              <Truck className="w-5 h-5" />
+              {actionLoading ? "Processing..." : "Mark as Picked Up"}
+            </button>
+          </div>
         );
-      } else {
+      } else if (isBuyer) {
         return (
           <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
-            ⏳ Waiting for farmer to hand over the stock
+            ⏳ Waiting for pickup confirmation
           </div>
         );
       }
     }
 
-    if (transportStatus === "IN_PROGRESS") {
-      return (
-        <button 
-          onClick={() => handleAction("deliver")}
-          disabled={actionLoading}
-          className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
-        >
-          <Package className="w-5 h-5" />
-          {actionLoading ? "Processing..." : "Mark as Delivered"}
-        </button>
-      );
-    }
-
     // ================= FARMER SELF-DELIVERY =================
     if (
       paymentStatus === "PAID" &&
-      transaction.transportRequired === false &&
-      isFarmer &&
+      transportRequired === false &&
       transportStatus !== "DELIVERED"
     ) {
-      return (
-        <button 
-          onClick={handleFarmerDelivered}
-          disabled={actionLoading}
-          className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
-        >
-          <Package className="w-5 h-5" />
-          {actionLoading ? "Processing..." : "Mark as Delivered"}
-        </button>
-      );
+      if (isFarmer) {
+        return (
+          <button 
+            onClick={handleFarmerDelivered}
+            disabled={actionLoading}
+            className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
+          >
+            <Package className="w-5 h-5" />
+            {actionLoading ? "Processing..." : "Mark as Delivered"}
+          </button>
+        );
+      } else if (isBuyer) {
+        return (
+          <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
+            ⏳ Waiting for farmer delivery
+          </div>
+        );
+      }
     }
 
     // ================= CONFIRM DELIVERY (MILL OWNER) =================
@@ -381,19 +376,19 @@ export default function TransactionDetails() {
     }
 
     // ================= TRANSPORT DELIVERED (MILL OWNER) =================
-    if (transportStatus === "PICKED_UP") {
+    if (transportRequired === true && transportStatus === "IN_PROGRESS" && pickupConfirmed === true) {
       if (isBuyer) {
         return (
           <button 
-            onClick={handleTransportDelivered}
+            onClick={() => handleAction("deliver")}
             disabled={actionLoading}
             className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
           >
             <CheckCircle2 className="w-5 h-5" />
-            {actionLoading ? "Processing..." : "Mark Delivery Completed"}
+            {actionLoading ? "Processing..." : "Mark as Delivered"}
           </button>
         );
-      } else {
+      } else if (isFarmer) {
         return (
           <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
             ⏳ Transport in progress... 

@@ -1,4 +1,6 @@
 const Transaction = require("../models/Transaction");
+const Notification = require("../models/Notification");
+const User = require("../models/User");
 
 
 // ================= GET USER TRANSACTIONS =================
@@ -186,38 +188,7 @@ const startTransport = async (req, res) => {
 
 
 
-// ================= MARK AS DELIVERED =================
-const markDelivered = async (req, res) => {
-  try {
 
-    const transaction = await Transaction.findById(req.params.id);
-
-    if (!transaction) {
-      return res.status(404).json({
-        message: "Transaction not found"
-      });
-    }
-
-    if (transaction.transportStatus !== "IN_PROGRESS") {
-      return res.status(400).json({
-        message: "Transport not in progress"
-      });
-    }
-
-    transaction.transportStatus = "DELIVERED";
-    transaction.status = "COMPLETED";
-
-    await transaction.save();
-
-    res.status(200).json({
-      message: "Order completed",
-      transaction
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
 
 
@@ -385,13 +356,30 @@ const assignTransport = async (req, res) => {
       });
     }
 
-    transaction.transportStatus = "ASSIGNED";
+    transaction.transportStatus = "IN_PROGRESS";
     transaction.vehicleDetails = {
       vehicleNumber,
       vehicleType
     };
 
     await transaction.save();
+
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
+
+    const millOwnerUser = await User.findById(req.user.id).select("fullName");
+
+    const newNotification = await Notification.create({
+      user: transaction.farmer,
+      title: "Vehicle Assigned",
+      message: `Vehicle ${vehicleNumber} is on the way`,
+      senderName: millOwnerUser?.fullName || "Mill Owner",
+      transactionId: transaction._id
+    });
+
+    if (onlineUsers[transaction.farmer]) {
+      io.to(onlineUsers[transaction.farmer]).emit("receiveNotification", newNotification);
+    }
 
     res.status(200).json({
       message: "Transport assigned successfully",
@@ -405,68 +393,65 @@ const assignTransport = async (req, res) => {
 
 
 
-// ================= MARK PICKED UP =================
-const markPickedUp = async (req, res) => {
+// ===== FARMER: CONFIRM PICKUP =====
+const confirmPickup = async (req, res) => {
   try {
-
     const transaction = await Transaction.findById(req.params.id);
 
     if (!transaction) {
-      return res.status(404).json({
-        message: "Transaction not found"
-      });
+      return res.status(404).json({ message: "Transaction not found" });
     }
 
-    if (req.user.id !== transaction.farmer.toString()) {
-      return res.status(403).json({
-        message: "Only farmer can perform this action"
-      });
+    // Only farmer can confirm pickup
+    if (transaction.farmer.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
     }
 
-    if (transaction.transportStatus !== "ASSIGNED") {
-      return res.status(400).json({
-        message: "Transport vehicle has not been assigned yet"
-      });
-    }
-
-    transaction.transportStatus = "PICKED_UP";
+    transaction.pickupConfirmed = true;
 
     await transaction.save();
 
-    res.status(200).json({
-      message: "Marked as picked up",
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
+
+    const farmerUser = await User.findById(req.user.id).select("fullName");
+
+    const newNotification = await Notification.create({
+      user: transaction.millOwner,
+      title: "Pickup Confirmed",
+      message: "Farmer confirmed pickup",
+      senderName: farmerUser?.fullName || "Farmer",
+      transactionId: transaction._id
+    });
+
+    if (onlineUsers[transaction.millOwner]) {
+      io.to(onlineUsers[transaction.millOwner]).emit("receiveNotification", newNotification);
+    }
+
+    res.json({
+      message: "Pickup confirmed",
       transaction
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("PICKUP ERROR:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 
-
-// ================= MARK TRANSPORT DELIVERED =================
-const markTransportDelivered = async (req, res) => {
+// ===== MILL OWNER: MARK DELIVERY =====
+const markDelivered = async (req, res) => {
   try {
-
     const transaction = await Transaction.findById(req.params.id);
 
     if (!transaction) {
-      return res.status(404).json({
-        message: "Transaction not found"
-      });
+      return res.status(404).json({ message: "Transaction not found" });
     }
 
-    if (req.user.id !== transaction.millOwner.toString()) {
-      return res.status(403).json({
-        message: "Only mill owner can perform this action"
-      });
-    }
-
-    if (transaction.transportStatus !== "PICKED_UP") {
-      return res.status(400).json({
-        message: "Transport has not been picked up yet"
-      });
+    // Only mill owner can confirm delivery
+    if (transaction.millOwner.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
     }
 
     transaction.transportStatus = "DELIVERED";
@@ -474,13 +459,31 @@ const markTransportDelivered = async (req, res) => {
 
     await transaction.save();
 
-    res.status(200).json({
-      message: "Delivery completed via transport",
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
+
+    const millOwnerUserDelivery = await User.findById(req.user.id).select("fullName");
+
+    const newNotification = await Notification.create({
+      user: transaction.farmer,
+      title: "Delivery Completed",
+      message: "Your paddy has been delivered",
+      senderName: millOwnerUserDelivery?.fullName || "Mill Owner",
+      transactionId: transaction._id
+    });
+
+    if (onlineUsers[transaction.farmer]) {
+      io.to(onlineUsers[transaction.farmer]).emit("receiveNotification", newNotification);
+    }
+
+    res.json({
+      message: "Delivery completed",
       transaction
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("DELIVERY ERROR:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -492,11 +495,10 @@ module.exports = {
   markAsPaid,
   requestTransport,
   startTransport,
-  markDelivered,
   setTransportDecision,
   markAsDeliveredByFarmer,
   confirmDeliveryByMillOwner,
   assignTransport,
-  markPickedUp,
-  markTransportDelivered
+  confirmPickup,
+  markDelivered
 };

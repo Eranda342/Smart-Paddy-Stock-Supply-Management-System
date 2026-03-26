@@ -10,6 +10,12 @@ const notificationSchema = new mongoose.Schema({
 
   title: String,
   message: String,
+  senderName: String,
+
+  transactionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Transaction"
+  },
 
   read: {
     type: Boolean,

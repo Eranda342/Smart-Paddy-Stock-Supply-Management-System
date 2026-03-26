@@ -60,6 +60,9 @@ const io = new Server(server, {
 
 const onlineUsers = {};
 
+app.set("io", io);
+app.set("onlineUsers", onlineUsers);
+
 io.on("connection", (socket) => {
 
   console.log("🟢 User connected:", socket.id);

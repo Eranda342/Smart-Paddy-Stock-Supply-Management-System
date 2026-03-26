@@ -69,11 +69,15 @@ const transactionSchema = new mongoose.Schema(
         "NOT_DECIDED",   // waiting for farmer decision
         "NOT_REQUIRED",  // farmer said NO
         "PENDING",       // farmer said YES, waiting for vehicle
-        "ASSIGNED",      // vehicle assigned
-        "PICKED_UP",     // collected from farmer
+        "IN_PROGRESS",   // vehicle appointed/picking up
         "DELIVERED"      // delivered to mill
       ],
       default: "NOT_DECIDED",
+    },
+
+    pickupConfirmed: {
+      type: Boolean,
+      default: false,
     },
 
     vehicleDetails: {
