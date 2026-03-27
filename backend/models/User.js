@@ -41,6 +41,11 @@ const userSchema = new mongoose.Schema(
     default: false
   },
 
+  profileImage: {
+    type: String,
+    default: null
+  },
+
 
   // ================= FARMER DETAILS =================
   farmDetails: {
@@ -88,6 +93,14 @@ const userSchema = new mongoose.Schema(
     },
 
     millLocation: {
+      type: String
+    },
+
+    millCapacity: {
+      type: Number
+    },
+
+    businessPhone: {
       type: String
     },
 

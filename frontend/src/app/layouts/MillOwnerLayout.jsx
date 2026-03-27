@@ -67,13 +67,13 @@ export default function MillOwnerLayout() {
 
   const menuItems = [
     { path: '/mill-owner', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    { path: "/mill-owner/listings", icon: List, label: "Buy Requests" },
     { path: '/mill-owner/browse-listings', icon: SearchIcon, label: 'Browse Listings' },
     { path: '/mill-owner/negotiations', icon: MessageSquare, label: 'Negotiations' },
     { path: '/mill-owner/transactions', icon: Receipt, label: 'Transactions' },
-    { path: '/mill-owner/transport', icon: Truck, label: 'Transport' },
     { path: '/mill-owner/vehicles', icon: TruckIcon, label: 'Vehicles' },
+    { path: '/mill-owner/transport', icon: Truck, label: 'Transport' },
     { path: '/mill-owner/profile', icon: User, label: 'Profile' },
-    { path: "/mill-owner/listings", icon: List, label: "Buy Requests" },
   ];
 
   const isActive = (path, exact = false) => {
@@ -107,18 +107,19 @@ export default function MillOwnerLayout() {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path, item.exact);
+
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all duration-200 ${
+                className={`relative flex items-center gap-3 px-4 py-3 rounded-lg mb-1 group transition-all duration-200 hover:translate-x-1 ${
                   active
-                    ? 'bg-[#22C55E] text-[#0F1115]'
+                    ? 'bg-[#22C55E]/10 text-foreground border border-[#22c55e]/30 shadow-[0_0_15px_rgba(34,197,94,0.08)]'
                     : 'text-sidebar-foreground hover:bg-sidebar-accent'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <Icon className={`w-5 h-5 transition-colors duration-300 z-10 ${active ? 'text-[#22c55e]' : ''}`} />
+                <span className={`font-medium z-10 ${active ? 'text-foreground' : ''}`}>{item.label}</span>
               </Link>
             );
           })}

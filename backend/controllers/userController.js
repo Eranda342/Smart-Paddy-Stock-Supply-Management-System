@@ -211,6 +211,12 @@ const updateProfile = async (req, res) => {
         req.body.businessDetails?.millLocation ||
         user.businessDetails.millLocation;
 
+      if (req.body.businessDetails?.millCapacity !== undefined)
+        user.businessDetails.millCapacity = req.body.businessDetails.millCapacity;
+
+      if (req.body.businessDetails?.businessPhone !== undefined)
+        user.businessDetails.businessPhone = req.body.businessDetails.businessPhone;
+
     }
 
     await user.save();
@@ -227,9 +233,34 @@ const updateProfile = async (req, res) => {
 };
 
 
+// ================= UPLOAD AVATAR =================
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.profileImage = req.file.filename;
+    await user.save();
+
+    res.status(200).json({
+      message: "Avatar uploaded successfully",
+      profileImage: req.file.filename
+    });
+  } catch (error) {
+    console.error("UPLOAD AVATAR ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
   getMyProfile,
-  updateProfile
+  updateProfile,
+  uploadAvatar
 };

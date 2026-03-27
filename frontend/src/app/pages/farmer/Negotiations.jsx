@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Send, CheckCircle2, Building2, Check, CheckCheck, Trash2, Ban, Pencil } from "lucide-react";
 import { io } from "socket.io-client";
+import toast from "react-hot-toast";
 
 const socket=io("http://localhost:5000");
 
@@ -149,6 +150,26 @@ setSelected(prev=>{
 });
 
 scrollBottom();
+
+// Toast for incoming messages (not sent by me)
+const senderId = msg.message?.sender?._id || msg.message?.sender;
+if (senderId && String(senderId) !== String(decodedUser?.id)) {
+  if (msg.message?.type === "COUNTER") {
+    toast(`💰 Counter offer: Rs ${msg.message.offeredPrice}/kg`, {
+      icon: "🔄",
+      style: { background: "#1a1f2e", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }
+    });
+  } else if (msg.message?.type === "OFFER") {
+    toast(`📦 New offer: Rs ${msg.message.offeredPrice}/kg`, {
+      icon: "✨",
+      style: { background: "#1a1f2e", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }
+    });
+  } else if (msg.message?.type === "MESSAGE") {
+    toast("💬 New message received", {
+      style: { background: "#1a1f2e", color: "#e2e8f0", border: "1px solid rgba(255,255,255,0.1)" }
+    });
+  }
+}
 
 }
 
@@ -367,6 +388,12 @@ if(res.ok){
 
 setSelected(data.negotiation);
 fetchNegotiations();
+
+if (status === "ACCEPTED") {
+  toast.success("✅ Negotiation accepted! Transaction created.");
+} else if (status === "REJECTED") {
+  toast.error("❌ Negotiation rejected.");
+}
 
 }
 

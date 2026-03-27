@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
-import { MapPin, User, Package } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MapPin, User, Package, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function BrowseListings() {
 
   const [listings, setListings] = useState([]);
-
   const [selectedDistrict, setSelectedDistrict] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
-
   const [minQty, setMinQty] = useState("");
   const [maxQty, setMaxQty] = useState("");
-
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-
   const [sortPrice, setSortPrice] = useState("none");
+  const [negotiatingId, setNegotiatingId] = useState(null);
 
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   const fetchListings = async () => {
 
@@ -43,6 +43,44 @@ export default function BrowseListings() {
   useEffect(() => {
     fetchListings();
   }, []);
+
+  const handleNegotiate = async (listing) => {
+    setNegotiatingId(listing._id);
+    try {
+      const res = await fetch("http://localhost:5000/api/negotiations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          listingId: listing._id,
+          message: "Hi, I am interested in your paddy listing.",
+          offeredPrice: listing.pricePerKg,
+          quantityKg: listing.quantityKg
+        })
+      });
+      const data = await res.json();
+      if (res.ok || res.status === 200) {
+        const negId = data.negotiation?._id;
+        toast.success(
+          data.message === "Existing negotiation"
+            ? "Reopening existing negotiation..."
+            : "Negotiation started! Redirecting to chat..."
+        );
+        setTimeout(() => {
+          navigate(`/mill-owner/negotiations/${negId}`);
+        }, 800);
+      } else {
+        toast.error(data.message || "Failed to start negotiation");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error. Please try again.");
+    } finally {
+      setNegotiatingId(null);
+    }
+  };
 
   // Dynamic filter options
 
@@ -327,8 +365,23 @@ export default function BrowseListings() {
 
                   </div>
 
-                  <button className="w-full py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg font-medium">
-                    Negotiate
+                  <button
+                    onClick={() => handleNegotiate(listing)}
+                    disabled={negotiatingId === listing._id}
+                    className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 ${
+                      negotiatingId === listing._id
+                        ? "bg-[#22C55E]/50 text-black/60 cursor-not-allowed"
+                        : "bg-[#22C55E] hover:bg-[#16A34A] text-black hover:scale-[1.02] active:scale-95"
+                    }`}
+                  >
+                    {negotiatingId === listing._id ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Starting...
+                      </>
+                    ) : (
+                      "Negotiate"
+                    )}
                   </button>
 
                 </div>

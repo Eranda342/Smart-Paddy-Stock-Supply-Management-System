@@ -5,7 +5,8 @@ const {
   registerUser,
   loginUser,
   getMyProfile,
-  updateProfile
+  updateProfile,
+  uploadAvatar
 } = require("../controllers/userController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -26,6 +27,10 @@ router.get("/me", protect, getMyProfile);
 
 // ================= UPDATE PROFILE =================
 router.put("/me", protect, updateProfile);
+
+
+// ================= UPLOAD AVATAR =================
+router.post("/me/avatar", protect, upload.single("avatar"), uploadAvatar);
 
 
 module.exports = router;

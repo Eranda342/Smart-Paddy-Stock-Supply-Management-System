@@ -49,14 +49,14 @@ export default function AdminLayout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all duration-200 ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-1 group transition-all duration-200 hover:translate-x-1 ${
                   active
-                    ? 'bg-[#22C55E] text-[#0F1115]'
+                    ? 'bg-[#22C55E]/10 text-foreground border border-[#22c55e]/30 shadow-[0_0_15px_rgba(34,197,94,0.08)]'
                     : 'text-sidebar-foreground hover:bg-sidebar-accent'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <Icon className={`w-5 h-5 transition-colors duration-300 z-10 ${active ? 'text-[#22c55e]' : ''}`} />
+                <span className={`font-medium z-10 ${active ? 'text-foreground' : ''}`}>{item.label}</span>
               </Link>
             );
           })}

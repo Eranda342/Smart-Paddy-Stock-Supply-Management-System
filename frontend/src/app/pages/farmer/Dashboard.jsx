@@ -76,8 +76,20 @@ export default function FarmerDashboard() {
   if (loading) return <div className="flex h-[50vh] items-center justify-center text-[#22C55E]">Loading metrics...</div>;
   if (error || !data) return <div className="flex h-[50vh] items-center justify-center text-red-500">{error || "No data"}</div>;
 
-  const salesData = Object.keys(data.monthly || {}).length > 0 
-    ? Object.keys(data.monthly).map(month => ({ month, sales: data.monthly[month] }))
+  const generateLast6Months = () => {
+    const result = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      result.push(d.toLocaleString("default", { month: "short" }));
+    }
+    return result;
+  };
+
+  const last6Months = generateLast6Months();
+
+  const salesData = data && Object.keys(data.monthly || {}).length > 0 
+    ? last6Months.map(month => ({ month, sales: data.monthly[month] || 0 }))
     : [{ month: "No Data", sales: 0 }];
 
   const paddyDistribution = Object.keys(data.distribution || {}).map((type, i) => {
@@ -106,9 +118,9 @@ export default function FarmerDashboard() {
     };
   });
 
-  const sparkData = Object.keys(data.monthly || {}).map(month => ({
+  const sparkData = last6Months.map(month => ({
     month,
-    value: data.monthly[month]
+    value: data?.monthly?.[month] || 0
   }));
 
   const topLocation = Object.entries(data.locations || {}).sort((a, b) => b[1] - a[1])[0];
@@ -137,7 +149,7 @@ export default function FarmerDashboard() {
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 relative">
         {step === 0 && <div className="absolute -top-6 left-2 font-medium text-green-500 animate-pulse text-sm flex items-center gap-2"><span>📊</span> Your performance overview</div>}
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_15px_rgba(34,197,94,0.08)] hover:shadow-[0_0_20px_rgba(34,197,94,0.12)] hover:dark:shadow-[0_0_20px_rgba(34,197,94,0.12)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
+        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(34,197,94,0.05)] hover:shadow-[0_0_15px_rgba(34,197,94,0.08)] hover:dark:shadow-[0_0_15px_rgba(34,197,94,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
           <div className="flex items-center justify-between mb-4 relative z-10 w-full">
             <div className="w-12 h-12 bg-[#22C55E]/10 rounded-xl flex items-center justify-center shrink-0">
@@ -160,7 +172,7 @@ export default function FarmerDashboard() {
           </div>
         </div>
 
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_15px_rgba(59,130,246,0.08)] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] hover:dark:shadow-[0_0_20px_rgba(59,130,246,0.12)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-blue-400 scale-[1.02]" : ""}`}>
+        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(59,130,246,0.05)] hover:shadow-[0_0_15px_rgba(59,130,246,0.08)] hover:dark:shadow-[0_0_15px_rgba(59,130,246,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-blue-400 scale-[1.02]" : ""}`}>
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
           <div className="flex items-center justify-between mb-4 relative z-10 w-full">
             <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0">
@@ -183,7 +195,7 @@ export default function FarmerDashboard() {
           </div>
         </div>
 
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_15px_rgba(139,92,246,0.08)] hover:shadow-[0_0_20px_rgba(139,92,246,0.12)] hover:dark:shadow-[0_0_20px_rgba(139,92,246,0.12)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-purple-400 scale-[1.02]" : ""}`}>
+        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(139,92,246,0.05)] hover:shadow-[0_0_15px_rgba(139,92,246,0.08)] hover:dark:shadow-[0_0_15px_rgba(139,92,246,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-purple-400 scale-[1.02]" : ""}`}>
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
           <div className="flex items-center justify-between mb-4 relative z-10 w-full">
             <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center shrink-0">
@@ -206,7 +218,7 @@ export default function FarmerDashboard() {
           </div>
         </div>
 
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_15px_rgba(245,158,11,0.08)] hover:shadow-[0_0_20px_rgba(245,158,11,0.12)] hover:dark:shadow-[0_0_20px_rgba(245,158,11,0.12)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-orange-400 scale-[1.02]" : ""}`}>
+        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(245,158,11,0.05)] hover:shadow-[0_0_15px_rgba(245,158,11,0.08)] hover:dark:shadow-[0_0_15px_rgba(245,158,11,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-orange-400 scale-[1.02]" : ""}`}>
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
           <div className="flex items-center justify-between mb-4 relative z-10 w-full">
             <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center shrink-0">
@@ -262,39 +274,43 @@ export default function FarmerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10 mt-6 relative">
         {step === 1 && <div className="absolute -top-6 left-2 font-medium text-green-500 animate-pulse text-sm flex items-center gap-2"><span>📈</span> Sales trend</div>}
         {step === 2 && <div className="absolute -top-6 left-[51%] font-medium text-green-500 animate-pulse text-sm flex items-center gap-2"><span>🌾</span> Crop distribution</div>}
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-6 hover:shadow-[0_0_20px_rgba(34,197,94,0.12)] transition-all duration-300 ${step === 1 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
+        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-6 hover:shadow-[0_0_15px_rgba(34,197,94,0.08)] transition-all duration-300 ${step === 1 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
           <h2 className="text-xl font-semibold mb-6">Sales Trend</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={salesData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#22c55e" />
-                  <stop offset="100%" stopColor="#4ade80" />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.5} />
-              <XAxis dataKey="month" stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} dy={10} />
-              <YAxis 
-                stroke="var(--color-muted-foreground)" 
-                tickLine={false} 
-                axisLine={false} 
-                dx={-10} 
-                tickFormatter={(value) => new Intl.NumberFormat("en-LK", { notation: "compact" }).format(value)}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'var(--color-card)', 
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
-                }}
-              />
-              <Line type="monotone" dataKey="sales" stroke="url(#colorGradient)" strokeWidth={4} dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#4ade80', stroke: '#fff' }} isAnimationActive={true} animationDuration={1000} />
-            </LineChart>
+            {salesData[0].month === "No Data" ? (
+              <div className="flex items-center justify-center h-full text-muted-foreground font-medium">📊 No data yet — start selling to see insights</div>
+            ) : (
+              <LineChart data={salesData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#22c55e" />
+                    <stop offset="100%" stopColor="#4ade80" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.5} />
+                <XAxis dataKey="month" stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} dy={10} />
+                <YAxis 
+                  stroke="var(--color-muted-foreground)" 
+                  tickLine={false} 
+                  axisLine={false} 
+                  dx={-10} 
+                  tickFormatter={(value) => "Rs " + new Intl.NumberFormat("en-LK", { notation: "compact" }).format(value)}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'var(--color-card)', 
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Line type="monotone" dataKey="sales" stroke="url(#colorGradient)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#22c55e' }} activeDot={{ r: 6, fill: '#4ade80', stroke: '#fff' }} isAnimationActive={true} animationDuration={1000} />
+              </LineChart>
+            )}
           </ResponsiveContainer>
         </div>
 
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-6 hover:shadow-[0_0_20px_rgba(34,197,94,0.12)] transition-all duration-300 w-full overflow-x-auto ${step === 2 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
+        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-6 hover:shadow-[0_0_15px_rgba(34,197,94,0.08)] transition-all duration-300 w-full overflow-x-auto ${step === 2 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
           <h2 className="text-xl font-semibold mb-6">Paddy Distribution</h2>
           <ResponsiveContainer width="100%" height={300}>
             {paddyDistribution.length === 0 ? (
