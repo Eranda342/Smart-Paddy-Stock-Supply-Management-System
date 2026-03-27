@@ -68,6 +68,9 @@ const createNegotiation = async (req, res) => {
     });
 
     await negotiation.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     // Notify farmer
     await Notification.create({
@@ -193,6 +196,9 @@ const addMessage = async (req, res) => {
     negotiation.lastMessage = newMessage.message;
 
     await negotiation.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({
       message: "Message sent",
@@ -311,6 +317,9 @@ const updateNegotiationStatus = async (req, res) => {
     }
 
     await negotiation.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
     await negotiation.populate("farmer millOwner listing");
     
 
@@ -349,6 +358,9 @@ const deleteMessage = async (req, res) => {
 
     message.isDeleted = true;
     await negotiation.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({ message: "Message deleted successfully", negotiation });
   } catch (error) {
@@ -378,6 +390,9 @@ const markMessagesRead = async (req, res) => {
 
     if (updated) {
       await negotiation.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
     }
 
     res.status(200).json({ message: "Messages marked as read", negotiation });
@@ -422,6 +437,9 @@ const editMessage = async (req, res) => {
     message.message = newText;
     message.isEdited = true;
     await negotiation.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({ message: "Message edited successfully", negotiation });
   } catch (error) {

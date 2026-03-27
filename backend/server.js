@@ -14,8 +14,10 @@ const listingRoutes = require("./routes/listingRoutes");
 const negotiationRoutes = require("./routes/negotiationRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const transportRoutes = require("./routes/transportRoutes");
+const vehicleRoutes = require("./routes/vehicleRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-const notificationRoutes = require("./routes/NotificationRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 // ================= APP INIT =================
 const app = express();
@@ -47,8 +49,10 @@ app.use("/api/listings", listingRoutes);
 app.use("/api/negotiations", negotiationRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/transports", transportRoutes);
+app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // ================= SOCKET.IO =================
 const io = new Server(server, {
@@ -61,6 +65,7 @@ const io = new Server(server, {
 const onlineUsers = {};
 
 app.set("io", io);
+global.io = io;
 app.set("onlineUsers", onlineUsers);
 
 io.on("connection", (socket) => {

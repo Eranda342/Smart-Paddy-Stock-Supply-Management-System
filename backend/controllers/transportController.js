@@ -97,6 +97,43 @@ const createTransport = async (req, res) => {
 };
 
 
+// ================= GET TRANSPORT DATA =================
+// Returns active (IN_PROGRESS) and history (DELIVERED) for the logged-in user
+const getTransport = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const userFilter = {
+      transportRequired: true,
+      $or: [{ farmer: userId }, { millOwner: userId }]
+    };
+
+    const populateOpts = [
+      { path: "farmer",    select: "fullName" },
+      { path: "millOwner", select: "fullName businessDetails" },
+      { path: "vehicle" }
+    ];
+
+    const [active, history] = await Promise.all([
+      Transaction.find({ ...userFilter, transportStatus: "IN_PROGRESS" })
+        .populate(populateOpts)
+        .sort({ updatedAt: -1 }),
+
+      Transaction.find({ ...userFilter, transportStatus: "DELIVERED" })
+        .populate(populateOpts)
+        .sort({ updatedAt: -1 })
+    ]);
+
+    res.json({ active, history });
+
+  } catch (error) {
+    console.error("GET TRANSPORT ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 module.exports = {
-  createTransport
+  createTransport,
+  getTransport
 };

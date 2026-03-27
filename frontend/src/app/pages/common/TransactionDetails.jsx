@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle2, Truck, CreditCard, Package, ArrowLeft, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function TransactionDetails() {
   const { id } = useParams();
@@ -11,8 +12,9 @@ export default function TransactionDetails() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [vehicleNumber, setVehicleNumber] = useState("");
   const [vehicleType, setVehicleType] = useState("");
+  const [vehicles, setVehicles] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -50,6 +52,22 @@ export default function TransactionDetails() {
   useEffect(() => {
     if (id) fetchTransaction();
   }, [id]);
+
+  // Fetch mill owner's vehicles for the dropdown
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/vehicles", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) setVehicles(data.vehicles || []);
+      } catch (err) {
+        console.error("Failed to fetch vehicles:", err);
+      }
+    };
+    fetchVehicles();
+  }, []);
 
   const handleAction = async (endpoint) => {
     try {
@@ -106,8 +124,62 @@ export default function TransactionDetails() {
 
   const handleFarmerDelivered = () => handleAction("farmer-delivered");
   const handleConfirmDelivery = () => handleAction("confirm-delivery");
-  const handlePickedUp = () => handleAction("pickup");
-  const handleTransportDelivered = () => handleAction("deliver");
+
+  // ================= PICKUP (instant state update) =================
+  const handlePickup = async () => {
+    try {
+      setActionLoading(true);
+      const res = await fetch(`http://localhost:5000/api/transactions/${transaction?._id}/pickup`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Something went wrong ❌");
+        alert("Error: " + (data.message || "Pickup failed"));
+      } else {
+        toast.success("Pickup confirmed 📦");
+        setTransaction(data.transaction || data);
+      }
+    } catch (err) {
+      toast.error("Something went wrong ❌");
+      console.error(err);
+      alert("Pickup failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ================= DELIVERED (instant state update) =================
+  const handleDelivered = async () => {
+    try {
+      setActionLoading(true);
+      const res = await fetch(`http://localhost:5000/api/transactions/${transaction?._id}/deliver`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Something went wrong ❌");
+        alert("Error: " + (data.message || "Delivery update failed"));
+      } else {
+        toast.success("Delivery completed ✅");
+        setTransaction(data.transaction || data);
+      }
+    } catch (err) {
+      toast.error("Something went wrong ❌");
+      console.error(err);
+      alert("Delivery update failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleAssignTransport = async () => {
     try {
@@ -119,19 +191,21 @@ export default function TransactionDetails() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ vehicleNumber, vehicleType })
+        body: JSON.stringify({ vehicleId: selectedVehicle })
       });
       
       const data = await res.json();
       
       if (!res.ok) {
+        toast.error("Something went wrong ❌");
         alert("Error: " + (data.message || "Failed to assign transport"));
       } else {
-        setVehicleNumber("");
-        setVehicleType("");
-        fetchTransaction();
+        toast.success("Vehicle assigned 🚛");
+        setSelectedVehicle("");
+        setTransaction(data.transaction || data);
       }
     } catch (err) {
+      toast.error("Something went wrong ❌");
       alert("Network error occurred.");
     } finally {
       setActionLoading(false);
@@ -173,9 +247,11 @@ export default function TransactionDetails() {
       case "PAID":
         return "bg-green-500/10 text-green-500 border border-green-500/20";
       case "IN_PROGRESS":
+      case "DELIVERY_IN_PROGRESS":
       case "TRANSPORT_SCHEDULED":
         return "bg-blue-500/10 text-blue-500 border border-blue-500/20";
       case "ORDER_CREATED":
+      case "PAYMENT_COMPLETED":
       case "PENDING":
       case "NOT_REQUIRED":
         return "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20";
@@ -199,8 +275,9 @@ export default function TransactionDetails() {
   const isFarmer = user?.id === farmerId;
 
   const renderActions = () => {
-    const { status, paymentStatus, transportStatus, transportRequired, pickupConfirmed, vehicleDetails } = transaction;
+    const { status, paymentStatus, transportRequired } = transaction;
 
+    // ================= COMPLETED =================
     if (status === "COMPLETED") {
       return (
         <div className="flex items-center gap-2 text-green-500 bg-green-500/10 px-4 py-3 rounded-lg font-medium justify-center border border-green-500/20">
@@ -214,7 +291,7 @@ export default function TransactionDetails() {
     if (paymentStatus === "PENDING") {
       if (isBuyer) {
         return (
-          <button 
+          <button
             onClick={() => handleAction("pay")}
             disabled={actionLoading}
             className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
@@ -232,13 +309,13 @@ export default function TransactionDetails() {
       }
     }
 
-    // ================= TRANSPORT DECISION =================
+    // ================= TRANSPORT DECISION (farmer chooses) =================
     if (paymentStatus === "PAID" && transportRequired === null) {
       if (isFarmer) {
         return (
           <div className="flex flex-col gap-3 w-full">
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={() => handleTransportDecision(true)}
                 disabled={actionLoading}
                 className="flex-1 flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
@@ -246,7 +323,7 @@ export default function TransactionDetails() {
                 <Truck className="w-5 h-5" />
                 {actionLoading ? "Processing..." : "Yes, Need Transport"}
               </button>
-              <button 
+              <button
                 onClick={() => handleTransportDecision(false)}
                 disabled={actionLoading}
                 className="flex-1 flex items-center justify-center gap-2 bg-transparent border border-border text-foreground px-4 py-3 rounded-lg font-semibold hover:bg-muted transition disabled:opacity-50"
@@ -265,31 +342,39 @@ export default function TransactionDetails() {
       }
     }
 
-    // ================= ASSIGN TRANSPORT (MILL OWNER) =================
-    if (transportRequired === true && transportStatus === "PENDING") {
+    // ================= TRANSPORT REQUIRED + PENDING =================
+    // Mill owner assigns vehicle; farmer confirms driver collected paddy
+    if (transaction?.transportRequired === true && transaction?.transportStatus === "PENDING") {
       if (isBuyer) {
+        // Mill owner assigns a vehicle
         return (
           <div className="flex flex-col gap-3 w-full bg-card p-5 rounded-xl border border-border mt-4">
             <p className="text-sm font-semibold mb-1">Assign Transport Vehicle</p>
-            <input
-              type="text"
-              placeholder="Vehicle Number (e.g. WP NA-1234)"
-              value={vehicleNumber}
-              onChange={(e) => setVehicleNumber(e.target.value)}
-              disabled={actionLoading}
-              className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#22C55E] placeholder:text-muted-foreground"
-            />
-            <input
-              type="text"
-              placeholder="Vehicle Type (e.g. Lorry, Truck)"
-              value={vehicleType}
-              onChange={(e) => setVehicleType(e.target.value)}
-              disabled={actionLoading}
-              className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#22C55E] placeholder:text-muted-foreground"
-            />
-            <button 
+
+            {vehicles.length === 0 ? (
+              <p className="text-xs text-muted-foreground bg-muted px-3 py-2 rounded-lg">
+                No vehicles found. Add vehicles in the{" "}
+                <a href="/mill-owner/vehicles" className="text-[#22C55E] underline">Vehicles</a> section first.
+              </p>
+            ) : (
+              <select
+                value={selectedVehicle}
+                onChange={(e) => setSelectedVehicle(e.target.value)}
+                disabled={actionLoading}
+                className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#22C55E]"
+              >
+                <option value="">Select a vehicle...</option>
+                {vehicles.map((v) => (
+                  <option key={v._id} value={v._id}>
+                    {v.vehicleNumber} — {v.type} ({v.capacityKg} kg) · {v.driverName}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <button
               onClick={handleAssignTransport}
-              disabled={actionLoading || !vehicleNumber.trim() || !vehicleType.trim()}
+              disabled={actionLoading || !selectedVehicle}
               className="mt-2 w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
             >
               <Truck className="w-5 h-5" />
@@ -297,104 +382,143 @@ export default function TransactionDetails() {
             </button>
           </div>
         );
-      } else {
+      } else if (isFarmer) {
+        // Farmer confirms driver collected the paddy
         return (
-          <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
-            ⏳ Waiting for buyer to assign transport vehicle
+          <div className="flex flex-col gap-3 w-full bg-card p-5 rounded-xl border border-border mt-4">
+            <div className="mb-1">
+              <p className="text-sm font-semibold">Awaiting Vehicle Assignment</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Once a vehicle is assigned, confirm when the driver collects your paddy.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
+              ⏳ Waiting for mill owner to assign a vehicle
+            </div>
           </div>
         );
       }
     }
 
-    // ================= START TRANSPORT / PICK UP =================
-    if (transportRequired === true && transportStatus === "IN_PROGRESS" && !pickupConfirmed) {
+    // ================= TRANSPORT IN_PROGRESS — farmer confirms pickup =================
+    // Farmer sees pickup button; mill owner waits
+    if (
+      transaction?.transportRequired === true &&
+      transaction?.transportStatus === "IN_PROGRESS" &&
+      !transaction?.pickupConfirmed
+    ) {
       if (isFarmer) {
         return (
           <div className="flex flex-col gap-3 w-full bg-card p-5 rounded-xl border border-border mt-4">
-            <p className="text-sm font-semibold mb-1">Vehicle Appointed</p>
-            <div className="bg-muted p-3 rounded-lg text-sm mb-4 text-muted-foreground">
-              <p><strong className="text-foreground">Vehicle Number:</strong> {vehicleDetails?.vehicleNumber || vehicleNumber || "N/A"}</p>
-              <p><strong className="text-foreground">Vehicle Type/Driver:</strong> {vehicleDetails?.vehicleType || vehicleType || vehicleDetails?.driverName || "N/A"}</p>
+            <div className="mb-1">
+              <p className="text-sm font-semibold">Vehicle Assigned</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Confirm once the driver has collected your paddy.
+              </p>
             </div>
-            <button 
-              onClick={() => handleAction("pickup")}
+            <div className="bg-muted p-3 rounded-lg text-sm mb-2 text-muted-foreground">
+              <p><strong className="text-foreground">Vehicle:</strong>{" "}
+                {transaction?.vehicle?.vehicleNumber || transaction?.vehicleDetails?.vehicleNumber || "N/A"}
+                {" "}— {transaction?.vehicle?.type || transaction?.vehicleDetails?.vehicleType || ""}
+              </p>
+              {transaction?.vehicle?.driverName && (
+                <p><strong className="text-foreground">Driver:</strong>{" "}
+                  {transaction?.vehicle?.driverName} · {transaction?.vehicle?.driverPhone}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={handlePickup}
               disabled={actionLoading}
               className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
             >
               <Truck className="w-5 h-5" />
-              {actionLoading ? "Processing..." : "Mark as Picked Up"}
+              {actionLoading ? "Processing..." : "Confirm Driver Collected Paddy"}
             </button>
           </div>
         );
       } else if (isBuyer) {
         return (
           <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
-            ⏳ Waiting for pickup confirmation
+            ⏳ Waiting for farmer to confirm pickup
           </div>
         );
       }
     }
 
-    // ================= FARMER SELF-DELIVERY =================
+    // ================= TRANSPORT IN_PROGRESS + PICKUP CONFIRMED — mill owner confirms receipt =================
+    if (
+      transaction?.transportRequired === true &&
+      transaction?.transportStatus === "IN_PROGRESS" &&
+      transaction?.pickupConfirmed === true
+    ) {
+      if (isBuyer) {
+        return (
+          <div className="flex flex-col gap-3 w-full bg-card p-5 rounded-xl border border-border mt-4">
+            <div className="mb-1">
+              <p className="text-sm font-semibold">Goods En Route</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Confirm once the paddy has arrived at your mill.
+              </p>
+            </div>
+            <button
+              onClick={handleDelivered}
+              disabled={actionLoading}
+              className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
+            >
+              <CheckCircle2 className="w-5 h-5" />
+              {actionLoading ? "Processing..." : "Confirm Received at Mill"}
+            </button>
+          </div>
+        );
+      } else if (isFarmer) {
+        return (
+          <div className="flex items-center justify-center gap-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
+            🚚 Goods picked up — en route to mill
+          </div>
+        );
+      }
+    }
+
+    // ================= SELF-DELIVERY (transportRequired === false) =================
+    // Farmer confirms delivery; mill owner waits (no button)
     if (
       paymentStatus === "PAID" &&
       transportRequired === false &&
-      transportStatus !== "DELIVERED"
+      transaction?.transportStatus !== "DELIVERED"
     ) {
       if (isFarmer) {
         return (
-          <button 
+          <button
             onClick={handleFarmerDelivered}
             disabled={actionLoading}
             className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
           >
             <Package className="w-5 h-5" />
-            {actionLoading ? "Processing..." : "Mark as Delivered"}
+            {actionLoading ? "Processing..." : "Confirm Delivery"}
           </button>
         );
       } else if (isBuyer) {
         return (
           <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
-            ⏳ Waiting for farmer delivery
+            ⏳ Waiting for farmer to confirm delivery
           </div>
         );
       }
     }
 
-    // ================= CONFIRM DELIVERY (MILL OWNER) =================
-    if (transportStatus === "DELIVERED" && isBuyer) {
+    // ================= SELF-DELIVERY DELIVERED — mill owner confirms receipt =================
+    if (transaction?.transportStatus === "DELIVERED" && transportRequired === false && isBuyer) {
       return (
-        <button 
+        <button
           onClick={handleConfirmDelivery}
           disabled={actionLoading}
           className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
         >
           <CheckCircle2 className="w-5 h-5" />
-          {actionLoading ? "Processing..." : "Confirm Delivery"}
+          {actionLoading ? "Processing..." : "Confirm Received at Mill"}
         </button>
       );
-    }
-
-    // ================= TRANSPORT DELIVERED (MILL OWNER) =================
-    if (transportRequired === true && transportStatus === "IN_PROGRESS" && pickupConfirmed === true) {
-      if (isBuyer) {
-        return (
-          <button 
-            onClick={() => handleAction("deliver")}
-            disabled={actionLoading}
-            className="w-full flex items-center justify-center gap-2 bg-[#22C55E] text-black px-4 py-3 rounded-lg font-semibold hover:bg-[#22C55E]/90 transition disabled:opacity-50"
-          >
-            <CheckCircle2 className="w-5 h-5" />
-            {actionLoading ? "Processing..." : "Mark as Delivered"}
-          </button>
-        );
-      } else if (isFarmer) {
-        return (
-          <div className="flex items-center justify-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-4 py-3 rounded-lg text-sm font-medium w-full">
-            ⏳ Transport in progress... 
-          </div>
-        );
-      }
     }
 
     return null;
@@ -478,8 +602,8 @@ export default function TransactionDetails() {
               
               <div>
                 <span className="text-xs text-muted-foreground uppercase font-semibold">Transport</span>
-                <span className={`block mt-1 px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(transaction.transportStatus)}`}>
-                  {transaction.transportStatus.replace("_", " ")}
+                <span className={`block mt-1 px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(transaction?.transportStatus)}`}>
+                  {transaction?.transportStatus?.replace("_", " ") || "N/A"}
                 </span>
               </div>
             </div>

@@ -1,7 +1,10 @@
 import { createRoot } from "react-dom/client";
+import { ThemeProvider } from "next-themes";
 import App from "./app/App.jsx";
 import "./styles/index.css";
 
 createRoot(document.getElementById("root")).render(
-  <App />
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <App />
+  </ThemeProvider>
 );

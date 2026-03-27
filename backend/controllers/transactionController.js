@@ -50,7 +50,8 @@ const getTransactionById = async (req, res) => {
         select: "fullName phone businessDetails"
       })
       .populate("listing")
-      .populate("negotiation");
+      .populate("negotiation")
+      .populate("vehicle");
 
     if (!transaction) {
       return res.status(404).json({
@@ -106,6 +107,9 @@ const markAsPaid = async (req, res) => {
     transaction.status = "PAYMENT_COMPLETED";
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({
       message: "Payment successful",
@@ -141,6 +145,9 @@ const requestTransport = async (req, res) => {
     transaction.transportStatus = "PENDING";
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({
       message: "Transport requested",
@@ -175,6 +182,9 @@ const startTransport = async (req, res) => {
     transaction.transportStatus = "IN_PROGRESS";
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({
       message: "Transport started",
@@ -226,6 +236,9 @@ const setTransportDecision = async (req, res) => {
     }
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({
       message: "Transport decision saved",
@@ -267,6 +280,9 @@ const markAsDeliveredByFarmer = async (req, res) => {
     transaction.status = "DELIVERED";
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({
       message: "Order marked as delivered by farmer",
@@ -307,6 +323,9 @@ const confirmDeliveryByMillOwner = async (req, res) => {
     transaction.status = "COMPLETED";
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     res.status(200).json({
       message: "Delivery confirmed and order completed",
@@ -348,9 +367,23 @@ const assignTransport = async (req, res) => {
       });
     }
 
-    const { vehicleNumber, vehicleType } = req.body;
+    const { vehicleId, vehicleNumber: manualNumber, vehicleType: manualType } = req.body;
 
-    if (!vehicleNumber || !vehicleType) {
+    let resolvedVehicleNumber = manualNumber;
+    let resolvedVehicleType = manualType;
+
+    if (vehicleId) {
+      const Vehicle = require("../models/Vehicle");
+      const vehicleDoc = await Vehicle.findById(vehicleId);
+      if (!vehicleDoc) {
+        return res.status(404).json({ message: "Vehicle not found" });
+      }
+      resolvedVehicleNumber = vehicleDoc.vehicleNumber;
+      resolvedVehicleType = vehicleDoc.type;
+      transaction.vehicle = vehicleId;
+    }
+
+    if (!resolvedVehicleNumber || !resolvedVehicleType) {
       return res.status(400).json({
         message: "Vehicle number and type are required"
       });
@@ -358,11 +391,14 @@ const assignTransport = async (req, res) => {
 
     transaction.transportStatus = "IN_PROGRESS";
     transaction.vehicleDetails = {
-      vehicleNumber,
-      vehicleType
+      vehicleNumber: resolvedVehicleNumber,
+      vehicleType: resolvedVehicleType
     };
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
     const io = req.app.get("io");
     const onlineUsers = req.app.get("onlineUsers");
@@ -371,9 +407,8 @@ const assignTransport = async (req, res) => {
 
     const newNotification = await Notification.create({
       user: transaction.farmer,
-      title: "Vehicle Assigned",
-      message: `Vehicle ${vehicleNumber} is on the way`,
-      senderName: millOwnerUser?.fullName || "Mill Owner",
+      message: "Vehicle has been assigned 🚛",
+      type: "VEHICLE_ASSIGNED",
       transactionId: transaction._id
     });
 
@@ -408,39 +443,43 @@ const confirmPickup = async (req, res) => {
     }
 
     transaction.pickupConfirmed = true;
+    transaction.pickupTime = new Date();
+    transaction.transportStatus = "IN_PROGRESS";   // valid enum value
+    transaction.status = "DELIVERY_IN_PROGRESS";   // ✅ valid enum value
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
-    const io = req.app.get("io");
-    const onlineUsers = req.app.get("onlineUsers");
-
-    const farmerUser = await User.findById(req.user.id).select("fullName");
+    const updated = await Transaction.findById(transaction._id).populate("vehicle");
 
     const newNotification = await Notification.create({
       user: transaction.millOwner,
-      title: "Pickup Confirmed",
-      message: "Farmer confirmed pickup",
-      senderName: farmerUser?.fullName || "Farmer",
+      message: "Pickup confirmed 📦",
+      type: "PICKUP_CONFIRMED",
       transactionId: transaction._id
     });
 
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
     if (onlineUsers[transaction.millOwner]) {
       io.to(onlineUsers[transaction.millOwner]).emit("receiveNotification", newNotification);
     }
 
     res.json({
       message: "Pickup confirmed",
-      transaction
+      transaction: updated
     });
 
   } catch (error) {
     console.error("PICKUP ERROR:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message });
   }
 };
 
 
-// ===== MILL OWNER: MARK DELIVERY =====
+// ===== CONFIRM DELIVERY (dual-path: mill owner for transport, farmer for self-delivery) =====
 const markDelivered = async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id);
@@ -449,41 +488,51 @@ const markDelivered = async (req, res) => {
       return res.status(404).json({ message: "Transaction not found" });
     }
 
-    // Only mill owner can confirm delivery
-    if (transaction.millOwner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized" });
+    if (transaction.transportRequired === true) {
+      // Transport was used → only the mill owner of this transaction can confirm receipt
+      if (transaction.millOwner.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized: only mill owner can confirm delivery for transport orders" });
+      }
+    } else {
+      // Self-delivery → only the farmer of this transaction can confirm
+      if (transaction.farmer.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized: only farmer can confirm self-delivery" });
+      }
     }
 
     transaction.transportStatus = "DELIVERED";
     transaction.status = "COMPLETED";
+    transaction.deliveryConfirmed = true;
+    transaction.deliveredTime = new Date();
 
     await transaction.save();
+    if (global.io) {
+      global.io.emit("dashboard_update");
+    }
 
-    const io = req.app.get("io");
-    const onlineUsers = req.app.get("onlineUsers");
-
-    const millOwnerUserDelivery = await User.findById(req.user.id).select("fullName");
+    const updated = await Transaction.findById(transaction._id).populate("vehicle");
 
     const newNotification = await Notification.create({
       user: transaction.farmer,
-      title: "Delivery Completed",
-      message: "Your paddy has been delivered",
-      senderName: millOwnerUserDelivery?.fullName || "Mill Owner",
+      message: "Your paddy has been delivered ✅",
+      type: "DELIVERED",
       transactionId: transaction._id
     });
 
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
     if (onlineUsers[transaction.farmer]) {
       io.to(onlineUsers[transaction.farmer]).emit("receiveNotification", newNotification);
     }
 
     res.json({
-      message: "Delivery completed",
-      transaction
+      message: "Delivery confirmed",
+      transaction: updated
     });
 
   } catch (error) {
     console.error("DELIVERY ERROR:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message });
   }
 };
 

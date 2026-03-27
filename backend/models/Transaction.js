@@ -80,9 +80,29 @@ const transactionSchema = new mongoose.Schema(
       default: false,
     },
 
+    pickupTime: {
+      type: Date,
+      default: null
+    },
+
+    deliveryConfirmed: {
+      type: Boolean,
+      default: false,
+    },
+
+    deliveredTime: {
+      type: Date,
+      default: null
+    },
+
     vehicleDetails: {
       vehicleNumber: String,
       vehicleType: String
+    },
+
+    vehicle: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vehicle"
     },
 
     // ================= ORDER STATUS =================
