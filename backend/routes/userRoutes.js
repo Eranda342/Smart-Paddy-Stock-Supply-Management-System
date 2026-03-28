@@ -9,7 +9,7 @@ const {
   uploadAvatar
 } = require("../controllers/userController");
 
-const { protect } = require("../middleware/authMiddleware");
+const { protect, checkApproved } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 
 
@@ -22,15 +22,15 @@ router.post("/login", loginUser);
 
 
 // ================= GET PROFILE =================
-router.get("/me", protect, getMyProfile);
+router.get("/me", protect, checkApproved, getMyProfile);
 
 
 // ================= UPDATE PROFILE =================
-router.put("/me", protect, updateProfile);
+router.put("/me", protect, checkApproved, updateProfile);
 
 
 // ================= UPLOAD AVATAR =================
-router.post("/me/avatar", protect, upload.single("avatar"), uploadAvatar);
+router.post("/me/avatar", protect, checkApproved, upload.single("avatar"), uploadAvatar);
 
 
 module.exports = router;

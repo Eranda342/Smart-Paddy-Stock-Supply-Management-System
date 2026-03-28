@@ -41,6 +41,11 @@ const userSchema = new mongoose.Schema(
     default: false
   },
 
+  isBlocked: {
+    type: Boolean,
+    default: false
+  },
+
   profileImage: {
     type: String,
     default: null
@@ -76,6 +81,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED"],
       default: "PENDING"
+    },
+
+    rejectionReason: {
+      type: String,
+      default: null
     }
 
   },
@@ -112,6 +122,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED"],
       default: "PENDING"
+    },
+
+    rejectionReason: {
+      type: String,
+      default: null
     }
 
   }

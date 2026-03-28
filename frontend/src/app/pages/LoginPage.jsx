@@ -1,6 +1,7 @@
-﻿import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Sprout, Eye, EyeOff, ShieldCheck, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { API } from "../../api/api";
 
 export default function LoginPage() {
@@ -38,23 +39,23 @@ export default function LoginPage() {
 
         const role = data.user.role.toLowerCase();
 
-if (role === "farmer") {
-  navigate("/farmer");
-} 
-else if (role === "mill_owner") {
-  navigate("/mill-owner");
-} 
-else if (role === "admin") {
-  navigate("/admin");
-}
+        if (role === "farmer") {
+          navigate("/farmer");
+        } 
+        else if (role === "mill_owner") {
+          navigate("/mill-owner");
+        } 
+        else if (role === "admin") {
+          navigate("/admin");
+        }
 
       } else {
-        alert(data.message || "Login failed");
+        toast.error(data.message || "Login failed");
       }
 
     } catch (error) {
       console.error(error);
-      alert("Server error");
+      toast.error("Server error");
     }
   };
 

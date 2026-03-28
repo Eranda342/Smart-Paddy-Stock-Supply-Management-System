@@ -117,6 +117,22 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    if (user.role !== "ADMIN") {
+      let status = "PENDING";
+      if (user.role === "FARMER") status = user.farmDetails?.verificationStatus || "PENDING";
+      else if (user.role === "MILL_OWNER") status = user.businessDetails?.verificationStatus || "PENDING";
+
+      if (status === "PENDING") {
+        return res.status(403).json({ message: "Pending approval" });
+      }
+      if (status === "REJECTED") {
+        return res.status(403).json({ message: "Account rejected" });
+      }
+      if (!user.isVerified) {
+        return res.status(403).json({ message: "Account is not verified" });
+      }
+    }
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,

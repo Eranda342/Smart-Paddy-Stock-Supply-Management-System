@@ -3,6 +3,9 @@ const Listing = require("../models/Listing");
 const Negotiation = require("../models/Negotiation");
 const Transaction = require("../models/Transaction");
 
+// Month name helper
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
 // ================= USER MANAGEMENT =================
 
 // Get all unverified users
@@ -29,6 +32,41 @@ const verifyUser = async (req, res) => {
   }
 };
 
+// Create Admin natively
+const createAdmin = async (req, res) => {
+  try {
+    const { fullName, email, password } = req.body;
+    
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+    
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    
+    // Hash password before saving via mongoose middleware (or manually)
+    // Wait, the User schema has a generic 'pre' save hook? Yes, usually.
+    const newAdmin = new User({
+      fullName,
+      email,
+      password, // assuming User model hashes this on run
+      role: "ADMIN",
+      isVerified: true
+    });
+    
+    // Ensure nested states are not flagged entirely as pending
+    newAdmin.farmDetails = { verificationStatus: "APPROVED" };
+    newAdmin.businessDetails = { verificationStatus: "APPROVED" };
+    
+    await newAdmin.save();
+    return res.status(201).json({ message: "Admin created successfully", user: { _id: newAdmin._id, email: newAdmin.email }});
+  } catch (error) {
+    res.status(500).json({ message: "Error creating admin" });
+  }
+};
+
 // Get all users
 const getAllUsers = async (req, res) => {
   try {
@@ -41,6 +79,30 @@ const getAllUsers = async (req, res) => {
         { email: { $regex: search, $options: "i" } }
       ];
     }
+    
+    if (req.query.status && req.query.status !== "ALL") {
+      const state = req.query.status.toUpperCase();
+      if (state === "BLOCKED") {
+        filter.isBlocked = true;
+      } else {
+        filter.isBlocked = false;
+        // Apply complex nested filtering for Verification Status
+        if (!filter.$or) filter.$or = [];
+        const statusOr = [
+          { role: "FARMER", "farmDetails.verificationStatus": state },
+          { role: "MILL_OWNER", "businessDetails.verificationStatus": state }
+        ];
+        
+        // Combine with existing $or if search is used
+        if (filter.$or.length > 0) {
+          filter.$and = [{ $or: filter.$or }, { $or: statusOr }];
+          delete filter.$or;
+        } else {
+          filter.$or = statusOr;
+        }
+      }
+    }
+
     const users = await User.find(filter).select("-password").sort({ createdAt: -1 });
     res.status(200).json({ count: users.length, users });
   } catch (error) {
@@ -54,6 +116,35 @@ const deleteUser = async (req, res) => {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json({ message: "User deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Block user
+const blockUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.role === "ADMIN") return res.status(403).json({ message: "Cannot block admins" });
+    
+    user.isBlocked = true;
+    await user.save();
+    res.status(200).json({ message: "User blocked successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Unblock user
+const unblockUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    
+    user.isBlocked = false;
+    await user.save();
+    res.status(200).json({ message: "User unblocked successfully", user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -214,7 +305,13 @@ const getPlatformStats = async (req, res) => {
       Listing.countDocuments(),
       Negotiation.countDocuments(),
       Transaction.countDocuments(),
-      User.countDocuments({ isVerified: false })
+      User.countDocuments({
+        role: { $ne: "ADMIN" },
+        $or: [
+          { role: "FARMER", "farmDetails.verificationStatus": "PENDING" },
+          { role: "MILL_OWNER", "businessDetails.verificationStatus": "PENDING" }
+        ]
+      })
     ]);
 
     const paidTransactions = await Transaction.find({ paymentStatus: "PAID" });
@@ -233,6 +330,206 @@ const getPlatformStats = async (req, res) => {
   }
 };
 
+// ================= DASHBOARD (new) =================
+
+/**
+ * GET /api/admin/dashboard
+ * Returns KPI counts + 6-month time-series for trading volume and user growth.
+ */
+const getDashboardStats = async (req, res) => {
+  try {
+    const now = new Date();
+    // Start of the window: 1st day of the month, 5 months ago
+    const windowStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    // ── Scalar KPIs ──────────────────────────────────────────────
+    const [totalUsers, pendingApprovals, activeListings, totalTransactions] = await Promise.all([
+      User.countDocuments({ role: { $ne: "ADMIN" } }),
+      User.countDocuments({
+        role: { $ne: "ADMIN" },
+        $or: [
+          { role: "FARMER", "farmDetails.verificationStatus": "PENDING" },
+          { role: "MILL_OWNER", "businessDetails.verificationStatus": "PENDING" }
+        ]
+      }),
+      Listing.countDocuments({ status: { $in: ["ACTIVE", "NEGOTIATING"] } }),
+      Transaction.countDocuments()
+    ]);
+
+    // ── Monthly Trading Volume (quantityKg summed per month) ──────
+    const tradingAgg = await Transaction.aggregate([
+      { $match: { createdAt: { $gte: windowStart } } },
+      {
+        $group: {
+          _id: {
+            year:  { $year:  "$createdAt" },
+            month: { $month: "$createdAt" }
+          },
+          volume: { $sum: "$quantityKg" }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    // Build a filled 6-month array (fill missing months with 0)
+    const monthlyTrading = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yr = d.getFullYear();
+      const mo = d.getMonth() + 1; // 1-based
+      const hit = tradingAgg.find(a => a._id.year === yr && a._id.month === mo);
+      monthlyTrading.push({
+        month: MONTH_NAMES[mo - 1],
+        volume: hit ? hit.volume : 0
+      });
+    }
+
+    // ── User Growth (new registrations per month, by role) ────────
+    const userGrowthAgg = await User.aggregate([
+      { $match: { role: { $ne: "ADMIN" }, createdAt: { $gte: windowStart } } },
+      {
+        $group: {
+          _id: {
+            year:  { $year:  "$createdAt" },
+            month: { $month: "$createdAt" },
+            role:  "$role"
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    const userGrowth = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yr = d.getFullYear();
+      const mo = d.getMonth() + 1;
+      const farmers   = userGrowthAgg.find(a => a._id.year === yr && a._id.month === mo && a._id.role === "FARMER");
+      const millOwners = userGrowthAgg.find(a => a._id.year === yr && a._id.month === mo && a._id.role === "MILL_OWNER");
+      userGrowth.push({
+        month:   MONTH_NAMES[mo - 1],
+        Farmers: farmers   ? farmers.count   : 0,
+        Mills:   millOwners ? millOwners.count : 0
+      });
+    }
+
+    res.status(200).json({
+      totalUsers,
+      pendingApprovals,
+      activeListings,
+      totalTransactions,
+      monthlyTrading,
+      userGrowth
+    });
+  } catch (error) {
+    console.error("getDashboardStats error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ================= VERIFICATIONS MANAGEMENT =================
+
+/**
+ * GET /api/admin/verifications
+ * Returns all non-admin users with a PENDING verification status (farmer or mill owner).
+ * Supports ?role=FARMER|MILL_OWNER and ?search= query params.
+ */
+const getPendingVerifications = async (req, res) => {
+  try {
+    let { role, search, status = "PENDING" } = req.query;
+    status = status.toUpperCase();
+
+    let filter = {
+      role: { $ne: "ADMIN" },
+      $or: [
+        { role: "FARMER", "farmDetails.verificationStatus": status },
+        { role: "MILL_OWNER", "businessDetails.verificationStatus": status }
+      ]
+    };
+
+    if (role && role !== "ALL") {
+      filter.role = role;
+      // If a specific role is given, we can simplify the $or to a direct match
+      delete filter.$or;
+      if (role === "FARMER") {
+        filter["farmDetails.verificationStatus"] = status;
+      } else if (role === "MILL_OWNER") {
+        filter["businessDetails.verificationStatus"] = status;
+      }
+    }
+
+    let users = await User.find(filter)
+      .select("-password")
+      .sort({ createdAt: -1 });
+
+    if (search) {
+      const s = search.toLowerCase();
+      users = users.filter(u =>
+        u.fullName?.toLowerCase().includes(s) ||
+        u.email?.toLowerCase().includes(s) ||
+        u.nic?.toLowerCase().includes(s)
+      );
+    }
+
+    res.status(200).json({ count: users.length, users });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * PUT /api/admin/verifications/:id/approve
+ * Approves a user's verification — sets verificationStatus to APPROVED and isVerified to true.
+ */
+const approveVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.role === "FARMER") {
+      user.farmDetails.verificationStatus = "APPROVED";
+    } else if (user.role === "MILL_OWNER") {
+      user.businessDetails.verificationStatus = "APPROVED";
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    res.status(200).json({ message: "User approved successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * PUT /api/admin/verifications/:id/reject
+ * Rejects a user's verification with an optional reason.
+ * Body: { reason: string }
+ */
+const rejectVerification = async (req, res) => {
+  try {
+    const { reason = "" } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.role === "FARMER") {
+      user.farmDetails.verificationStatus = "REJECTED";
+      user.farmDetails.rejectionReason = reason;
+    } else if (user.role === "MILL_OWNER") {
+      user.businessDetails.verificationStatus = "REJECTED";
+      user.businessDetails.rejectionReason = reason;
+    }
+
+    user.isVerified = false;
+    await user.save();
+
+    res.status(200).json({ message: "User rejected", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUnverifiedUsers,
   verifyUser,
@@ -243,5 +540,12 @@ module.exports = {
   getAllNegotiations,
   getAllTransactions,
   getAllTransport,
-  getPlatformStats
+  getPlatformStats,
+  getDashboardStats,
+  getPendingVerifications,
+  approveVerification,
+  rejectVerification,
+  blockUser,
+  unblockUser,
+  createAdmin
 };

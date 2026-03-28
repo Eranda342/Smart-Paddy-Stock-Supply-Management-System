@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect } = require("../middleware/authMiddleware");
+const { protect, checkApproved } = require("../middleware/authMiddleware");
 
 const {
   getVehicles,
@@ -11,15 +11,15 @@ const {
 } = require("../controllers/vehicleController");
 
 // GET ALL
-router.get("/", protect, getVehicles);
+router.get("/", protect, checkApproved, getVehicles);
 
 // ADD
-router.post("/", protect, addVehicle);
+router.post("/", protect, checkApproved, addVehicle);
 
 // UPDATE
-router.put("/:id", protect, updateVehicle);
+router.put("/:id", protect, checkApproved, updateVehicle);
 
 // DELETE
-router.delete("/:id", protect, deleteVehicle);
+router.delete("/:id", protect, checkApproved, deleteVehicle);
 
 module.exports = router;

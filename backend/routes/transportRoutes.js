@@ -1,16 +1,16 @@
 const express = require("express");
 const { createTransport, getTransport } = require("../controllers/transportController");
-const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+const { protect, authorizeRoles, checkApproved } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 // GET transport data (active + history) — both roles
-router.get("/", protect, getTransport);
+router.get("/", protect, checkApproved, getTransport);
 
 // Only MILL_OWNER can create transport
 router.post(
   "/",
-  protect,
+  protect, checkApproved,
   authorizeRoles("MILL_OWNER"),
   createTransport
 );

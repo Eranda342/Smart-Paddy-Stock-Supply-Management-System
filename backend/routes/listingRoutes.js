@@ -10,10 +10,7 @@ const {
   getBuyListings
 } = require("../controllers/listingController");
 
-const {
-  protect,
-  authorizeRoles
-} = require("../middleware/authMiddleware");
+const { protect, authorizeRoles, checkApproved } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -27,7 +24,7 @@ Mill Owners -> BUY listings
 */
 router.post(
   "/",
-  protect,
+  protect, checkApproved,
   authorizeRoles("FARMER", "MILL_OWNER"),
   createListing
 );
@@ -42,7 +39,7 @@ Mill Owner -> their BUY listings
 */
 router.get(
   "/my",
-  protect,
+  protect, checkApproved,
   authorizeRoles("FARMER", "MILL_OWNER"),
   getMyListings
 );
@@ -56,7 +53,7 @@ Mill owners browse farmer SELL listings
 */
 router.get(
   "/marketplace",
-  protect,
+  protect, checkApproved,
   authorizeRoles("MILL_OWNER"),
   getAllListings
 );
@@ -70,7 +67,7 @@ Farmers browse mill owner BUY listings
 */
 router.get(
   "/buy-listings",
-  protect,
+  protect, checkApproved,
   authorizeRoles("FARMER"),
   getBuyListings
 );
@@ -83,7 +80,7 @@ GET SINGLE LISTING
 */
 router.get(
   "/:id",
-  protect,
+  protect, checkApproved,
   getListingById
 );
 
@@ -96,7 +93,7 @@ Only owner farmer can update SELL listings
 */
 router.put(
   "/:id",
-  protect,
+  protect, checkApproved,
   authorizeRoles("FARMER"),
   updateListing
 );
@@ -110,7 +107,7 @@ Only owner farmer can delete
 */
 router.delete(
   "/:id",
-  protect,
+  protect, checkApproved,
   authorizeRoles("FARMER"),
   deleteListing
 );

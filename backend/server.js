@@ -36,7 +36,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ================= STATIC FILES =================
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Resolve uploads dir relative to this file so it works regardless of cwd
+const UPLOADS_DIR = path.resolve(__dirname, "uploads");
+console.log("📁 Serving uploads from:", UPLOADS_DIR);
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
