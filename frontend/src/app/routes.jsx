@@ -38,6 +38,13 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import PendingVerifications from "./pages/admin/PendingVerifications";
 import AdminUsers from "./pages/admin/Users";
 import AdminReports from "./pages/admin/Reports";
+import AdminListings from "./pages/admin/Listings";
+import AdminNegotiations from "./pages/admin/Negotiations";
+import AdminTransactions from "./pages/admin/Transactions";
+import AdminTransport from "./pages/admin/Transport";
+import AdminDisputes from "./pages/admin/Disputes";
+import AdminNotificationsCenter from "./pages/admin/NotificationsCenter";
+import AdminSystemSettings from "./pages/admin/SystemSettings";
 
 // ================= SHARED =================
 import TransactionDetails from "./pages/common/TransactionDetails";
@@ -144,9 +151,26 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <AdminDashboard /> },
-      { path: "verifications", element: <PendingVerifications /> },
+
+      // Users
       { path: "users", element: <AdminUsers /> },
+      { path: "verifications", element: <PendingVerifications /> },
+
+      // Marketplace
+      { path: "listings", element: <AdminListings /> },
+      { path: "negotiations", element: <AdminNegotiations /> },
+      { path: "transactions", element: <AdminTransactions /> },
+      { path: "transport", element: <AdminTransport /> },
+
+      // Analytics
       { path: "reports", element: <AdminReports /> },
+
+      // Support
+      { path: "disputes", element: <AdminDisputes /> },
+      { path: "notifications-center", element: <AdminNotificationsCenter /> },
+
+      // Configuration
+      { path: "settings", element: <AdminSystemSettings /> },
 
       { path: "*", element: <AdminDashboard /> }
     ],

@@ -44,7 +44,8 @@ app.get("/", (req, res) => {
 });
 
 // ================= API ROUTES =================
-app.use("/api/users", userRoutes);
+app.use("/api/users", userRoutes);       // existing user routes
+app.use("/api/auth", userRoutes);        // alias: register + login via /api/auth
 app.use("/api/listings", listingRoutes);
 app.use("/api/negotiations", negotiationRoutes);
 app.use("/api/transactions", transactionRoutes);
