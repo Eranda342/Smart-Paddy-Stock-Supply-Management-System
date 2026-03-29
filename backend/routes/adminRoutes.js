@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  createAdmin,
   verifyUser,
   getUnverifiedUsers,
   getAllUsers,
@@ -24,6 +25,22 @@ const router = express.Router();
 
 // All routes require ADMIN role
 const adminOnly = [protect, checkApproved, authorizeRoles("ADMIN")];
+
+const checkAdminCreationAccess = (req, res, next) => {
+  if (req.body.adminSecret && req.body.adminSecret === process.env.ADMIN_SECRET) {
+    return next();
+  }
+  protect(req, res, (err) => {
+    if (err) return next(err);
+    if (req.user && req.user.role === "ADMIN") {
+      next();
+    } else {
+      res.status(403).json({ message: "Not authorized to create admin" });
+    }
+  });
+};
+
+router.post("/create-admin", checkAdminCreationAccess, createAdmin);
 
 // ================= PLATFORM STATS =================
 router.get("/stats", ...adminOnly, getPlatformStats);

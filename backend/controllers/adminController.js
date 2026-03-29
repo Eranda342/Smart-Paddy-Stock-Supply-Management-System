@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Listing = require("../models/Listing");
 const Negotiation = require("../models/Negotiation");
 const Transaction = require("../models/Transaction");
+const bcrypt = require("bcryptjs");
 
 // Month name helper
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -46,12 +47,13 @@ const createAdmin = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
     
-    // Hash password before saving via mongoose middleware (or manually)
-    // Wait, the User schema has a generic 'pre' save hook? Yes, usually.
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const newAdmin = new User({
       fullName,
       email,
-      password, // assuming User model hashes this on run
+      password: hashedPassword,
       role: "ADMIN",
       isVerified: true
     });
