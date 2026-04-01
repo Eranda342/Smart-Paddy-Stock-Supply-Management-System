@@ -47,6 +47,11 @@ const transactionSchema = new mongoose.Schema(
       required: true,
     },
 
+    platformFee: {
+      type: Number,
+      default: 0,
+    },
+
     // ================= PAYMENT =================
     paymentStatus: {
       type: String,

@@ -1,4 +1,5 @@
 const Listing = require("../models/Listing");
+const SystemSetting = require("../models/SystemSetting");
 
 
 // CREATE LISTING
@@ -33,6 +34,16 @@ const createListing = async (req, res, next) => {
     if (req.user.role === "MILL_OWNER" && listingType !== "BUY") {
       return res.status(403).json({
         message: "Mill owners can only create BUY listings"
+      });
+    }
+
+    // Enforce maxListingsPerUser from system settings
+    const settings = await SystemSetting.findOne();
+    const maxAllowed = settings?.maxListingsPerUser || 20;
+    const activeCount = await Listing.countDocuments({ owner: ownerId, status: "ACTIVE" });
+    if (activeCount >= maxAllowed) {
+      return res.status(400).json({
+        message: `You have reached the maximum allowed active listings (${maxAllowed}). Please remove an existing listing first.`
       });
     }
 

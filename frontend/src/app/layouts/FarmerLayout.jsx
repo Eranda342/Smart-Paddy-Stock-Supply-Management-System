@@ -9,7 +9,8 @@ import {
   User,
   LogOut,
   Search,
-  Bell
+  Bell,
+  HelpCircle
 } from "lucide-react";
 
 import { io } from "socket.io-client";
@@ -89,6 +90,7 @@ export default function FarmerLayout() {
     { name: "Negotiations", path: "/farmer/negotiations", icon: Handshake },
     { name: "Transactions", path: "/farmer/transactions", icon: Package },
     { name: "Transport", path: "/farmer/transport", icon: Truck },
+    { name: "Complaints", path: "/farmer/complaints", icon: HelpCircle },
     { name: "Profile", path: "/farmer/profile", icon: User }
   ];
 

@@ -3,6 +3,7 @@ const Listing = require("../models/Listing");
 const Transaction = require("../models/Transaction");
 const Transport = require("../models/Transport");
 const Notification = require("../models/Notification");
+const SystemSetting = require("../models/SystemSetting");
 
 
 // =============================
@@ -279,6 +280,11 @@ const updateNegotiationStatus = async (req, res) => {
 
       const totalAmount = finalPrice * quantity;
 
+      // Platform fee from system settings
+      const settings = await SystemSetting.findOne();
+      const feePercent = settings?.platformFeePercentage ?? 5;
+      const platformFee = parseFloat(((totalAmount * feePercent) / 100).toFixed(2));
+
       // Reduce listing stock
       listing.availableQuantityKg -= quantity;
 
@@ -295,6 +301,7 @@ const updateNegotiationStatus = async (req, res) => {
         finalPricePerKg: finalPrice,
         quantityKg: quantity,
         totalAmount: totalAmount,
+        platformFee: platformFee,
         status: "ORDER_CREATED"
       });
 

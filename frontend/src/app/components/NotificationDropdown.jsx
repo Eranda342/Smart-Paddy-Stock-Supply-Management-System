@@ -16,7 +16,7 @@ export default function NotificationDropdown() {
       const token = localStorage.getItem("token");
       if (!token) return;
       
-      const res = await fetch(`${API}/notifications`, {
+      const res = await fetch(`${API}/notifications/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -43,12 +43,12 @@ export default function NotificationDropdown() {
     }
 
     if (decodedUser?.id) {
-      socket.emit("registerUser", decodedUser.id);
+      socket.emit("joinUserRoom", decodedUser.id);
     }
 
-    socket.on("receiveNotification", (notification) => {
+    socket.on("newNotification", (notification) => {
       setNotifications(prev => [notification, ...prev]);
-      toast.success(`${notification.title || "New Update"}: ${notification.message}`);
+      toast.success(`Admin Update: ${notification.message || notification.body || "New notification received"}`);
     });
 
     const interval = setInterval(() => {
@@ -104,7 +104,7 @@ export default function NotificationDropdown() {
       try {
         const token = localStorage.getItem("token");
         await fetch(`${API}/notifications/${n._id}/read`, {
-          method: "PUT",
+          method: "PATCH",
           headers: { Authorization: `Bearer ${token}` }
         });
         setNotifications(prev => prev.map(notif =>

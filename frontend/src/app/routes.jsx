@@ -48,6 +48,7 @@ import AdminSystemSettings from "./pages/admin/SystemSettings";
 
 // ================= SHARED =================
 import TransactionDetails from "./pages/common/TransactionDetails";
+import Complaints from "./pages/common/Complaints";
 
 // ================= AUTH =================
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -105,6 +106,7 @@ export const router = createBrowserRouter([
       { path: "transactions/:id", element: <TransactionDetails /> },
 
       { path: "transport", element: <FarmerTransport /> },
+      { path: "complaints", element: <Complaints /> },
       { path: "profile", element: <FarmerProfile /> },
 
       { path: "*", element: <FarmerDashboard /> }
@@ -135,6 +137,7 @@ export const router = createBrowserRouter([
 
       { path: "transport", element: <MillOwnerTransport /> },
       { path: "vehicles", element: <MillOwnerVehicles /> },
+      { path: "complaints", element: <Complaints /> },
       { path: "profile", element: <MillOwnerProfile /> },
 
       { path: "*", element: <MillOwnerDashboard /> }

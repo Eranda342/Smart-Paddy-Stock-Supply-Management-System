@@ -2,7 +2,11 @@ const User = require("../models/User");
 const Listing = require("../models/Listing");
 const Negotiation = require("../models/Negotiation");
 const Transaction = require("../models/Transaction");
+const Dispute = require("../models/Dispute");
 const bcrypt = require("bcryptjs");
+const Announcement = require("../models/Announcement");
+const Notification = require("../models/Notification");
+const SystemSetting = require("../models/SystemSetting");
 
 // Month name helper
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -194,6 +198,24 @@ const adminDeleteListing = async (req, res) => {
   }
 };
 
+// Update a listing status (admin)
+const adminUpdateListingStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ message: "Status is required" });
+
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) return res.status(404).json({ message: "Listing not found" });
+
+    listing.status = status;
+    await listing.save();
+
+    res.status(200).json({ message: "Listing status updated", listing });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ================= NEGOTIATIONS MONITORING =================
 
 // Get all negotiations (admin view)
@@ -297,6 +319,75 @@ const getAllTransport = async (req, res) => {
   }
 };
 
+// ================= DISPUTES MANAGEMENT =================
+
+// Get all disputes (admin view)
+const getAllDisputes = async (req, res) => {
+  try {
+    const { status } = req.query;
+    let filter = {};
+    if (status && status !== 'ALL') filter.status = status;
+
+    const disputes = await Dispute.find(filter)
+      .populate("reporter", "fullName role email")
+      .populate({
+        path: "transaction",
+        select: "_id status paymentStatus totalAmount quantityKg",
+        populate: [
+          { path: "farmer", select: "fullName" },
+          { path: "millOwner", select: "fullName" },
+          { path: "listing", select: "paddyType" } // populating paddyType correctly
+        ]
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ count: disputes.length, disputes });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update a dispute status
+const updateDisputeStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    const dispute = await Dispute.findById(req.params.id);
+    if (!dispute) return res.status(404).json({ message: "Dispute not found" });
+
+    if (status) dispute.status = status;
+    await dispute.save();
+
+    const io = req.app.get("io");
+    if (io) io.emit("disputeUpdated", dispute);
+
+    res.status(200).json({ message: "Dispute updated", dispute });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Add a note to dispute
+const addDisputeNote = async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ message: "Note message is required" });
+
+    const dispute = await Dispute.findById(req.params.id);
+    if (!dispute) return res.status(404).json({ message: "Dispute not found" });
+
+    dispute.notes.push({ message });
+    await dispute.save();
+
+    const io = req.app.get("io");
+    if (io) io.emit("disputeUpdated", dispute);
+
+    res.status(200).json({ message: "Note added successfully", dispute });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ================= PLATFORM STATS =================
 
 // Platform overview stats
@@ -345,7 +436,7 @@ const getDashboardStats = async (req, res) => {
     const windowStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
     // ── Scalar KPIs ──────────────────────────────────────────────
-    const [totalUsers, pendingApprovals, activeListings, totalTransactions] = await Promise.all([
+    const [totalUsers, pendingApprovals, activeListings, totalTransactions, totalNegotiations, pendingKYC] = await Promise.all([
       User.countDocuments({ role: { $ne: "ADMIN" } }),
       User.countDocuments({
         role: { $ne: "ADMIN" },
@@ -355,8 +446,28 @@ const getDashboardStats = async (req, res) => {
         ]
       }),
       Listing.countDocuments({ status: { $in: ["ACTIVE", "NEGOTIATING"] } }),
-      Transaction.countDocuments()
+      Transaction.countDocuments(),
+      Negotiation.countDocuments(),
+      User.countDocuments({
+        role: { $ne: "ADMIN" },
+        $or: [
+          { role: "FARMER", "farmDetails.verificationStatus": "PENDING" },
+          { role: "MILL_OWNER", "businessDetails.verificationStatus": "PENDING" }
+        ]
+      })
     ]);
+
+    // ── Platform Revenue ─────────────────────────────────────────
+    const revenueResult = await Transaction.aggregate([
+      { $match: { status: "COMPLETED" } }, // adjust if your status differs
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalAmount" } // using totalAmount as per Transaction schema
+        }
+      }
+    ]);
+    const totalRevenue = revenueResult[0]?.totalRevenue || 0;
 
     // ── Monthly Trading Volume (quantityKg summed per month) ──────
     const tradingAgg = await Transaction.aggregate([
@@ -402,6 +513,42 @@ const getDashboardStats = async (req, res) => {
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
 
+    // ── Monthly Revenue (revenue summed per month) ──────
+    const revenueAgg = await Transaction.aggregate([
+      { $match: { status: "COMPLETED", createdAt: { $gte: windowStart } } },
+      {
+        $group: {
+          _id: {
+            year:  { $year:  "$createdAt" },
+            month: { $month: "$createdAt" }
+          },
+          revenue: { $sum: "$totalAmount" }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    const monthlyRevenue = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yr = d.getFullYear();
+      const mo = d.getMonth() + 1; // 1-based
+      const hit = revenueAgg.find(a => a._id.year === yr && a._id.month === mo);
+      monthlyRevenue.push({
+        month: MONTH_NAMES[mo - 1],
+        revenue: hit ? hit.revenue : 0
+      });
+    }
+
+    const currentMonthRev = monthlyRevenue[5].revenue;
+    const lastMonthRev = monthlyRevenue[4].revenue;
+    let revenueGrowth = 0;
+    if (lastMonthRev > 0) {
+      revenueGrowth = ((currentMonthRev - lastMonthRev) / lastMonthRev) * 100;
+    } else if (currentMonthRev > 0) {
+      revenueGrowth = 100; 
+    }
+
     const userGrowth = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -421,7 +568,12 @@ const getDashboardStats = async (req, res) => {
       pendingApprovals,
       activeListings,
       totalTransactions,
+      totalRevenue,
+      totalNegotiations,
+      pendingKYC,
       monthlyTrading,
+      monthlyRevenue,
+      revenueGrowth,
       userGrowth
     });
   } catch (error) {
@@ -532,6 +684,200 @@ const rejectVerification = async (req, res) => {
   }
 };
 
+// ================= ANALYTICS =================
+
+const getAnalyticsOverview = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments({ role: { $ne: "ADMIN" } });
+    const totalTransactions = await Transaction.countDocuments();
+    const totalListings = await Listing.countDocuments();
+    
+    const revResult = await Transaction.aggregate([
+      { $match: { paymentStatus: "PAID" } }, // or paymentStatus: 'PAID'
+      { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } }
+    ]);
+    const totalRevenue = revResult[0]?.totalRevenue || 0;
+    const completedDeliveries = await Transaction.countDocuments({ transportStatus: "DELIVERED" });
+
+    res.status(200).json({ totalUsers, totalTransactions, totalRevenue, totalListings, completedDeliveries });
+  } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+const getAnalyticsRevenue = async (req, res) => {
+  try {
+    const now = new Date();
+    const windowStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    
+    const revenueAgg = await Transaction.aggregate([
+      { $match: { status: "COMPLETED", createdAt: { $gte: windowStart } } },
+      {
+        $group: {
+          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          revenue: { $sum: "$totalAmount" }
+        }
+      }
+    ]);
+    
+    const monthlyRevenue = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yr = d.getFullYear();
+      const mo = d.getMonth() + 1;
+      const hit = revenueAgg.find(a => a._id.year === yr && a._id.month === mo);
+      monthlyRevenue.push({
+        month: MONTH_NAMES[mo - 1],
+        revenue: hit ? hit.revenue : 0
+      });
+    }
+    res.status(200).json(monthlyRevenue);
+  } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+const getAnalyticsUsers = async (req, res) => {
+  try {
+    const data = await User.aggregate([
+      { $match: { role: { $ne: "ADMIN" } } },
+      { $group: { _id: "$role", count: { $sum: 1 } } }
+    ]);
+    const formatted = data.map(d => ({ name: d._id, value: d.count }));
+    res.status(200).json(formatted);
+  } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+const getAnalyticsPaddy = async (req, res) => {
+  try {
+    const data = await Listing.aggregate([
+      { $group: { _id: "$paddyType", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    const formatted = data.map(d => ({ name: d._id || "Unknown", value: d.count }));
+    res.status(200).json(formatted);
+  } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+const getAnalyticsDistricts = async (req, res) => {
+  try {
+    const data = await Listing.aggregate([
+      { $group: { _id: "$location.district", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    const formatted = data.map(d => ({ name: d._id || "Unknown", value: d.count }));
+    res.status(200).json(formatted);
+  } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+const getAnalyticsConversion = async (req, res) => {
+  try {
+    const accepted = await Negotiation.countDocuments({ status: { $in: ["ACCEPTED", "AGREED"] } });
+    const transactions = await Transaction.countDocuments();
+    let rate = 0;
+    if (accepted > 0) {
+      rate = (transactions / accepted) * 100;
+    }
+    // Cap at 100 just in case
+    if (rate > 100) rate = 100;
+
+    res.status(200).json({ 
+      rate: rate.toFixed(1),
+      acceptedNegotiations: accepted,
+      transactions: transactions
+    });
+  } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+
+// ================= SYSTEM SETTINGS =================
+const getPlatformSettings = async (req, res) => {
+  try {
+    let settings = await SystemSetting.findOne();
+    if (!settings) {
+      settings = new SystemSetting({});
+      await settings.save();
+    }
+    res.status(200).json(settings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updatePlatformSettings = async (req, res) => {
+  try {
+    let settings = await SystemSetting.findOne();
+    if (!settings) settings = new SystemSetting({});
+
+    const fields = ["platformFeePercentage", "autoDisputeDays", "maintenanceMode", "maxListingsPerUser", "supportEmail"];
+    fields.forEach(f => {
+      if (req.body[f] !== undefined) settings[f] = req.body[f];
+    });
+
+    await settings.save();
+    res.status(200).json({ message: "Settings updated", settings });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// ================= NOTIFICATIONS CENTER =================
+const getAnnouncements = async (req, res) => {
+  try {
+    const announcements = await Announcement.find().sort({ createdAt: -1 });
+    res.status(200).json(announcements);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const createAnnouncement = async (req, res) => {
+  try {
+    const { title, body, target } = req.body;
+    if (!title || !body || !target) return res.status(400).json({ message: "Missing fields" });
+
+    // Find users
+    let query = { role: { $ne: "ADMIN" } };
+    if (target === "FARMER") query.role = "FARMER";
+    if (target === "MILL_OWNER") query.role = "MILL_OWNER";
+    
+    // Select only IDs
+    const users = await User.find(query).select("_id");
+    
+    // Save Announcement record for Admin History
+    const announcement = new Announcement({
+       title, body, target, count: users.length, status: "SENT"
+    });
+    await announcement.save();
+
+    // Broadcast individual generic notifications for User Bell Dropdown mapping
+    const titleHeader = "ADMIN: " + title + "\\n" + body;
+    const notifications = users.map(u => ({
+       user: u._id,
+       message: titleHeader,
+       type: "SYSTEM_ALERT"
+    }));
+    await Notification.insertMany(notifications);
+
+    // Socket ping
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("newNotification"); // For admin dashboard sync
+      users.forEach(u => {
+        io.to(u._id.toString()).emit("newNotification", { title: "ADMIN: " + title, body: body });
+      });
+    }
+
+    res.status(201).json(announcement);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteAnnouncement = async (req, res) => {
+  try {
+    await Announcement.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUnverifiedUsers,
   verifyUser,
@@ -549,5 +895,20 @@ module.exports = {
   rejectVerification,
   blockUser,
   unblockUser,
-  createAdmin
+  createAdmin,
+  adminUpdateListingStatus,
+  getAnalyticsOverview,
+  getAnalyticsRevenue,
+  getAnalyticsUsers,
+  getAnalyticsPaddy,
+  getAnalyticsDistricts,
+  getAnalyticsConversion,
+  getAllDisputes,
+  updateDisputeStatus,
+  addDisputeNote,
+  getPlatformSettings,
+  updatePlatformSettings,
+  getAnnouncements,
+  createAnnouncement,
+  deleteAnnouncement
 };

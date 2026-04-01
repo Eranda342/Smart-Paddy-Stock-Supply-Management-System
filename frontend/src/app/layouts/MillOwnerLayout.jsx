@@ -1,6 +1,6 @@
 import { List } from "lucide-react";
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sprout, LayoutDashboard, Search as SearchIcon, MessageSquare, Receipt, Truck, TruckIcon, User, LogOut, Search, Bell } from 'lucide-react';
+import { Sprout, LayoutDashboard, Search as SearchIcon, MessageSquare, Receipt, Truck, TruckIcon, User, LogOut, Search, Bell, HelpCircle } from 'lucide-react';
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -73,6 +73,7 @@ export default function MillOwnerLayout() {
     { path: '/mill-owner/transactions', icon: Receipt, label: 'Transactions' },
     { path: '/mill-owner/vehicles', icon: TruckIcon, label: 'Vehicles' },
     { path: '/mill-owner/transport', icon: Truck, label: 'Transport' },
+    { path: '/mill-owner/complaints', icon: HelpCircle, label: 'Complaints' },
     { path: '/mill-owner/profile', icon: User, label: 'Profile' },
   ];
 

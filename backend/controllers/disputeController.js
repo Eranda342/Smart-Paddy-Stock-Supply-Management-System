@@ -1,0 +1,74 @@
+const Dispute = require('../models/Dispute');
+const Transaction = require('../models/Transaction');
+
+// Create a new dispute complaint
+const createDispute = async (req, res) => {
+  try {
+    const { title, description, transactionId } = req.body;
+
+    if (!title || !description) {
+      return res.status(400).json({ message: "Title and description are required" });
+    }
+
+    let attachments = [];
+    if (req.files && req.files.length > 0) {
+      attachments = req.files.map(file => ({
+        fileName: file.originalname,
+        fileUrl: `/uploads/${file.filename}`
+      }));
+    }
+
+    const dispute = new Dispute({
+      title,
+      description,
+      reporter: req.user._id,
+      transaction: transactionId || undefined,
+      status: "OPEN",
+      attachments,
+    });
+
+    await dispute.save();
+
+    // Broadcast to admins
+    const io = req.app.get("io");
+    if (io) io.emit("disputeUpdated"); // So admins see the new one immediately
+
+    res.status(201).json({ message: "Complaint submitted successfully", dispute });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get logged-in user's disputes
+const getMyDisputes = async (req, res) => {
+  try {
+    const disputes = await Dispute.find({ reporter: req.user._id })
+      .populate('transaction')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ disputes });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getDisputeById = async (req, res) => {
+  try {
+    const dispute = await Dispute.findOne({ _id: req.params.id, reporter: req.user._id })
+      .populate('transaction');
+
+    if (!dispute) {
+      return res.status(404).json({ message: "Dispute not found" });
+    }
+
+    res.status(200).json(dispute);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  createDispute,
+  getMyDisputes,
+  getDisputeById
+};

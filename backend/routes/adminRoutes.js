@@ -16,7 +16,22 @@ const {
   approveVerification,
   rejectVerification,
   blockUser,
-  unblockUser
+  unblockUser,
+  adminUpdateListingStatus,
+  getAnalyticsOverview,
+  getAnalyticsRevenue,
+  getAnalyticsUsers,
+  getAnalyticsPaddy,
+  getAnalyticsDistricts,
+  getAnalyticsConversion,
+  getAllDisputes,
+  updateDisputeStatus,
+  addDisputeNote,
+  getPlatformSettings,
+  updatePlatformSettings,
+  getAnnouncements,
+  createAnnouncement,
+  deleteAnnouncement
 } = require("../controllers/adminController");
 
 const { protect, authorizeRoles, checkApproved } = require("../middleware/authMiddleware");
@@ -60,6 +75,7 @@ router.put("/users/:id/reject", ...adminOnly, rejectVerification);
 // ================= LISTINGS =================
 router.get("/listings", ...adminOnly, getAllListings);
 router.delete("/listings/:id", ...adminOnly, adminDeleteListing);
+router.patch("/listings/:id/status", ...adminOnly, adminUpdateListingStatus);
 
 // ================= NEGOTIATIONS =================
 router.get("/negotiations", ...adminOnly, getAllNegotiations);
@@ -77,5 +93,29 @@ router.get("/dashboard", ...adminOnly, getDashboardStats);
 router.get("/verifications", ...adminOnly, getPendingVerifications);
 router.put("/verifications/:id/approve", ...adminOnly, approveVerification);
 router.put("/verifications/:id/reject", ...adminOnly, rejectVerification);
+
+// ================= ANALYTICS =================
+router.get("/analytics/overview", ...adminOnly, getAnalyticsOverview);
+router.get("/analytics/revenue", ...adminOnly, getAnalyticsRevenue);
+router.get("/analytics/users", ...adminOnly, getAnalyticsUsers);
+router.get("/analytics/paddy", ...adminOnly, getAnalyticsPaddy);
+router.get("/analytics/districts", ...adminOnly, getAnalyticsDistricts);
+router.get("/analytics/conversion", ...adminOnly, getAnalyticsConversion);
+
+// ================= DISPUTES =================
+router.get("/disputes", ...adminOnly, getAllDisputes);
+router.patch("/disputes/:id/status", ...adminOnly, updateDisputeStatus);
+router.post("/disputes/:id/note", ...adminOnly, addDisputeNote);
+
+
+
+// ================= SYSTEM SETTINGS =================
+router.get("/settings", ...adminOnly, getPlatformSettings);
+router.patch("/settings", ...adminOnly, updatePlatformSettings);
+
+// ================= NOTIFICATIONS CENTER =================
+router.get("/notifications", ...adminOnly, getAnnouncements);
+router.post("/notifications", ...adminOnly, createAnnouncement);
+router.delete("/notifications/:id", ...adminOnly, deleteAnnouncement);
 
 module.exports = router;

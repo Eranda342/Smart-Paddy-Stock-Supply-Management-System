@@ -1,12 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Bell, Send, Users, BellOff, CheckCircle, Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { io } from 'socket.io-client';
 
-const notificationHistory = [
-  { id: 1, title: 'System Maintenance', body: 'Platform will be down for maintenance on Sunday 2AM–4AM.', target: 'ALL', sent: '2026-03-20', status: 'SENT', count: 177 },
-  { id: 2, title: 'New Feature: Transport Tracking', body: 'Track your deliveries in real-time from the Transport tab.', target: 'FARMER', sent: '2026-03-15', status: 'SENT', count: 132 },
-  { id: 3, title: 'Listing Approval Reminder', body: 'Please complete your listing details to activate your offer.', target: 'MILL_OWNER', sent: '2026-03-10', status: 'SENT', count: 45 },
-];
+const API_BASE = 'http://localhost:5000/api';
+const SOCKET_URL = 'http://localhost:5000';
 
 const TARGETS = [
   { value: 'ALL', label: 'All Users', icon: Users, color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },
@@ -15,10 +13,37 @@ const TARGETS = [
 ];
 
 export default function AdminNotifications() {
-  const [history, setHistory] = useState(notificationHistory);
+  const [history, setHistory] = useState([]);
   const [form, setForm] = useState({ title: '', body: '', target: 'ALL' });
   const [sending, setSending] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAnnouncements = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/admin/notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setHistory(Array.isArray(data) ? data : []);
+    } catch {
+      toast.error('Failed to load notification history');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAnnouncements();
+
+    const socket = io(SOCKET_URL);
+    socket.on('newNotification', () => {
+      fetchAnnouncements();
+    });
+
+    return () => socket.disconnect();
+  }, [fetchAnnouncements]);
 
   const handleSend = async () => {
     if (!form.title.trim() || !form.body.trim()) {
@@ -27,34 +52,55 @@ export default function AdminNotifications() {
     }
     setSending(true);
 
-    // Simulate API call (backend notification system can be wired here)
-    setTimeout(() => {
-      const newNotif = {
-        id: Date.now(),
-        title: form.title,
-        body: form.body,
-        target: form.target,
-        sent: new Date().toISOString().split('T')[0],
-        status: 'SENT',
-        count: form.target === 'ALL' ? 177 : form.target === 'FARMER' ? 132 : 45,
-      };
-      setHistory([newNotif, ...history]);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/admin/notifications`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(form)
+      });
+      
+      if (!res.ok) throw new Error();
+
       setForm({ title: '', body: '', target: 'ALL' });
       setShowForm(false);
-      setSending(false);
       toast.success(`Notification sent to ${form.target === 'ALL' ? 'all users' : form.target === 'FARMER' ? 'farmers' : 'mill owners'}!`);
-    }, 1200);
+      // Socket will trigger fetchAnnouncements automatically, but we can do it proactively
+      fetchAnnouncements();
+    } catch {
+      toast.error('Failed to send notification');
+    } finally {
+      setSending(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    setHistory(history.filter(n => n.id !== id));
-    toast.success('Notification removed');
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${API_BASE}/admin/notifications/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setHistory(history.filter(n => n._id !== id));
+      toast.success('Announcement removed');
+    } catch {
+      toast.error('Failed to delete announcement');
+    }
   };
 
   const targetStats = TARGETS.map(t => ({
     ...t,
-    count: history.filter(n => n.target === t.value || (t.value === 'ALL' && n.target === 'ALL')).length
+    count: history.filter(n => n.target === t.value).length
   }));
+
+  // Force ALL config count to include everyone if tracking generically
+  const allStat = targetStats.find(t => t.value === 'ALL');
+  if (allStat) {
+     allStat.count = history.filter(n => n.target === 'ALL').length; 
+  }
 
   return (
     <div className="max-w-[1320px] mx-auto">
@@ -83,7 +129,7 @@ export default function AdminNotifications() {
               </div>
               <div>
                 <div className={`text-2xl font-semibold ${t.color}`}>{t.count}</div>
-                <div className="text-sm text-muted-foreground">{t.label} Notifications</div>
+                <div className="text-sm text-muted-foreground">{t.label} Announcements</div>
               </div>
             </div>
           );
@@ -175,7 +221,11 @@ export default function AdminNotifications() {
           <span className="text-sm text-muted-foreground">{history.length} sent</span>
         </div>
 
-        {history.length === 0 ? (
+        {loading ? (
+           <div className="flex justify-center items-center h-40">
+             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+           </div>
+        ) : history.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
             <BellOff className="w-10 h-10 mb-2 opacity-30" />
             <p className="text-sm">No notifications sent yet</p>
@@ -183,7 +233,7 @@ export default function AdminNotifications() {
         ) : (
           <div className="divide-y divide-border">
             {history.map(notif => (
-              <div key={notif.id} className="flex items-start gap-4 p-5 hover:bg-muted/20 transition-colors group">
+              <div key={notif._id} className="flex items-start gap-4 p-5 hover:bg-muted/20 transition-colors group">
                 <div className="w-10 h-10 bg-[#22C55E]/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                   <Bell className="w-5 h-5 text-[#22C55E]" />
                 </div>
@@ -197,18 +247,18 @@ export default function AdminNotifications() {
                     }`}>
                       {notif.target}
                     </span>
-                    <span className="text-xs text-muted-foreground shrink-0 ml-auto">{notif.sent}</span>
+                    <span className="text-xs text-muted-foreground shrink-0 ml-auto flex items-center"><CheckCircle className="w-3 h-3 text-green-400 mr-1" /> {new Date(notif.createdAt).toLocaleString()}</span>
                   </div>
                   <p className="text-sm text-muted-foreground line-clamp-2">{notif.body}</p>
                   <div className="flex items-center gap-3 mt-2">
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <CheckCircle className="w-3 h-3 text-green-400" />
-                      Delivered to {notif.count} users
+                      <Users className="w-3 h-3 text-primary" />
+                      Delivered to {notif.count} remote users
                     </span>
                   </div>
                 </div>
                 <button
-                  onClick={() => handleDelete(notif.id)}
+                  onClick={() => handleDelete(notif._id)}
                   className="p-2 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100 shrink-0"
                 >
                   <Trash2 className="w-4 h-4 text-red-400" />

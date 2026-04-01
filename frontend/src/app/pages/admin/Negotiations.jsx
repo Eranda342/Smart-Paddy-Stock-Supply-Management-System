@@ -1,94 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, MessageSquare, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, MessageSquare, RefreshCw, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5000/api';
 
 const StatusBadge = ({ status }) => {
-  const map = {
-    OPEN: 'text-blue-400 bg-blue-400/10 border border-blue-400/20',
-    AGREED: 'text-green-400 bg-green-400/10 border border-green-400/20',
-    ACCEPTED: 'text-green-400 bg-green-400/10 border border-green-400/20',
-    REJECTED: 'text-red-400 bg-red-400/10 border border-red-400/20',
-    CANCELLED: 'text-gray-400 bg-gray-400/10 border border-gray-400/20',
-  };
+  let displayStatus = status;
+  let style = 'text-gray-400 bg-gray-400/10 border-gray-400/20';
+  
+  if (status === 'OPEN') {
+    displayStatus = 'PENDING';
+    style = 'text-amber-400 bg-amber-400/10 border-amber-400/20';
+  } else if (status === 'AGREED' || status === 'ACCEPTED') {
+    displayStatus = 'ACCEPTED';
+    style = 'text-green-400 bg-green-400/10 border-green-400/20';
+  } else if (status === 'REJECTED' || status === 'CANCELLED') {
+    displayStatus = 'REJECTED';
+    style = 'text-red-400 bg-red-400/10 border-red-400/20';
+  }
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${map[status] || 'text-gray-400 bg-gray-400/10'}`}>
-      {status}
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${style}`}>
+      {displayStatus}
     </span>
   );
 };
-
-function NegotiationRow({ neg }) {
-  const [expanded, setExpanded] = useState(false);
-  const msgCount = neg.messages?.length || 0;
-
-  return (
-    <>
-      <tr
-        className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <td className="px-4 py-4">
-          <div className="font-medium text-sm">{neg.farmer?.fullName || '—'}</div>
-          <div className="text-xs text-muted-foreground">{neg.farmer?.email}</div>
-        </td>
-        <td className="px-4 py-4">
-          <div className="font-medium text-sm">{neg.millOwner?.fullName || '—'}</div>
-          <div className="text-xs text-muted-foreground">{neg.millOwner?.email}</div>
-        </td>
-        <td className="px-4 py-4 text-sm">{neg.listing?.paddyType || '—'}</td>
-        <td className="px-4 py-4 text-sm">
-          {neg.offeredPrice ? `Rs ${neg.offeredPrice}/kg` : '—'}
-        </td>
-        <td className="px-4 py-4 text-sm">{neg.quantity ? `${neg.quantity} kg` : '—'}</td>
-        <td className="px-4 py-4"><StatusBadge status={neg.status} /></td>
-        <td className="px-4 py-4">
-          <span className="flex items-center gap-1 text-sm text-muted-foreground">
-            <MessageSquare className="w-4 h-4" />
-            {msgCount}
-          </span>
-        </td>
-        <td className="px-4 py-4 text-sm text-muted-foreground">
-          {neg.updatedAt ? new Date(neg.updatedAt).toLocaleDateString() : '—'}
-        </td>
-        <td className="px-4 py-4">
-          {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-        </td>
-      </tr>
-      {expanded && msgCount > 0 && (
-        <tr className="bg-muted/20 border-b border-border">
-          <td colSpan={9} className="px-6 py-4">
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Message Thread ({msgCount} messages)
-            </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-              {neg.messages.map((msg, i) => (
-                <div key={i} className="flex gap-2">
-                  <div className={`max-w-sm px-3 py-2 rounded-xl text-sm bg-muted/50 border border-border`}>
-                    <span className="font-medium text-xs text-muted-foreground block mb-0.5">
-                      {msg.type || 'MESSAGE'}
-                    </span>
-                    {msg.message}
-                    {msg.offeredPrice && (
-                      <span className="block text-xs text-amber-400 mt-1">Offer: Rs {msg.offeredPrice}/kg</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
-  );
-}
 
 export default function AdminNegotiations() {
   const [negotiations, setNegotiations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [selectedNegotiation, setSelectedNegotiation] = useState(null);
 
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
@@ -172,13 +115,42 @@ export default function AdminNegotiations() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  {['Farmer', 'Mill Owner', 'Paddy Type', 'Offered Price', 'Quantity', 'Status', 'Messages', 'Last Activity', ''].map(h => (
+                  {['Buyer', 'Seller', 'Listing', 'Offer Price (Rs)', 'Quantity', 'Status', 'Date', 'Actions'].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {negotiations.map(neg => <NegotiationRow key={neg._id} neg={neg} />)}
+                {negotiations.map(neg => (
+                  <tr key={neg._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-4">
+                      <div className="font-medium text-sm">{neg.millOwner?.fullName || '—'}</div>
+                      <div className="text-xs text-muted-foreground">{neg.millOwner?.email}</div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="font-medium text-sm">{neg.farmer?.fullName || '—'}</div>
+                      <div className="text-xs text-muted-foreground">{neg.farmer?.email}</div>
+                    </td>
+                    <td className="px-4 py-4 text-sm font-medium">{neg.listing?.paddyType || '—'}</td>
+                    <td className="px-4 py-4 text-sm font-semibold text-[#22C55E]">
+                      {neg.offeredPrice ? `Rs ${neg.offeredPrice}` : '—'}
+                    </td>
+                    <td className="px-4 py-4 text-sm">{neg.quantity ? `${neg.quantity} kg` : '—'}</td>
+                    <td className="px-4 py-4"><StatusBadge status={neg.status} /></td>
+                    <td className="px-4 py-4 text-sm text-muted-foreground">
+                      {neg.updatedAt ? new Date(neg.updatedAt).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-4 py-4">
+                      <button
+                        onClick={() => setSelectedNegotiation(neg)}
+                        className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors group"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4 text-blue-400 group-hover:text-blue-500" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -186,8 +158,91 @@ export default function AdminNegotiations() {
       </div>
 
       <p className="text-xs text-muted-foreground mt-3 text-right">
-        Click any row to expand message thread •  {negotiations.length} total
+        {negotiations.length} total negotiations
       </p>
+
+      {/* View Modal */}
+      {selectedNegotiation && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card w-full max-w-xl rounded-2xl shadow-xl border border-border flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
+              <h3 className="text-xl font-semibold">Negotiation Thread</h3>
+              <button
+                onClick={() => setSelectedNegotiation(null)}
+                className="p-2 hover:bg-muted rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4 border-b border-border shrink-0">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground block mb-1">Buyer (Mill Owner)</span>
+                  <span className="font-medium">{selectedNegotiation.millOwner?.fullName || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Seller (Farmer)</span>
+                  <span className="font-medium">{selectedNegotiation.farmer?.fullName || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Listing</span>
+                  <span className="font-medium">{selectedNegotiation.listing?.paddyType || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Quantity Requested</span>
+                  <span className="font-medium">{selectedNegotiation.quantity ? `${selectedNegotiation.quantity} kg` : '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Latest Offer</span>
+                  <span className="font-semibold text-[#22C55E]">
+                    {selectedNegotiation.offeredPrice ? `Rs ${selectedNegotiation.offeredPrice}` : '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Status</span>
+                  <StatusBadge status={selectedNegotiation.status} />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Message History ({selectedNegotiation.messages?.length || 0})
+              </h4>
+              {selectedNegotiation.messages && selectedNegotiation.messages.length > 0 ? (
+                <div className="space-y-3">
+                  {selectedNegotiation.messages.map((msg, i) => (
+                    <div key={i} className="flex gap-2">
+                      <div className="w-full px-4 py-3 rounded-xl text-sm bg-muted/30 border border-border">
+                        <div className="flex justify-between items-center mb-1">
+                           <span className="font-medium text-xs text-muted-foreground">
+                            {msg.senderModel === 'Farmer' ? 'Farmer' : 'Mill Owner'}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
+                            {msg.type || 'MESSAGE'}
+                          </span>
+                        </div>
+                        <p className="text-foreground mt-1">{msg.message}</p>
+                        {msg.offeredPrice && (
+                          <div className="mt-2 text-sm font-medium text-amber-500 bg-amber-500/10 inline-block px-2 py-1 rounded">
+                            Offer: Rs {msg.offeredPrice}/kg
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  <MessageSquare className="w-8 h-8 opacity-20 mx-auto mb-2" />
+                  <p>No messages in this negotiation.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

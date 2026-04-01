@@ -186,7 +186,9 @@ const ThemedTooltip = ({ active, payload, label }) => {
             <span className="w-2 h-2 rounded-full inline-block" style={{ background: p.color }} />
             {p.name}
           </span>
-          <span className="font-bold text-foreground">{Number(p.value).toLocaleString()}</span>
+          <span className="font-bold text-foreground">
+            {p.name === 'Sales' ? `Rs. ${Number(p.value).toLocaleString()}` : Number(p.value).toLocaleString()}
+          </span>
         </div>
       ))}
     </div>
@@ -228,12 +230,14 @@ const QUICK_ACTIONS = [
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [chartsVisible, setChartsVisible] = useState(false);
   // Chart series toggle
   const [hiddenSeries, setHiddenSeries] = useState({});
+  const animatedRevenue = useCountUp(loading ? null : Number(stats?.totalRevenue ?? 0), 1200);
 
   const fetchStats = useCallback(async (isManual = false) => {
     try {
@@ -243,6 +247,35 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(data);
+      console.log("Dashboard stats:", data);
+
+      const resSales = await axios.get('http://localhost:5000/api/analytics/monthly-sales', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (Array.isArray(resSales.data)) {
+        const uniqueMap = {};
+
+        resSales.data.forEach(item => {
+          if (!uniqueMap[item.month]) {
+            uniqueMap[item.month] = { ...item };
+          } else {
+            uniqueMap[item.month].sales += item.sales;
+          }
+        });
+
+        const cleanedData = Object.values(uniqueMap);
+
+        const monthOrder = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        cleanedData.sort((a, b) => {
+          return monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month);
+        });
+
+        console.log("Chart Data:", cleanedData);
+
+        setSalesData([]); 
+        setSalesData(cleanedData);
+      }
+
       setLastUpdated(
         new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       );
@@ -356,31 +389,93 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* ── Revenue Banner (shown when data loads) ── */}
+      {/* ── Compact Premium Stats Banner ── */}
       {!loading && stats && (
-        <div className="mb-8 bg-gradient-to-r from-[#22C55E]/10 via-[#22C55E]/5 to-transparent border border-[#22C55E]/20 rounded-2xl p-5 flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Platform Revenue · Paid Transactions
-            </div>
-            <div className="text-2xl font-bold text-[#22C55E] tabular-nums">
-              Rs. {Number(stats?.totalRevenue || 0).toLocaleString()}
-            </div>
-          </div>
-          <div className="flex items-center gap-8 text-sm">
-            {[
-              { label: 'Total Negotiations', value: stats?.totalNegotiations },
-              { label: 'Total Transactions', value: stats?.totalTransactions },
-              { label: 'Pending KYC',        value: stats?.pendingVerifications },
-            ].map(({ label, value }, i, arr) => (
-              <div key={label} className="flex items-center gap-8">
-                <div className="text-center">
-                  <div className="font-bold text-xl tabular-nums">{value ?? '—'}</div>
-                  <div className="text-muted-foreground text-xs mt-0.5">{label}</div>
-                </div>
-                {i < arr.length - 1 && <div className="w-px h-10 bg-border" />}
+        <div 
+          className="mb-8 relative overflow-hidden bg-card border border-border rounded-2xl p-4 lg:min-h-[110px] lg:max-h-[140px] flex items-center hover:shadow-md hover:scale-[1.02] transition-all duration-300 group"
+          title="Platform metrics and revenue overview"
+        >
+          {/* Soft Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#22C55E]/[0.02] via-transparent to-transparent pointer-events-none" />
+          
+          {/* Subtle Hover Glow */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.02) 0%, transparent 70%)' }} />
+
+          <div className="relative w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6 z-10 animate-in fade-in zoom-in-[0.98] duration-500">
+            
+            {/* LEFT: Revenue Value (40%) */}
+            <div className="flex-1 lg:max-w-[40%] flex flex-col justify-center">
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-sm font-semibold text-foreground">Platform Revenue</h2>
+                <span className="text-[10px] font-medium text-muted-foreground px-2 py-0.5 rounded bg-muted/50 border border-border/50">Paid Transactions</span>
               </div>
-            ))}
+              <div className="text-[32px] md:text-[36px] font-bold tracking-tight text-[#22C55E] leading-none">
+                Rs. {new Intl.NumberFormat('en-LK').format(animatedRevenue)}
+              </div>
+            </div>
+
+            {/* CENTER: Growth & Sparkline (20%) */}
+            <div className="flex-1 lg:max-w-[20%] flex items-center gap-4">
+              {stats.revenueGrowth !== undefined && (
+                <div className="flex flex-col items-start">
+                  <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md ${
+                    stats.revenueGrowth >= 0 
+                      ? 'text-emerald-600 bg-emerald-500/10' 
+                      : 'text-rose-600 bg-rose-500/10'
+                  }`}>
+                    {stats.revenueGrowth >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth.toFixed(1)}%
+                  </div>
+                  <span className="text-[10px] text-muted-foreground mt-0.5 font-medium ml-1">vs last month</span>
+                </div>
+              )}
+              {stats.monthlyRevenue && stats.monthlyRevenue.length > 0 && (
+                <div className="w-16 h-8 opacity-60 pointer-events-none hidden xl:block">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={stats.monthlyRevenue} margin={{ top: 2, right: 0, left: 0, bottom: 2 }}>
+                      <defs>
+                        <linearGradient id="compSparkGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#22C55E" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#22C55E" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <Area 
+                        type="monotone" 
+                        dataKey="revenue" 
+                        stroke="#22C55E" 
+                        strokeWidth={1.5} 
+                        fill="url(#compSparkGrad)" 
+                        isAnimationActive={chartsVisible} 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT: Compact Inline Stats (40%) */}
+            <div className="flex-1 lg:max-w-[40%] flex items-center lg:justify-end justify-between lg:gap-6 gap-3">
+              {[
+                { label: 'Total Negotiations', value: stats?.totalNegotiations ?? 0, icon: MessageSquare, color: '#3B82F6' },
+                { label: 'Total Transactions', value: stats?.totalTransactions ?? 0, icon: Receipt,       color: '#A855F7' },
+                { label: 'Pending KYC',        value: stats?.pendingKYC ?? 0,        icon: UserPlus,      color: '#F97316' },
+              ].map(({ label, value, icon: Icon, color }, i, arr) => (
+                <div key={label} className="flex items-center lg:gap-6 gap-3 shrink-0">
+                  <div className="flex items-start lg:items-center gap-2.5">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 border border-border/40 mt-0.5 lg:mt-0" style={{ background: `${color}10`, color }}>
+                      <Icon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-base sm:text-[18px] leading-none tabular-nums text-foreground">{value}</span>
+                      <span className="text-[10px] sm:text-xs font-medium text-muted-foreground mt-1 whitespace-nowrap">{label}</span>
+                    </div>
+                  </div>
+                  {i < arr.length - 1 && <div className="w-px h-8 bg-border/50 hidden lg:block" />}
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       )}
@@ -391,22 +486,22 @@ export default function AdminDashboard() {
       {/* ── Charts ── */}
       <div className="grid grid-cols-2 gap-6 mb-8">
 
-        {/* Area / Line Chart — Trading Volume */}
+        {/* Area / Line Chart — Sales Trend */}
         <div className="bg-card border border-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold">Monthly Trading Volume</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Paddy traded (kg) · Last 6 months</p>
+              <h2 className="text-base font-semibold">Sales Trend</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Platform revenue · Last 6 months</p>
             </div>
             <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-lg font-medium">
               6M
             </span>
           </div>
-          {tradingVolumeData.length === 0 ? (
-            <EmptyState icon={BarChart2} title="No volume data" description="Trading data will populate as transactions complete." />
+          {salesData.length === 0 ? (
+            <EmptyState icon={BarChart2} title="No sales data" description="Sales data will populate as transactions complete." />
           ) : (
             <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={tradingVolumeData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <AreaChart data={salesData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="volGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#22C55E" stopOpacity={0.18} />
@@ -415,12 +510,20 @@ export default function AdminDashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="month" stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                <YAxis 
+                  stroke="var(--color-muted-foreground)" 
+                  tick={{ fontSize: 11 }} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  width={55}
+                  tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}k` : val} 
+                />
                 <Tooltip content={<ThemedTooltip />} cursor={{ stroke: '#22C55E', strokeWidth: 1, strokeDasharray: '4 4' }} />
                 <Area
+                  key={`salesArea-${salesData.length}`}
                   type="monotone"
-                  dataKey="volume"
-                  name="Volume (kg)"
+                  dataKey="sales"
+                  name="Sales"
                   stroke="#22C55E"
                   strokeWidth={2.5}
                   fill="url(#volGrad)"

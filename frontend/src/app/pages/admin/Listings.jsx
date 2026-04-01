@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, Trash2, CheckCircle, XCircle, Package, RefreshCw } from 'lucide-react';
+import { Search, Filter, Trash2, CheckCircle, XCircle, Package, RefreshCw, Eye, Ban, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5000/api';
@@ -24,6 +24,7 @@ export default function AdminListings() {
   const [districtFilter, setDistrictFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [stats, setStats] = useState({ total: 0, open: 0, sold: 0 });
+  const [selectedListing, setSelectedListing] = useState(null);
 
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -62,6 +63,21 @@ export default function AdminListings() {
       fetchListings();
     } catch {
       toast.error('Failed to delete listing');
+    }
+  };
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/listings/${id}/status`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`Listing status updated to ${status}`);
+      fetchListings();
+    } catch {
+      toast.error('Failed to update listing status');
     }
   };
 
@@ -167,13 +183,31 @@ export default function AdminListings() {
                       {listing.createdAt ? new Date(listing.createdAt).toLocaleDateString() : '—'}
                     </td>
                     <td className="px-4 py-4">
-                      <button
-                        onClick={() => handleDelete(listing._id)}
-                        className="p-2 hover:bg-red-500/10 rounded-lg transition-colors group"
-                        title="Delete Listing"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-500" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedListing(listing)}
+                          className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors group"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4 text-blue-400 group-hover:text-blue-500" />
+                        </button>
+                        {listing.status === 'ACTIVE' && (
+                          <button
+                            onClick={() => handleStatusUpdate(listing._id, 'CLOSED')}
+                            className="p-2 hover:bg-yellow-500/10 rounded-lg transition-colors group"
+                            title="Suspend Listing"
+                          >
+                            <Ban className="w-4 h-4 text-yellow-400 group-hover:text-yellow-500" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(listing._id)}
+                          className="p-2 hover:bg-red-500/10 rounded-lg transition-colors group"
+                          title="Delete Listing"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-500" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -182,6 +216,65 @@ export default function AdminListings() {
           </div>
         )}
       </div>
+
+      {/* View Modal */}
+      {selectedListing && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card w-full max-w-lg rounded-2xl shadow-xl border border-border">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h3 className="text-xl font-semibold">Listing Details</h3>
+              <button
+                onClick={() => setSelectedListing(null)}
+                className="p-2 hover:bg-muted rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Listing ID</span>
+                <span className="font-medium">{selectedListing._id}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Farmer Name</span>
+                <span className="font-medium">{selectedListing.owner?.fullName || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Paddy Type</span>
+                <span className="font-medium">{selectedListing.paddyType || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Quantity</span>
+                <span className="font-medium">{selectedListing.quantityKg?.toLocaleString() || '—'} kg</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Price per kg</span>
+                <span className="font-medium">Rs {selectedListing.pricePerKg || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">District</span>
+                <span className="font-medium">{selectedListing.location?.district || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Contact</span>
+                <span className="font-medium">{selectedListing.owner?.email || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Status</span>
+                <StatusBadge status={selectedListing.status} />
+              </div>
+            </div>
+            <div className="p-6 border-t border-border flex justify-end">
+              <button
+                onClick={() => setSelectedListing(null)}
+                className="px-6 py-2.5 bg-muted hover:bg-muted/70 text-foreground font-medium rounded-xl transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

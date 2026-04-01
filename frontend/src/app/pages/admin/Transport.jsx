@@ -7,10 +7,10 @@ const API_BASE = 'http://localhost:5000/api';
 const TransportBadge = ({ status }) => {
   const map = {
     PENDING: 'text-amber-400 bg-amber-400/10 border border-amber-400/20',
-    VEHICLE_ASSIGNED: 'text-blue-400 bg-blue-400/10 border border-blue-400/20',
-    IN_TRANSIT: 'text-purple-400 bg-purple-400/10 border border-purple-400/20',
+    VEHICLE_ASSIGNED: 'text-indigo-400 bg-indigo-400/10 border border-indigo-400/20',
+    IN_TRANSIT: 'text-blue-400 bg-blue-400/10 border border-blue-400/20',
     DELIVERED: 'text-green-400 bg-green-400/10 border border-green-400/20',
-    PICKUP_CONFIRMED: 'text-indigo-400 bg-indigo-400/10 border border-indigo-400/20',
+    PICKUP_CONFIRMED: 'text-teal-400 bg-teal-400/10 border border-teal-400/20',
   };
   const icons = {
     PENDING: Clock,
@@ -66,7 +66,7 @@ export default function AdminTransport() {
   const statCards = [
     { label: 'Total Deliveries', value: stats.total, icon: Truck, color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },
     { label: 'Delivered', value: stats.delivered, icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-400/10' },
-    { label: 'In Transit', value: stats.inTransit, icon: MapPin, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+    { label: 'In Transit', value: stats.inTransit, icon: MapPin, color: 'text-blue-400', bg: 'bg-blue-400/10' },
     { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10' },
   ];
 
@@ -165,7 +165,7 @@ export default function AdminTransport() {
                           <div className="text-xs text-muted-foreground">{txn.vehicle.driverName || txn.vehicle.type}</div>
                         </div>
                       ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
+                        <span className="text-sm text-muted-foreground bg-muted/40 px-2 py-1 rounded">Not Assigned</span>
                       )}
                     </td>
                     <td className="px-4 py-4"><TransportBadge status={txn.transportStatus} /></td>

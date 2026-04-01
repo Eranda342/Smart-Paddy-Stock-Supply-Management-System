@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Receipt, TrendingUp, DollarSign, RefreshCw, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Search, Receipt, TrendingUp, DollarSign, RefreshCw, CheckCircle, Clock, XCircle, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5000/api';
@@ -12,10 +12,11 @@ const PaymentBadge = ({ status }) => {
   };
   const icons = { PENDING: Clock, PAID: CheckCircle, FAILED: XCircle };
   const Icon = icons[status] || Clock;
+  const displayStatus = status === 'PAID' ? 'COMPLETED' : status;
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${map[status] || 'text-gray-400 bg-gray-400/10'}`}>
       <Icon className="w-3 h-3" />
-      {status}
+      {displayStatus}
     </span>
   );
 };
@@ -26,6 +27,7 @@ export default function AdminTransactions() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [stats, setStats] = useState({ total: 0, paid: 0, pending: 0, totalRevenue: 0 });
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
@@ -50,10 +52,9 @@ export default function AdminTransactions() {
   useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
 
   const statCards = [
-    { label: 'Total Transactions', value: stats.total, icon: Receipt, color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },
-    { label: 'Paid', value: stats.paid, icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-400/10' },
-    { label: 'Pending Payment', value: stats.pending, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10' },
     { label: 'Total Revenue', value: `Rs ${(stats.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+    { label: 'Total Transactions', value: stats.total, icon: Receipt, color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },
+    { label: 'Pending Transactions', value: stats.pending, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10' },
   ];
 
   return (
@@ -69,7 +70,7 @@ export default function AdminTransactions() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-3 gap-5 mb-8">
         {statCards.map(s => {
           const Icon = s.icon;
           return (
@@ -104,7 +105,7 @@ export default function AdminTransactions() {
         >
           <option value="">All Payment Status</option>
           <option value="PENDING">Pending</option>
-          <option value="PAID">Paid</option>
+          <option value="PAID">Completed</option>
           <option value="FAILED">Failed</option>
         </select>
       </div>
@@ -125,7 +126,7 @@ export default function AdminTransactions() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  {['Transaction ID', 'Farmer', 'Mill Owner', 'Paddy Type', 'Quantity', 'Total Amount', 'Payment', 'Transport', 'Date'].map(h => (
+                  {['Transaction ID', 'Buyer', 'Seller', 'Listing', 'Amount (Rs)', 'Status', 'Date', 'Actions'].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -137,32 +138,29 @@ export default function AdminTransactions() {
                       <span className="font-mono text-xs text-muted-foreground">#{txn._id?.slice(-8)}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm font-medium">{txn.farmer?.fullName || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{txn.farmer?.email}</div>
-                    </td>
-                    <td className="px-4 py-4">
                       <div className="text-sm font-medium">{txn.millOwner?.fullName || '—'}</div>
                       <div className="text-xs text-muted-foreground">{txn.millOwner?.email}</div>
                     </td>
-                    <td className="px-4 py-4 text-sm">{txn.listing?.paddyType || '—'}</td>
-                    <td className="px-4 py-4 text-sm">{txn.quantityKg ? `${txn.quantityKg} kg` : '—'}</td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium">{txn.farmer?.fullName || '—'}</div>
+                      <div className="text-xs text-muted-foreground">{txn.farmer?.email}</div>
+                    </td>
+                    <td className="px-4 py-4 text-sm font-medium">{txn.listing?.paddyType || '—'}</td>
                     <td className="px-4 py-4 text-sm font-semibold text-[#22C55E]">
                       {txn.totalAmount ? `Rs ${txn.totalAmount.toLocaleString()}` : '—'}
                     </td>
                     <td className="px-4 py-4"><PaymentBadge status={txn.paymentStatus} /></td>
-                    <td className="px-4 py-4">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        txn.transportStatus === 'DELIVERED'
-                          ? 'text-green-400 bg-green-400/10'
-                          : txn.transportStatus === 'IN_TRANSIT'
-                          ? 'text-blue-400 bg-blue-400/10'
-                          : 'text-gray-400 bg-gray-400/10'
-                      }`}>
-                        {txn.transportStatus || 'N/A'}
-                      </span>
-                    </td>
                     <td className="px-4 py-4 text-sm text-muted-foreground">
                       {txn.createdAt ? new Date(txn.createdAt).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-4 py-4">
+                      <button
+                        onClick={() => setSelectedTransaction(txn)}
+                        className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors group"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4 text-blue-400 group-hover:text-blue-500" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -171,6 +169,79 @@ export default function AdminTransactions() {
           </div>
         )}
       </div>
+
+      {/* View Modal */}
+      {selectedTransaction && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card w-full max-w-lg rounded-2xl shadow-xl border border-border">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h3 className="text-xl font-semibold">Transaction Details</h3>
+              <button
+                onClick={() => setSelectedTransaction(null)}
+                className="p-2 hover:bg-muted rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Transaction ID</span>
+                <span className="font-mono text-sm">#{selectedTransaction._id?.slice(-8)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Buyer (Mill Owner)</span>
+                <span className="font-medium text-right">
+                  {selectedTransaction.millOwner?.fullName || '—'}<br/>
+                  <span className="text-xs text-muted-foreground">{selectedTransaction.millOwner?.email}</span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Seller (Farmer)</span>
+                <span className="font-medium text-right">
+                  {selectedTransaction.farmer?.fullName || '—'}<br/>
+                  <span className="text-xs text-muted-foreground">{selectedTransaction.farmer?.email}</span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Listing / Paddy Type</span>
+                <span className="font-medium">{selectedTransaction.listing?.paddyType || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Quantity</span>
+                <span className="font-medium">{selectedTransaction.quantityKg?.toLocaleString() || '—'} kg</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Total Amount</span>
+                <span className="font-semibold text-[#22C55E]">
+                  Rs {selectedTransaction.totalAmount?.toLocaleString() || '—'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Payment Status</span>
+                <PaymentBadge status={selectedTransaction.paymentStatus} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Transport Status</span>
+                <span className="font-medium">{selectedTransaction.transportStatus || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Date Completed</span>
+                <span className="font-medium">
+                  {selectedTransaction.createdAt ? new Date(selectedTransaction.createdAt).toLocaleString() : '—'}
+                </span>
+              </div>
+            </div>
+            <div className="p-6 border-t border-border flex justify-end">
+              <button
+                onClick={() => setSelectedTransaction(null)}
+                className="px-6 py-2.5 bg-muted hover:bg-muted/70 text-foreground font-medium rounded-xl transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
