@@ -1,150 +1,181 @@
-# Smart Paddy Stock & Supply Management System
+🌾 AgroBridge – Smart Paddy Trading & Supply Management System
 
-## 📌 Project Overview
+AgroBridge is a full-stack, real-time platform that connects farmers and mill owners to streamline paddy trading, negotiations, transport logistics, and dispute resolution with a centralized admin control system.
 
-The Smart Paddy Stock & Supply Management System is a web-based platform developed to digitally connect farmers and rice mill owners within a structured and transparent trading environment.
+⸻
 
-The system enables farmers to sell paddy stocks and mill owners to publish buying requests. It supports negotiation, transaction confirmation, and transport coordination, including vehicle aggregation for multiple nearby farmers.
+🚀 Key Features
 
-This project is developed as part of a Final Year Undergraduate Degree Programme.
+👨‍🌾 Farmer & Mill Owner Portals
+	•	User registration & authentication (JWT-based)
+	•	Create and manage listings
+	•	Browse marketplace listings
+	•	Real-time negotiation system
+	•	Transaction tracking
+	•	Transport tracking (delivery lifecycle)
+	•	Notification system (real-time updates)
 
----
+⸻
 
-## 🎯 Problem Statement
+🛠️ Admin Dashboard
+	•	User management & verification (KYC approval system)
+	•	Listings moderation
+	•	Transactions & negotiations monitoring
+	•	Transport management overview
+	•	Dispute resolution system (multi-stage workflow)
+	•	Notifications center (broadcast system)
+	•	Reports & analytics dashboard
+	•	System settings (dynamic platform control)
 
-Traditional paddy trading processes rely heavily on intermediaries, informal communication, and manual coordination. This results in:
+⸻
 
-- Limited price transparency
-- Inefficient negotiation processes
-- Risk of fake or unverified participants
-- Poor transport coordination
-- Lack of structured transaction records
+📎 Dispute & Complaint System
+	•	Raise disputes with detailed description
+	•	Upload proof (images/documents)
+	•	Admin review panel with evidence viewer
+	•	Internal case tracking workflow:
+	•	OPEN → REVIEW → INVESTIGATION → RESOLVED
 
-This system aims to digitally transform the paddy trading workflow while maintaining realistic agricultural practices.
+⸻
 
----
+🔔 Real-Time Notification System
+	•	Socket.IO powered live updates
+	•	Admin announcements (targeted: Farmers / Mill Owners / All)
+	•	Per-user notification delivery (socket rooms)
+	•	Notification dropdown with read/unread tracking
 
-## 🎯 Project Objectives
+⸻
 
-- Provide a centralized digital marketplace for paddy trading
-- Enable direct interaction between farmers and mill owners
-- Implement secure role-based access control
-- Support structured negotiation and transaction recording
-- Integrate transport coordination functionality
-- Ensure user authenticity through admin verification
+⚙️ Dynamic System Settings
+	•	Platform fee configuration
+	•	Auto dispute trigger (cron-based)
+	•	Max listings per user
+	•	Maintenance mode (global system lock)
+	•	All settings stored in MongoDB and applied system-wide
 
----
+⸻
 
-## 👥 User Roles
+📊 Reports & Analytics
+	•	Platform revenue tracking
+	•	User growth analytics
+	•	Paddy distribution insights
+	•	Transaction and negotiation statistics
+	•	Export reports (PDF / Excel)
 
-### 1️⃣ Farmer
-- Register and manage profile
-- Add NIC details during registration
-- Post paddy stock listings (SELL)
-- View mill owner buying posts (BUY)
-- Negotiate deals via messaging
-- Confirm transactions
-- Request transport services
-- Track transport status
+⸻
 
----
+🏗️ Tech Stack
 
-### 2️⃣ Rice Mill Owner
-- Register with business verification details
-- Post buying requests
-- View farmer selling listings
-- Negotiate pricing and quantity
-- Confirm transactions
-- Assign transport vehicles
-- Manage multiple farmer pickups in a single route
+Frontend
+	•	React (Vite)
+	•	Tailwind CSS
+	•	Context API
+	•	Socket.IO Client
 
----
+  ⸻
 
-### 3️⃣ Administrator
-- Approve or reject user registrations
-- Verify mill owner business documents
-- Monitor system users
-- Maintain system integrity
+Backend
+	•	Node.js
+	•	Express.js
+	•	MongoDB (Mongoose)
+	•	Socket.IO
+	•	Multer (file uploads)
+	•	Node-cron (automation)
 
----
+⸻
 
-## 🏗️ System Architecture
+🔄 System Architecture
+	•	REST API driven backend
+	•	Real-time communication via WebSockets
+	•	MongoDB for persistent storage
+	•	Modular MVC structure
+	•	Global configuration via System Settings
 
-The system follows a layered web architecture:
+⸻
 
-- **User Layer** – Farmer, Mill Owner, Admin
-- **Presentation Layer** – Web Application Interface
-- **Application Layer** – Backend Services
-  - Authentication & Authorization
-  - User Verification
-  - Listing Management
-  - Negotiation Management
-  - Transaction Management
-  - Transport Coordination
-  - Notification Services
-- **Data Layer** – MongoDB Database
+📁 Project Structure
+backend/
+ ├── models/
+ ├── controllers/
+ ├── routes/
+ ├── middleware/
+ ├── config/
+ └── server.js
 
-External integrations:
-- Maps / Location API (for transport tracking)
-- Email & SMS notification services
+frontend/
+ ├── src/
+ │   ├── pages/
+ │   ├── layouts/
+ │   ├── components/
+ │   ├── contexts/
+ │   └── api/
 
----
+⸻
 
-## 🗄️ Database Design (MongoDB)
+⚡ Installation & Setup
 
-The system uses MongoDB (NoSQL) for flexible and scalable data management.
+1. Clone the repository
 
-### Main Collections:
-- `users`
-- `listings`
-- `negotiations`
-- `transactions`
-- `transports`
-- `notifications`
+git clone https://github.com/your-username/agrobridge.git
+cd agrobridge
 
-Embedded documents are used for negotiation messages, while references are used for transactions and transport aggregation.
+⸻
 
----
+2. Backend Setup
+cd backend
+npm install
+npm run dev
 
-## 🚛 Transport Coordination Feature
+⸻
 
-The system supports:
-- Optional transport requests
-- Vehicle assignment by mill owners
-- Batch pickup for multiple farmers located in nearby areas
-- Transaction-linked transport records
+3. Frontend Setup
+cd frontend
+npm install
+npm run dev
 
----
+⸻
 
-## 🛠️ Technologies Used
+4. Environment Variables
 
-- Backend: Node.js (Planned)
-- Database: MongoDB
-- UI/UX Design: Figma
-- Version Control: Git & GitHub
-- API Architecture: RESTful Services
+Create .env file in backend:
+PORT=5000
+MONGO_URI=your_mongodb_connection
+JWT_SECRET=your_secret_key
 
----
+⸻
 
-## 📂 Project Status
+🔐 Security Features
+	•	JWT Authentication
+	•	Role-based access (Admin / Farmer / Mill Owner)
+	•	Protected API routes
+	•	Maintenance mode middleware
+	•	File upload handling with Multer
 
-✔ Project Initiation Document (PID) Completed  
-✔ System Design Completed  
-✔ Architecture Finalized  
-🔄 Database Implementation In Progress  
-🔄 UI Design In Progress  
+⸻
 
----
+🚀 Real-Time Features
+	•	Live notifications
+	•	Instant dispute updates
+	•	Admin broadcast system
+	•	Socket-based user communication
 
-## 📚 Academic Context
+⸻
 
-This project is developed as a final year academic requirement.  
-The system focuses on demonstrating functional feasibility rather than full commercial deployment.
+📌 Future Improvements
+	•	Payment gateway integration
+	•	Advanced analytics dashboard
+	•	Mobile app version
+	•	AI-based price prediction
+	•	Notification preferences
 
----
+⸻
 
-## 👨‍🎓 Author
+👨‍💻 Author
 
-Eranda Buddhika  
-Final Year Undergraduate Project  
-Smart Paddy Stock & Supply Management System
+Eranda Buddhika
+
+⸻
+
+📜 License
+
+This project is developed for academic and demonstration purposes.
