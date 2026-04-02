@@ -239,7 +239,26 @@ const getAllNegotiations = async (req, res) => {
       );
     }
 
-    res.status(200).json({ count: negotiations.length, negotiations });
+    // Derive the latest offer price and quantity from messages and attach as
+    // top-level fields so the admin table can display them directly.
+    const enriched = negotiations.map(neg => {
+      const obj = neg.toObject();
+
+      // Walk messages in reverse to find the most recent OFFER or COUNTER message
+      const offerMessages = (obj.messages || [])
+        .filter(m => m.type === "OFFER" || m.type === "COUNTER")
+        .reverse();
+
+      const latestOffer = offerMessages.find(m => m.offeredPrice);
+      const latestQty   = offerMessages.find(m => m.quantityKg);
+
+      obj.offeredPrice = latestOffer?.offeredPrice ?? null;
+      obj.quantity     = latestQty?.quantityKg ?? null;
+
+      return obj;
+    });
+
+    res.status(200).json({ count: enriched.length, negotiations: enriched });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
