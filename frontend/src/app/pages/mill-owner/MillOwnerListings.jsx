@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 export default function MillOwnerListings() {
 
@@ -53,6 +56,12 @@ export default function MillOwnerListings() {
 
   useEffect(() => {
     fetchListings();
+
+    socket.on("dashboard_update", fetchListings);
+
+    return () => {
+      socket.off("dashboard_update", fetchListings);
+    };
   }, []);
 
   const handleCreateListing = async (e) => {

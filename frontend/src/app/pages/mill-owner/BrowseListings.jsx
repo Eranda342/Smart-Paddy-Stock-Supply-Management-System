@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, User, Package, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 export default function BrowseListings() {
 
@@ -42,6 +45,12 @@ export default function BrowseListings() {
 
   useEffect(() => {
     fetchListings();
+
+    socket.on("dashboard_update", fetchListings);
+
+    return () => {
+      socket.off("dashboard_update", fetchListings);
+    };
   }, []);
 
   const handleNegotiate = async (listing) => {

@@ -1,6 +1,9 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 export default function FarmerListings() {
 
@@ -65,6 +68,12 @@ export default function FarmerListings() {
 
   useEffect(() => {
     fetchListings();
+
+    socket.on("dashboard_update", fetchListings);
+
+    return () => {
+      socket.off("dashboard_update", fetchListings);
+    };
   }, []);
 
   const openCreateModal = () => {

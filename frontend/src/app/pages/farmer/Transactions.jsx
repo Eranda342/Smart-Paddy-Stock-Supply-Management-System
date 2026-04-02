@@ -1,5 +1,8 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 export default function FarmerTransactions() {
 
@@ -42,6 +45,12 @@ export default function FarmerTransactions() {
 
   useEffect(() => {
     fetchTransactions();
+
+    socket.on("dashboard_update", fetchTransactions);
+
+    return () => {
+      socket.off("dashboard_update", fetchTransactions);
+    };
   }, []);
 
   // ================= UI HELPERS =================

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle2, Truck, CreditCard, Package, ArrowLeft, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 export default function TransactionDetails() {
   const { id } = useParams();
@@ -51,6 +54,16 @@ export default function TransactionDetails() {
 
   useEffect(() => {
     if (id) fetchTransaction();
+
+    const handleUpdate = () => {
+      if (id) fetchTransaction();
+    };
+
+    socket.on("dashboard_update", handleUpdate);
+
+    return () => {
+      socket.off("dashboard_update", handleUpdate);
+    };
   }, [id]);
 
   // Fetch mill owner's vehicles for the dropdown

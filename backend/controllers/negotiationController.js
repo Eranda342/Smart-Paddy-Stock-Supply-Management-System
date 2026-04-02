@@ -200,6 +200,11 @@ const addMessage = async (req, res) => {
     if (global.io) {
       global.io.emit("dashboard_update");
     }
+    
+    await negotiation.populate("farmer", "fullName");
+    await negotiation.populate("millOwner", "fullName businessDetails");
+    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("listing");
 
     res.status(200).json({
       message: "Message sent",
@@ -327,8 +332,19 @@ const updateNegotiationStatus = async (req, res) => {
     if (global.io) {
       global.io.emit("dashboard_update");
     }
-    await negotiation.populate("farmer millOwner listing");
+
+    await negotiation.populate("farmer", "fullName");
+    await negotiation.populate("millOwner", "fullName businessDetails");
+    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("listing");
     
+    if (global.io) {
+      global.io.to(negotiation._id.toString()).emit("receiveStatusUpdate", {
+        negotiationId: negotiation._id.toString(),
+        status: negotiation.status,
+        systemMessage: negotiation.messages[negotiation.messages.length - 1]
+      });
+    }
 
     res.status(200).json({
       message: "Negotiation status updated",
@@ -369,6 +385,11 @@ const deleteMessage = async (req, res) => {
       global.io.emit("dashboard_update");
     }
 
+    await negotiation.populate("farmer", "fullName");
+    await negotiation.populate("millOwner", "fullName businessDetails");
+    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("listing");
+
     res.status(200).json({ message: "Message deleted successfully", negotiation });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -401,6 +422,11 @@ const markMessagesRead = async (req, res) => {
       global.io.emit("dashboard_update");
     }
     }
+
+    await negotiation.populate("farmer", "fullName");
+    await negotiation.populate("millOwner", "fullName businessDetails");
+    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("listing");
 
     res.status(200).json({ message: "Messages marked as read", negotiation });
   } catch (error) {
@@ -447,6 +473,11 @@ const editMessage = async (req, res) => {
     if (global.io) {
       global.io.emit("dashboard_update");
     }
+
+    await negotiation.populate("farmer", "fullName");
+    await negotiation.populate("millOwner", "fullName businessDetails");
+    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("listing");
 
     res.status(200).json({ message: "Message edited successfully", negotiation });
   } catch (error) {

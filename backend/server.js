@@ -117,7 +117,7 @@ io.on("connection", (socket) => {
   socket.on("sendMessage", ({ negotiationId, message }) => {
     io.to(negotiationId).emit("receiveMessage", {
       negotiationId,
-      ...message
+      message
     });
   });
 

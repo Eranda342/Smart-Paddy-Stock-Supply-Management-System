@@ -27,9 +27,12 @@ export default function MillOwnerNegotiations() {
 
   // Register socket + online presence
   useEffect(() => {
-    if (decodedUser) {
-      socket.emit("registerUser", decodedUser.id);
-    }
+    const handleConnect = () => {
+      if (decodedUser) socket.emit("registerUser", decodedUser.id);
+    };
+
+    if (socket.connected) handleConnect();
+    socket.on("connect", handleConnect);
 
     const handleUserOnline = (userId) =>
       setOnlineUsersMap((prev) => ({ ...prev, [userId]: true }));
@@ -38,12 +41,24 @@ export default function MillOwnerNegotiations() {
 
     socket.on("userOnline", handleUserOnline);
     socket.on("userOffline", handleUserOffline);
+    socket.on("dashboard_update", fetchNegotiations);
 
     return () => {
+      socket.off("connect", handleConnect);
       socket.off("userOnline", handleUserOnline);
       socket.off("userOffline", handleUserOffline);
+      socket.off("dashboard_update", fetchNegotiations);
     };
   }, []);
+
+  useEffect(() => {
+    if (selected && decodedUser) {
+      const p1 = selected.millOwner?._id || selected.millOwner;
+      const p2 = selected.farmer?._id || selected.farmer;
+      const targetId = String(p1) === String(decodedUser.id) ? String(p2) : String(p1);
+      if (targetId) socket.emit("checkOnlineStatus", targetId);
+    }
+  }, [selected?._id]);
 
   // Mark messages as read
   const markAsRead = async (negotiationId) => {
@@ -85,7 +100,7 @@ export default function MillOwnerNegotiations() {
 
   // Fetch all negotiations for this mill owner
   const fetchNegotiations = async () => {
-    setLoading(true);
+    if (!id && negotiations.length === 0) setLoading(true);
     try {
       const res = await fetch("http://localhost:5000/api/negotiations", {
         headers: { Authorization: `Bearer ${token}` },
@@ -193,16 +208,43 @@ export default function MillOwnerNegotiations() {
       }
     };
 
+    const handleStatusUpdate = ({ negotiationId, status, systemMessage }) => {
+      setNegotiations(prev => prev.map(n => n._id === negotiationId ? { ...n, status } : n));
+      if (selected && selected._id === negotiationId) {
+        setSelected(prev => {
+          const exists = prev.messages.some(m => m._id === systemMessage._id);
+          if (exists) return { ...prev, status };
+          return {
+            ...prev,
+            status,
+            messages: [...prev.messages, systemMessage]
+          };
+        });
+        scrollBottom();
+
+        const senderId = systemMessage.sender?._id || systemMessage.sender;
+        if (senderId && String(senderId) !== String(decodedUser?.id)) {
+          if (status === "ACCEPTED") {
+            toast.success("✅ Deal confirmed by the other party!");
+          } else if (status === "REJECTED") {
+            toast.error("❌ Offer was rejected.");
+          }
+        }
+      }
+    };
+
     socket.on("receiveMessage", receiveHandler);
     socket.on("messagesRead", handleMessagesRead);
     socket.on("messageDeleted", handleMessageDeleted);
     socket.on("messageEdited", handleMessageEdited);
+    socket.on("receiveStatusUpdate", handleStatusUpdate);
 
     return () => {
       socket.off("receiveMessage", receiveHandler);
       socket.off("messagesRead", handleMessagesRead);
       socket.off("messageDeleted", handleMessageDeleted);
       socket.off("messageEdited", handleMessageEdited);
+      socket.off("receiveStatusUpdate", handleStatusUpdate);
     };
   }, [selected]);
 

@@ -26,22 +26,37 @@ const scrollBottom=()=>{
 setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),100);
 };
 
-useEffect(() => {
-  if (decodedUser) {
-    socket.emit("registerUser", decodedUser.id);
-  }
+  useEffect(() => {
+    const handleConnect = () => {
+      if (decodedUser) socket.emit("registerUser", decodedUser.id);
+    };
 
-  const handleUserOnline = (userId) => setOnlineUsersMap(prev => ({...prev, [userId]: true}));
-  const handleUserOffline = (userId) => setOnlineUsersMap(prev => ({...prev, [userId]: false}));
+    if (socket.connected) handleConnect();
+    socket.on("connect", handleConnect);
 
-  socket.on("userOnline", handleUserOnline);
-  socket.on("userOffline", handleUserOffline);
+    const handleUserOnline = (userId) => setOnlineUsersMap(prev => ({...prev, [userId]: true}));
+    const handleUserOffline = (userId) => setOnlineUsersMap(prev => ({...prev, [userId]: false}));
 
-  return () => {
-    socket.off("userOnline", handleUserOnline);
-    socket.off("userOffline", handleUserOffline);
-  };
-}, []);
+    socket.on("userOnline", handleUserOnline);
+    socket.on("userOffline", handleUserOffline);
+    socket.on("dashboard_update", fetchNegotiations);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("userOnline", handleUserOnline);
+      socket.off("userOffline", handleUserOffline);
+      socket.off("dashboard_update", fetchNegotiations);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selected && decodedUser) {
+      const p1 = selected.millOwner?._id || selected.millOwner;
+      const p2 = selected.farmer?._id || selected.farmer;
+      const targetId = String(p1) === String(decodedUser.id) ? String(p2) : String(p1);
+      if (targetId) socket.emit("checkOnlineStatus", targetId);
+    }
+  }, [selected?._id]);
 
 const markAsRead = async (negotiationId) => {
   try {
@@ -210,16 +225,43 @@ if (senderId && String(senderId) !== String(decodedUser?.id)) {
     }
   };
 
+  const handleStatusUpdate = ({ negotiationId, status, systemMessage }) => {
+    setNegotiations(prev => prev.map(n => n._id === negotiationId ? { ...n, status } : n));
+    if (selected && selected._id === negotiationId) {
+      setSelected(prev => {
+        const exists = prev.messages.some(m => m._id === systemMessage._id);
+        if (exists) return { ...prev, status };
+        return {
+          ...prev,
+          status,
+          messages: [...prev.messages, systemMessage]
+        };
+      });
+      scrollBottom();
+
+      const senderId = systemMessage.sender?._id || systemMessage.sender;
+      if (senderId && String(senderId) !== String(decodedUser?.id)) {
+        if (status === "ACCEPTED") {
+          toast.success("✅ Deal confirmed by the other party!");
+        } else if (status === "REJECTED") {
+          toast.error("❌ Offer was rejected.");
+        }
+      }
+    }
+  };
+
   socket.on("receiveMessage",receiveHandler);
   socket.on("messagesRead", handleMessagesRead);
   socket.on("messageDeleted", handleMessageDeleted);
   socket.on("messageEdited", handleMessageEdited);
+  socket.on("receiveStatusUpdate", handleStatusUpdate);
 
   return()=>{
     socket.off("receiveMessage",receiveHandler);
     socket.off("messagesRead", handleMessagesRead);
     socket.off("messageDeleted", handleMessageDeleted);
     socket.off("messageEdited", handleMessageEdited);
+    socket.off("receiveStatusUpdate", handleStatusUpdate);
   };
 
 },[selected]);

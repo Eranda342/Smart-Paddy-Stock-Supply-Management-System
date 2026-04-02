@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Trash2, CheckCircle, XCircle, Package, RefreshCw, Eye, Ban, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -52,7 +55,11 @@ export default function AdminListings() {
     }
   }, [search, districtFilter, statusFilter]);
 
-  useEffect(() => { fetchListings(); }, [fetchListings]);
+  useEffect(() => { 
+    fetchListings(); 
+    socket.on("dashboard_update", fetchListings);
+    return () => socket.off("dashboard_update", fetchListings);
+  }, [fetchListings]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this listing? This cannot be undone.')) return;
