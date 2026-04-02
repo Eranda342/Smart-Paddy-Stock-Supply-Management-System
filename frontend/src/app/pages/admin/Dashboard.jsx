@@ -270,6 +270,7 @@ export default function AdminDashboard() {
 
   // Initial fetch + Socket connection
   useEffect(() => {
+    document.title = "Admin Dashboard | AgroBridge";
     fetchStats();
     
     const socket = io("http://localhost:5000");

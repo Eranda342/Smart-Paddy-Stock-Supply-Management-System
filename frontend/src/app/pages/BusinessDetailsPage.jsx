@@ -1,6 +1,7 @@
-﻿import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Sprout, Upload, AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 const SRI_LANKAN_DISTRICTS = [
   "Ampara","Anuradhapura","Badulla","Batticaloa","Colombo","Galle","Gampaha",
@@ -88,7 +89,9 @@ export default function BusinessDetailsPage() {
     const accountInfo = JSON.parse(localStorage.getItem("accountInfo"));
 
     if (!accountInfo) {
-      alert("Missing account information");
+      toast.error("Missing account information", {
+        style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+      });
       navigate("/register/account");
       return;
     }
@@ -145,14 +148,18 @@ export default function BusinessDetailsPage() {
 
       } else {
 
-        alert(data.message || "Registration failed");
+        toast.error(data.message || "Registration failed", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+        });
 
       }
 
     } catch (error) {
 
       console.error(error);
-      alert("Server error");
+      toast.error("Server error", {
+        style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+      });
 
     }
 

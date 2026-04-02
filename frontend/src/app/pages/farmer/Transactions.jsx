@@ -44,6 +44,7 @@ export default function FarmerTransactions() {
   };
 
   useEffect(() => {
+    document.title = "Transactions | AgroBridge";
     fetchTransactions();
 
     socket.on("dashboard_update", fetchTransactions);

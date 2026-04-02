@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { HelpCircle, CheckCircle, Clock, MessageSquare, Plus, X, List, Info, ArrowUpRight, UploadCloud, Paperclip } from 'lucide-react';
+import { HelpCircle, CheckCircle, Clock, MessageSquare, Plus, X, List, Info, ArrowUpRight, UploadCloud, Paperclip, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 
@@ -31,6 +31,7 @@ export default function Complaints() {
   const [selectedDispute, setSelectedDispute] = useState(null);
   const [chats, setChats] = useState([]);
   const [chatInput, setChatInput] = useState('');
+  const [chatSending, setChatSending] = useState(false);
   
   // Create Modal state
   const [showCreateWrapper, setShowCreateWrapper] = useState(false);
@@ -44,14 +45,21 @@ export default function Complaints() {
   const chatEndRef = useRef();
   const fileInputRef = useRef();
 
+  // Use a ref so socket handlers always call the latest fetchDisputes (no stale closure)
+  const fetchDisputesRef = useRef(null);
+
   useEffect(() => {
-    socketRef.current = io(SOCKET_URL);
-    socketRef.current.on('disputeUpdated', () => { fetchDisputes(); });
-    socketRef.current.on('newMessage', (msg) => {
+    const sock = io(SOCKET_URL);
+    socketRef.current = sock;
+    sock.on('disputeUpdated', () => fetchDisputesRef.current?.());
+    sock.on('dashboard_update', () => fetchDisputesRef.current?.());
+    sock.on('newMessage', (msg) => {
       setChats(prev => [...prev, msg]);
-      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     });
-    return () => socketRef.current.disconnect();
+    // 15-second polling fallback
+    const poll = setInterval(() => fetchDisputesRef.current?.(), 15000);
+    return () => { sock.disconnect(); clearInterval(poll); };
   }, []);
 
   const fetchDisputes = useCallback(async () => {
@@ -66,6 +74,9 @@ export default function Complaints() {
       setLoading(false);
     }
   }, []);
+
+  // Keep ref current so socket handlers always use latest version
+  useEffect(() => { fetchDisputesRef.current = fetchDisputes; }, [fetchDisputes]);
 
   const fetchTransactions = async () => {
     if (transactions.length > 0) return;
@@ -106,17 +117,41 @@ export default function Complaints() {
   }, [selectedDispute, disputes]);
 
   const handleSendMessage = async () => {
-    if (!chatInput.trim()) return;
+    const trimmed = chatInput.trim();
+    if (!trimmed || chatSending) return;
+
+    // Optimistic UI
+    const optimisticMsg = {
+      _id: `temp-${Date.now()}`,
+      message: trimmed,
+      senderRole: 'FARMER',
+      senderId: currentUser._id,
+      createdAt: new Date().toISOString(),
+    };
+    setChats(prev => [...prev, optimisticMsg]);
+    setChatInput('');
+    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+
     try {
+      setChatSending(true);
       const token = localStorage.getItem('token');
-      await fetch(`${API_BASE}/chat/${selectedDispute._id}`, {
+      const res = await fetch(`${API_BASE}/chat/${selectedDispute._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ message: chatInput })
+        body: JSON.stringify({ message: trimmed })
       });
-      setChatInput('');
+      if (!res.ok) {
+        const err = await res.json();
+        setChats(prev => prev.filter(m => m._id !== optimisticMsg._id));
+        toast.error(err.message || 'Failed to send message');
+      }
+      // Socket will deliver the real message — remove optimistic placeholder
+      setChats(prev => prev.filter(m => m._id !== optimisticMsg._id));
     } catch {
+      setChats(prev => prev.filter(m => m._id !== optimisticMsg._id));
       toast.error('Failed to send message');
+    } finally {
+      setChatSending(false);
     }
   };
 
@@ -420,14 +455,24 @@ export default function Complaints() {
                   </div>
 
                   {selectedDispute.status !== 'CLOSED' ? (
-                     <div className="p-3 border-t border-border bg-card">
+                     <div className="p-3 border-t border-border bg-card flex gap-2">
                        <input 
                           value={chatInput} 
                           onChange={e => setChatInput(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }}}
                           placeholder="Reply to administration..."
-                          className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:border-primary/50"
+                          className="flex-1 px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:border-primary/50"
+                          disabled={chatSending}
                        />
+                       <button
+                         onClick={handleSendMessage}
+                         disabled={chatSending || !chatInput.trim()}
+                         className="px-4 py-3 bg-primary hover:bg-primary/90 text-background rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                       >
+                         {chatSending
+                           ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                           : <Send className="w-4 h-4" />}
+                       </button>
                      </div>
                   ) : (
                      <div className="p-4 border-t border-border bg-muted/30 text-center text-sm text-muted-foreground font-medium">

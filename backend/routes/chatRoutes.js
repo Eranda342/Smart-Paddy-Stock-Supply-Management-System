@@ -27,7 +27,7 @@ router.post("/:disputeId", verifyToken, async (req, res) => {
 
     const newChat = new DisputeChat({
       disputeId: req.params.disputeId,
-      senderId: req.user._id,
+      senderId: req.user.id || req.user._id,
       senderRole: req.user.role,
       message,
     });

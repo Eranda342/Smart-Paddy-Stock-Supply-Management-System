@@ -88,13 +88,14 @@ router.get(
 /*
 ============================================
 UPDATE LISTING
-Only owner farmer can update SELL listings
+Farmers can update SELL listings
+Mill Owners can update BUY listings
 ============================================
 */
 router.put(
   "/:id",
   protect, checkApproved,
-  authorizeRoles("FARMER"),
+  authorizeRoles("FARMER", "MILL_OWNER"),
   updateListing
 );
 
@@ -102,13 +103,14 @@ router.put(
 /*
 ============================================
 DELETE LISTING
-Only owner farmer can delete
+Farmers can delete SELL listings
+Mill Owners can delete BUY listings
 ============================================
 */
 router.delete(
   "/:id",
   protect, checkApproved,
-  authorizeRoles("FARMER"),
+  authorizeRoles("FARMER", "MILL_OWNER"),
   deleteListing
 );
 

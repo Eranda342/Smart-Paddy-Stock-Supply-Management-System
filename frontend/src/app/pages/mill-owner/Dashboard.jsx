@@ -4,7 +4,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from "socket.io-client";
-import { useTheme } from "next-themes";
+import { useTheme } from "../../contexts/ThemeContext";
 import CountUp from "react-countup";
 import autoTable from "jspdf-autotable";
 import { jsPDF } from "jspdf";
@@ -16,10 +16,11 @@ export default function MillOwnerDashboard() {
   const [range, setRange] = useState("all");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [step, setStep] = useState(0);
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
+    document.title = "Dashboard | AgroBridge";
     const socket = io("http://localhost:5000");
 
     socket.on("dashboard_update", () => {
@@ -339,7 +340,7 @@ export default function MillOwnerDashboard() {
           <p className="text-muted-foreground">Overview of your procurement activities</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="px-4 py-2 text-sm font-medium rounded-xl border border-border bg-card/60 backdrop-blur-md text-foreground hover:bg-accent hover:scale-[1.02] shadow-sm transition-all flex items-center gap-2">
+          <button onClick={toggleTheme} className="px-4 py-2 text-sm font-medium rounded-xl border border-border bg-card/60 backdrop-blur-md text-foreground hover:bg-accent hover:scale-[1.02] shadow-sm transition-all flex items-center gap-2">
             {theme === "dark" ? "Light Mode ☀️" : "Dark Mode 🌙"}
           </button>
           <div className="flex bg-muted/50 p-1 rounded-xl border border-border/50">

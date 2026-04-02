@@ -34,29 +34,14 @@ export default function AdminDisputes() {
   const [actionLoading, setActionLoading] = useState(false);
   const [chats, setChats] = useState([]);
   const [chatInput, setChatInput] = useState('');
+  const [chatSending, setChatSending] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [lastOpenedDisputeId, setLastOpenedDisputeId] = useState(null);
 
   const socketRef = useRef();
   const chatEndRef = useRef();
-
-  // Socket logic
-  useEffect(() => {
-    socketRef.current = io(SOCKET_URL);
-    
-    socketRef.current.on('connect', () => setSocketConnected(true));
-    socketRef.current.on('disconnect', () => setSocketConnected(false));
-    
-    socketRef.current.on('disputeUpdated', (updatedDispute) => {
-       fetchDisputes(); // Sync the master feed live. If we have it selected, it auto-refreshes down below
-    });
-
-    socketRef.current.on('newMessage', (msg) => {
-       setChats(prev => [...prev, msg]);
-       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    });
-
-    return () => socketRef.current.disconnect();
-  }, []);
+  // Ref so socket callbacks always call the LATEST fetchDisputes (avoids stale closure)
+  const fetchDisputesRef = useRef(null);
 
   const fetchDisputes = useCallback(async () => {
     try {
@@ -71,32 +56,79 @@ export default function AdminDisputes() {
     }
   }, []);
 
-  const fetchChats = async (did) => {
+  // Keep ref updated so socket handlers always use latest version
+  useEffect(() => { fetchDisputesRef.current = fetchDisputes; }, [fetchDisputes]);
+
+  // ── Socket setup (AFTER fetchDisputes is defined) ──
+  useEffect(() => {
+    const sock = io(SOCKET_URL);
+    socketRef.current = sock;
+
+    sock.on('connect', () => setSocketConnected(true));
+    sock.on('disconnect', () => setSocketConnected(false));
+    if (sock.connected) setSocketConnected(true);
+
+    // Use ref so these always call the latest fetchDisputes — no stale closure
+    sock.on('disputeUpdated', () => fetchDisputesRef.current?.());
+    sock.on('dashboard_update', () => fetchDisputesRef.current?.());
+
+    sock.on('newMessage', (msg) => {
+      setChats(prev => [...prev, msg]);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    });
+
+    // 15-second polling fallback in case socket events are missed
+    const poll = setInterval(() => fetchDisputesRef.current?.(), 15000);
+
+    return () => {
+      sock.disconnect();
+      clearInterval(poll);
+    };
+  }, []);
+
+  const fetchChats = useCallback(async (did) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/chat/${did}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setChats(data);
-      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    } catch (err) {
+      setChats(Array.isArray(data) ? data : []);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } catch {
       toast.error('Failed to load chat history');
     }
-  };
+  }, []);
 
   useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
 
+  // Effect 1: When a dispute is OPENED — join its socket room and load chat
   useEffect(() => {
-    if (selectedDispute) {
-       socketRef.current.emit('joinDispute', selectedDispute._id);
-       fetchChats(selectedDispute._id);
-       
-       // Update modal data live if DB changes asynchronously
-       const fresh = disputes.find(d => d._id === selectedDispute._id);
-       if (fresh && !actionLoading && fresh.updatedAt !== selectedDispute.updatedAt) {
-          setSelectedDispute(fresh);
-       }
+    if (!selectedDispute) return;
+    setChats([]);
+    if (socketRef.current) socketRef.current.emit('joinDispute', selectedDispute._id);
+    fetchChats(selectedDispute._id);
+  }, [selectedDispute?._id, fetchChats]);
+
+  // Effect 2: Live-sync open modal metadata when the disputes list refreshes
+  useEffect(() => {
+    if (!selectedDispute || actionLoading) return;
+    const fresh = disputes.find(d => d._id === selectedDispute._id);
+    if (fresh && fresh.updatedAt !== selectedDispute.updatedAt) {
+      setSelectedDispute(fresh);
     }
-  }, [selectedDispute, disputes, actionLoading]);
+  }, [disputes]);
+
+  // ── Open / close helpers ──
+  const openDispute = (d) => {
+    setSelectedDispute(d);
+    setChats([]);
+    setNoteInput('');
+    setChatInput('');
+  };
+
+  const closeDispute = () => {
+    setSelectedDispute(null);
+    setChats([]);
+  };
 
   const handleUpdateStatus = async (newStatus) => {
     if (!selectedDispute) return;
@@ -138,17 +170,42 @@ export default function AdminDisputes() {
   };
 
   const handeSendMessage = async () => {
-    if (!chatInput.trim()) return;
+    const trimmed = chatInput.trim();
+    if (!trimmed || chatSending) return;
+
+    // Optimistic UI — show message immediately
+    const optimisticMsg = {
+      _id: `temp-${Date.now()}`,
+      message: trimmed,
+      senderRole: 'ADMIN',
+      createdAt: new Date().toISOString(),
+      _optimistic: true,
+    };
+    setChats(prev => [...prev, optimisticMsg]);
+    setChatInput('');
+    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+
     try {
+      setChatSending(true);
       const token = localStorage.getItem('token');
-      await fetch(`${API_BASE}/chat/${selectedDispute._id}`, {
+      const res = await fetch(`${API_BASE}/chat/${selectedDispute._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ message: chatInput })
+        body: JSON.stringify({ message: trimmed })
       });
-      setChatInput('');
+      if (!res.ok) {
+        const err = await res.json();
+        // Remove optimistic message on failure
+        setChats(prev => prev.filter(m => m._id !== optimisticMsg._id));
+        toast.error(err.message || 'Failed to send message');
+      }
+      // Real message will arrive via socket 'newMessage' event — remove optimistic duplicate
+      setChats(prev => prev.filter(m => m._id !== optimisticMsg._id));
     } catch {
+      setChats(prev => prev.filter(m => m._id !== optimisticMsg._id));
       toast.error('Failed to send message');
+    } finally {
+      setChatSending(false);
     }
   };
 
@@ -221,7 +278,7 @@ export default function AdminDisputes() {
                   <td className="px-5 py-4"><StatusBadge status={d.status} /></td>
                   <td className="px-5 py-4 text-muted-foreground">{new Date(d.createdAt).toLocaleDateString()}</td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => setSelectedDispute(d)} className="text-primary hover:text-primary/80 font-medium transition-colors">
+                    <button onClick={() => openDispute(d)} className="text-primary hover:text-primary/80 font-medium transition-colors">
                       Manage Case
                     </button>
                   </td>
@@ -246,7 +303,7 @@ export default function AdminDisputes() {
                    </span>
                 )}
               </div>
-              <button onClick={() => setSelectedDispute(null)} className="p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors">
+              <button onClick={closeDispute} className="p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors">
                   Close X
               </button>
             </div>
@@ -349,12 +406,19 @@ export default function AdminDisputes() {
                     <input 
                        value={chatInput} 
                        onChange={e => setChatInput(e.target.value)}
-                       onKeyDown={e => e.key === 'Enter' && handeSendMessage()}
+                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handeSendMessage(); }}}
                        placeholder="Type your message..."
                        className="flex-1 px-4 py-2.5 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:border-primary/50"
+                       disabled={chatSending}
                     />
-                    <button onClick={handeSendMessage} className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-background rounded-xl transition-colors">
-                      <Send className="w-4 h-4" />
+                    <button 
+                      onClick={handeSendMessage} 
+                      disabled={chatSending || !chatInput.trim()}
+                      className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-background rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {chatSending 
+                        ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        : <Send className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>

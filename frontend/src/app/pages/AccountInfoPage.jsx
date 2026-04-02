@@ -1,6 +1,7 @@
-﻿import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Sprout, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function AccountInfoPage() {
 
@@ -54,7 +55,9 @@ export default function AccountInfoPage() {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match", {
+        style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+      });
       return;
     }
 

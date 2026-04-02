@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sprout, Eye, EyeOff, ShieldCheck, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { API } from "../../api/api";
@@ -7,6 +7,10 @@ import { API } from "../../api/api";
 export default function LoginPage() {
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "Login | AgroBridge";
+  }, []);
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);

@@ -1,12 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, User, Package } from "lucide-react";
+import { MapPin, User, Package, RefreshCw } from "lucide-react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 export default function BrowseListings() {
 
   const navigate = useNavigate();
 
   const [listings, setListings] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [isLive, setIsLive] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [selectedDistrict, setSelectedDistrict] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
@@ -21,8 +27,9 @@ export default function BrowseListings() {
 
   const token = localStorage.getItem("token");
 
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async (showRefreshAnimation = false) => {
     try {
+      if (showRefreshAnimation) setIsRefreshing(true);
 
       const res = await fetch("http://localhost:5000/api/listings/buy-listings", {
         headers: {
@@ -34,16 +41,38 @@ export default function BrowseListings() {
 
       if (res.ok) {
         setListings(data.listings);
+        setLastUpdated(new Date());
       }
 
     } catch (error) {
       console.error(error);
+    } finally {
+      if (showRefreshAnimation) {
+        setTimeout(() => setIsRefreshing(false), 600);
+      }
     }
-  };
+  }, [token]);
 
   useEffect(() => {
+    document.title = "Browse Listings | AgroBridge";
     fetchListings();
-  }, []);
+
+    socket.on("connect", () => setIsLive(true));
+    socket.on("disconnect", () => setIsLive(false));
+    socket.on("dashboard_update", () => fetchListings());
+    socket.on("listing_created", () => fetchListings());
+    socket.on("listing_deleted", () => fetchListings());
+
+    if (socket.connected) setIsLive(true);
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("dashboard_update");
+      socket.off("listing_created");
+      socket.off("listing_deleted");
+    };
+  }, [fetchListings]);
 
   const districts = [
     "All",
@@ -130,11 +159,36 @@ export default function BrowseListings() {
   return (
     <div className="max-w-[1320px] mx-auto">
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2">Browse Listings</h1>
-        <p className="text-muted-foreground">
-          Find mill owners requesting paddy
-        </p>
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-semibold">Browse Listings</h1>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+              isLive
+                ? "bg-green-500/15 text-green-400 border border-green-500/25"
+                : "bg-gray-500/15 text-gray-400 border border-gray-500/25"
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-green-400 animate-pulse" : "bg-gray-400"}`} />
+              {isLive ? "Live" : "Offline"}
+            </div>
+          </div>
+          <p className="text-muted-foreground">
+            Find mill owners requesting paddy
+            {lastUpdated && (
+              <span className="ml-3 text-xs text-muted-foreground/60">
+                · Updated {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
+          </p>
+        </div>
+
+        <button
+          onClick={() => fetchListings(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-all"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
       </div>
 
       <div className="flex gap-6">

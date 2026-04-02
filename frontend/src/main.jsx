@@ -1,10 +1,11 @@
 import { createRoot } from "react-dom/client";
-import { ThemeProvider } from "next-themes";
+import { Toaster } from "react-hot-toast";
 import App from "./app/App.jsx";
 import "./styles/index.css";
 
 createRoot(document.getElementById("root")).render(
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+  <>
     <App />
-  </ThemeProvider>
+    <Toaster position="top-right" />
+  </>
 );

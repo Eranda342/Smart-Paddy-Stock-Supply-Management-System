@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { PADDY_TYPES, DISTRICTS } from "../../../constants/paddyTypes";
+import toast from "react-hot-toast";
 
 const socket = io("http://localhost:5000");
 
@@ -22,20 +24,6 @@ export default function FarmerListings() {
   const [description, setDescription] = useState("");
 
   const token = localStorage.getItem("token");
-
-  const paddyTypes = [
-    "Samba","Keeri Samba","Nadu","Red Rice","White Rice","Kakulu",
-    "Suwandel","Pachchaperumal","Madathawalu","Kuruluthuda",
-    "Bg 352","Bg 358","Bg 360","At 362"
-  ];
-
-  const districts = [
-    "Ampara","Anuradhapura","Badulla","Batticaloa","Colombo","Galle",
-    "Gampaha","Hambantota","Jaffna","Kalutara","Kandy","Kegalle",
-    "Kilinochchi","Kurunegala","Mannar","Matale","Matara","Monaragala",
-    "Mullaitivu","Nuwara Eliya","Polonnaruwa","Puttalam","Ratnapura",
-    "Trincomalee","Vavuniya"
-  ];
 
   const resetForm = () => {
     setPaddyType("Samba");
@@ -67,6 +55,7 @@ export default function FarmerListings() {
   };
 
   useEffect(() => {
+    document.title = "My Listings | AgroBridge";
     fetchListings();
 
     socket.on("dashboard_update", fetchListings);
@@ -75,6 +64,20 @@ export default function FarmerListings() {
       socket.off("dashboard_update", fetchListings);
     };
   }, []);
+
+  const closeModal = () => setShowModal(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+      }
+    };
+    if (showModal) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showModal]);
 
   const openCreateModal = () => {
     setEditListingId(null);
@@ -128,21 +131,35 @@ export default function FarmerListings() {
 
       if (res.ok) {
 
-        alert(editListingId ? "Listing updated successfully" : "Listing created successfully");
+        toast.success(editListingId ? "Listing updated successfully" : "Listing created successfully", {
+          style: {
+            borderRadius: "8px",
+            background: "#1f2937",
+            color: "#fff",
+          },
+        });
 
-        setShowModal(false);
+        closeModal();
         setEditListingId(null);
 
         resetForm();
         fetchListings();
 
       } else {
-        alert(data.message);
+        toast.error(data.message || "Failed to create listing", {
+          style: {
+            borderRadius: "8px",
+            background: "#1f2937",
+            color: "#fff",
+          },
+        });
       }
 
     } catch (error) {
       console.error(error);
-      alert("Server error");
+      toast.error("Server error", {
+        style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+      });
     }
   };
 
@@ -161,7 +178,9 @@ export default function FarmerListings() {
       });
 
       if (res.ok) {
-        alert("Listing deleted");
+        toast.success("Listing deleted", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+        });
         fetchListings();
       }
 
@@ -289,10 +308,34 @@ export default function FarmerListings() {
       </div>
 
       {showModal && (
-
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-
-          <div className="bg-gray-900 border border-gray-700 rounded-xl p-8 w-[650px]">
+        <>
+          <style>{`
+            @keyframes overlayFade {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes modalScale {
+              from { opacity: 0; transform: scale(0.95); }
+              to { opacity: 1; transform: scale(1); }
+            }
+          `}</style>
+          <div 
+            onClick={closeModal}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+            style={{ animation: 'overlayFade 0.2s ease-out forwards' }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gray-900 border border-gray-700 rounded-xl p-8 w-[650px] relative shadow-2xl"
+              style={{ animation: 'modalScale 0.2s ease-out forwards' }}
+            >
+              <button 
+                type="button"
+                onClick={closeModal}
+                className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all cursor-pointer z-50"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
             <h2 className="text-2xl font-semibold mb-6">
               {editListingId ? "Edit Listing" : "Create New Listing"}
@@ -303,47 +346,53 @@ export default function FarmerListings() {
               <div className="grid grid-cols-2 gap-6">
 
                 <div>
-                  <label className="block mb-2">Paddy Type</label>
+                  <label className="block mb-2 text-sm font-medium">Paddy Type</label>
                   <select
                     value={paddyType}
                     onChange={(e) => setPaddyType(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
                   >
-                    {paddyTypes.map((type) => (
-                      <option key={type}>{type}</option>
+                    {PADDY_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block mb-2">Quantity (kg)</label>
+                  <label className="block mb-2 text-sm font-medium">Quantity (kg)</label>
                   <input
                     type="number"
                     value={quantityKg}
                     onChange={(e) => setQuantityKg(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2">Price (Rs/kg)</label>
+                  <label className="block mb-2 text-sm font-medium">Price (Rs/kg)</label>
                   <input
                     type="number"
                     value={pricePerKg}
                     onChange={(e) => setPricePerKg(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2">District</label>
+                  <label className="block mb-2 text-sm font-medium">District</label>
                   <select
                     value={district}
                     onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
                   >
-                    {districts.map((d) => (
-                      <option key={d}>{d}</option>
+                    {DISTRICTS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -374,8 +423,8 @@ export default function FarmerListings() {
 
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-3 bg-gray-700 rounded-lg"
+                  onClick={closeModal}
+                  className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white transition-colors rounded-lg"
                 >
                   Cancel
                 </button>
@@ -391,10 +440,9 @@ export default function FarmerListings() {
 
             </form>
 
+            </div>
           </div>
-
-        </div>
-
+        </>
       )}
 
     </div>

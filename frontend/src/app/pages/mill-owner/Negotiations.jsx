@@ -25,8 +25,8 @@ export default function MillOwnerNegotiations() {
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
-  // Register socket + online presence
   useEffect(() => {
+    document.title = "Negotiations | AgroBridge";
     const handleConnect = () => {
       if (decodedUser) socket.emit("registerUser", decodedUser.id);
     };

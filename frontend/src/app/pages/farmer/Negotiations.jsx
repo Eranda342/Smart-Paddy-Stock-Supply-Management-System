@@ -27,6 +27,7 @@ setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),100);
 };
 
   useEffect(() => {
+    document.title = "Negotiations | AgroBridge";
     const handleConnect = () => {
       if (decodedUser) socket.emit("registerUser", decodedUser.id);
     };
@@ -422,7 +423,9 @@ body:JSON.stringify({status})
 const data=await res.json();
 
 if(!res.ok){
-  alert("Backend Error: " + data.message);
+  toast.error("Backend Error: " + data.message, {
+    style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+  });
   console.error("Failed to update negotiation status", data);
 }
 

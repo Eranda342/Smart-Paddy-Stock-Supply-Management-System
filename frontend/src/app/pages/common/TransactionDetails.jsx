@@ -97,12 +97,12 @@ export default function TransactionDetails() {
       const data = await res.json();
       
       if (!res.ok) {
-        alert("Error: " + (data.message || "Failed to update status"));
+        toast.error("Error: " + (data.message || "Failed to update status"));
       } else {
         fetchTransaction();
       }
     } catch (err) {
-      alert("Network error occurred.");
+      toast.error("Network error occurred.");
     } finally {
       setActionLoading(false);
     }
@@ -124,12 +124,12 @@ export default function TransactionDetails() {
       const data = await res.json();
       
       if (!res.ok) {
-        alert("Error: " + (data.message || "Failed to update transport decision"));
+        toast.error("Error: " + (data.message || "Failed to update transport decision"));
       } else {
         fetchTransaction();
       }
     } catch (err) {
-      alert("Network error occurred.");
+      toast.error("Network error occurred.");
     } finally {
       setActionLoading(false);
     }
@@ -151,16 +151,14 @@ export default function TransactionDetails() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error("Something went wrong ❌");
-        alert("Error: " + (data.message || "Pickup failed"));
+        toast.error("Error: " + (data.message || "Pickup failed"));
       } else {
         toast.success("Pickup confirmed 📦");
         setTransaction(data.transaction || data);
       }
     } catch (err) {
-      toast.error("Something went wrong ❌");
       console.error(err);
-      alert("Pickup failed");
+      toast.error("Pickup failed");
     } finally {
       setActionLoading(false);
     }
@@ -179,16 +177,14 @@ export default function TransactionDetails() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error("Something went wrong ❌");
-        alert("Error: " + (data.message || "Delivery update failed"));
+        toast.error("Error: " + (data.message || "Delivery update failed"));
       } else {
         toast.success("Delivery completed ✅");
         setTransaction(data.transaction || data);
       }
     } catch (err) {
-      toast.error("Something went wrong ❌");
       console.error(err);
-      alert("Delivery update failed");
+      toast.error("Delivery update failed");
     } finally {
       setActionLoading(false);
     }
@@ -210,16 +206,14 @@ export default function TransactionDetails() {
       const data = await res.json();
       
       if (!res.ok) {
-        toast.error("Something went wrong ❌");
-        alert("Error: " + (data.message || "Failed to assign transport"));
+        toast.error("Error: " + (data.message || "Failed to assign transport"));
       } else {
         toast.success("Vehicle assigned 🚛");
         setSelectedVehicle("");
         setTransaction(data.transaction || data);
       }
     } catch (err) {
-      toast.error("Something went wrong ❌");
-      alert("Network error occurred.");
+      toast.error("Network error occurred.");
     } finally {
       setActionLoading(false);
     }
