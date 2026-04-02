@@ -97,7 +97,7 @@ const getFarmerDashboard = async (req, res) => {
     
     const locations = {};
     transactions.forEach(t => {
-      const loc = t.listing?.location || "Sri Lanka";
+      const loc = t.listing?.location?.district || t.listing?.location || "Sri Lanka";
       locations[loc] = (locations[loc] || 0) + (t.totalAmount || 0);
     });
 
@@ -211,7 +211,7 @@ const getMillOwnerDashboard = async (req, res) => {
       .slice(0, 5);
 
     const distribution = {};
-    transactions.forEach(t => {
+    completedTransactions.forEach(t => {
       const type = t.listing?.paddyType || "Other";
       distribution[type] = (distribution[type] || 0) + (t.quantityKg || 0);
     });
@@ -221,7 +221,7 @@ const getMillOwnerDashboard = async (req, res) => {
     
     const locations = {};
     transactions.forEach(t => {
-      const loc = t.listing?.location || "Sri Lanka";
+      const loc = t.listing?.location?.district || t.listing?.location || "Sri Lanka";
       locations[loc] = (locations[loc] || 0) + 1;
     });
 

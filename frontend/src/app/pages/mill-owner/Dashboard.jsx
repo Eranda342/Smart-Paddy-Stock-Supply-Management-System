@@ -5,9 +5,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from "socket.io-client";
 import { useTheme } from "next-themes";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import CountUp from "react-countup";
+import autoTable from "jspdf-autotable";
+import { jsPDF } from "jspdf";
 
 export default function MillOwnerDashboard() {
   const [data, setData] = useState(null);
@@ -61,16 +61,211 @@ export default function MillOwnerDashboard() {
     fetchDashboard();
   }, [range, refreshTrigger]);
 
-  const exportPDF = async () => {
-    const element = document.getElementById("dashboard-content");
-    const canvas = await html2canvas(element, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("mill-owner-report.pdf");
+  const exportPDF = () => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+    const GREEN  = [34, 197, 94];
+    const DARK   = [15, 23, 42];
+    const GRAY   = [100, 116, 139];
+    const LIGHT  = [248, 250, 252];
+    const now    = new Date();
+
+    const fmt = (n) => new Intl.NumberFormat("en-LK").format(n || 0);
+    const fmtCur = (n) => `Rs. ${fmt(n)}`;
+
+    // ── Header Banner ──────────────────────────────────────────
+    doc.setFillColor(...DARK);
+    doc.rect(0, 0, W, 38, "F");
+    doc.setFillColor(...GREEN);
+    doc.rect(0, 35, W, 3, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(255, 255, 255);
+    doc.text("AgroBridge", 14, 16);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(150, 220, 150);
+    doc.text("Mill Owner Procurement Report", 14, 24);
+
+    doc.setFontSize(8);
+    doc.setTextColor(100, 180, 100);
+    doc.text(`Generated: ${now.toLocaleDateString("en-LK", { weekday:"long", year:"numeric", month:"long", day:"numeric" })}  ·  ${now.toLocaleTimeString("en-LK")}`, 14, 31);
+
+    // Range badge
+    const rangeLabel = range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time";
+    doc.setFillColor(...GREEN);
+    doc.roundedRect(W - 46, 10, 32, 10, 3, 3, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text(rangeLabel, W - 30, 16.5, { align: "center" });
+
+    let y = 48;
+
+    // ── Section: Executive Summary ─────────────────────────────
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(...DARK);
+    doc.text("Executive Summary", 14, y);
+    y += 2;
+    doc.setDrawColor(...GREEN);
+    doc.setLineWidth(0.5);
+    doc.line(14, y, W - 14, y);
+    y += 6;
+
+    const kpis = [
+      { label: "Active Purchases",       value: fmt(data?.stats?.activePurchases) },
+      { label: "Ongoing Negotiations",   value: fmt(data?.stats?.ongoingNegotiations) },
+      { label: "Monthly Procurement",    value: `${fmt(data?.stats?.monthlyProcurementKg)} kg` },
+      { label: "Total Spend",            value: fmtCur(data?.stats?.totalSpend) },
+      { label: "Best Selling Type",      value: data?.bestSelling || "N/A" },
+      { label: "Highest Sourcing Area",  value: topLocationStr || "N/A" },
+    ];
+
+    const colW = (W - 28) / 3;
+    const rowH = 20;
+    kpis.forEach((kpi, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      const x   = 14 + col * colW;
+      const ky  = y + row * rowH;
+
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(x, ky, colW - 4, rowH - 3, 2, 2, "F");
+      doc.setDrawColor(220, 230, 240);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(x, ky, colW - 4, rowH - 3, 2, 2, "S");
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...GRAY);
+      doc.text(kpi.label, x + 4, ky + 6);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...DARK);
+      doc.text(String(kpi.value), x + 4, ky + 13.5);
+    });
+    y += Math.ceil(kpis.length / 3) * rowH + 6;
+
+    // ── Section: Monthly Procurement Trend ─────────────────────
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(...DARK);
+    doc.text("Monthly Procurement Trend", 14, y);
+    y += 2;
+    doc.setDrawColor(...GREEN);
+    doc.line(14, y, W - 14, y);
+    y += 4;
+
+    const last6Months = generateLast6Months();
+    const trendRows = last6Months.map(month => [
+      month,
+      fmtCur(data?.monthly?.[month] || 0),
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Month", "Revenue (Rs.)"]],
+      body: trendRows,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 3.5, textColor: DARK },
+      headStyles: { fillColor: GREEN, textColor: [0, 0, 0], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: LIGHT },
+      columnStyles: { 0: { cellWidth: 40 }, 1: { halign: "right" } },
+      margin: { left: 14, right: 14 },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ── Section: Procurement by Paddy Type ────────────────────
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(...DARK);
+    doc.text("Procurement by Paddy Type", 14, y);
+    y += 2;
+    doc.setDrawColor(...GREEN);
+    doc.line(14, y, W - 14, y);
+    y += 4;
+
+    const distEntries = Object.entries(data?.distribution || {})
+      .sort((a, b) => b[1] - a[1]);
+    const totalKg = distEntries.reduce((s, [, v]) => s + v, 0);
+    const distRows = distEntries.map(([type, qty]) => [
+      type,
+      `${fmt(qty)} kg`,
+      totalKg > 0 ? `${((qty / totalKg) * 100).toFixed(1)}%` : "0%",
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Paddy Type", "Quantity (kg)", "Share (%)"]],
+      body: distRows.length ? distRows : [["No data", "-", "-"]],
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 3.5, textColor: DARK },
+      headStyles: { fillColor: GREEN, textColor: [0, 0, 0], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: LIGHT },
+      columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
+      margin: { left: 14, right: 14 },
+    });
+    y = doc.lastAutoTable.finalY + 10;
+
+    // new page if needed
+    if (y > H - 70) { doc.addPage(); y = 20; }
+
+    // ── Section: Recent Purchases ─────────────────────────────
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(...DARK);
+    doc.text("Recent Purchases", 14, y);
+    y += 2;
+    doc.setDrawColor(...GREEN);
+    doc.line(14, y, W - 14, y);
+    y += 4;
+
+    const recentRows = recentActivity.map(r => [
+      r.date,
+      r.farmer,
+      r.paddyType,
+      r.quantity,
+      r.price,
+      r.status,
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Date", "Farmer", "Paddy Type", "Qty", "Price", "Status"]],
+      body: recentRows.length ? recentRows : [["No recent activity", "", "", "", "", ""]],
+      theme: "grid",
+      styles: { fontSize: 8, cellPadding: 3, textColor: DARK },
+      headStyles: { fillColor: GREEN, textColor: [0, 0, 0], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: LIGHT },
+      columnStyles: {
+        3: { halign: "right" },
+        4: { halign: "right" },
+        5: { halign: "center" },
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    // ── Footer on every page ───────────────────────────────────
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= pageCount; p++) {
+      doc.setPage(p);
+      doc.setFillColor(...DARK);
+      doc.rect(0, H - 12, W, 12, "F");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 180, 100);
+      doc.text("AgroBridge · Smart Paddy Stock Supply Management System · Confidential", 14, H - 4.5);
+      doc.setTextColor(100, 180, 100);
+      doc.text(`Page ${p} of ${pageCount}`, W - 14, H - 4.5, { align: "right" });
+    }
+
+    const filename = `AgroBridge_Report_${now.toISOString().slice(0, 10)}.pdf`;
+    doc.save(filename);
   };
 
   if (loading) return <div className="flex h-[50vh] items-center justify-center text-[#22C55E] font-medium">Loading metrics...</div>;
@@ -134,10 +329,7 @@ export default function MillOwnerDashboard() {
   }));
 
   const topLocationEntry = Object.entries(data.locations || {}).sort((a, b) => b[1] - a[1])[0];
-  let topLocationStr = topLocationEntry?.[0] || "N/A";
-  if (topLocationStr.includes("district")) {
-    topLocationStr = topLocationStr.replace(/[{}:"']/g, '').replace('district', '').trim();
-  }
+  const topLocationStr = topLocationEntry?.[0] || "N/A";
 
   return (
     <div id="dashboard-content" className="w-full animate-fadeIn transition-all duration-300 ease-out">
@@ -306,8 +498,12 @@ export default function MillOwnerDashboard() {
                   stroke="var(--color-muted-foreground)" 
                   tickLine={false} 
                   axisLine={false} 
-                  dx={-10} 
-                  tickFormatter={(value) => "Rs " + new Intl.NumberFormat("en-LK", { notation: "compact" }).format(value)}
+                  width={80}
+                  tickFormatter={(value) => {
+                    if (value >= 1000000) return `Rs ${(value / 1000000).toFixed(1)}M`;
+                    if (value >= 1000) return `Rs ${(value / 1000).toFixed(0)}K`;
+                    return `Rs ${value}`;
+                  }}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -332,7 +528,19 @@ export default function MillOwnerDashboard() {
               <BarChart data={procurementData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.5} />
                 <XAxis dataKey="type" stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} dy={10} />
-                <YAxis stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} dx={-10} tickFormatter={(value) => new Intl.NumberFormat("en-LK", { notation: "compact" }).format(value) + " kg"} />
+                <YAxis 
+                  stroke="var(--color-muted-foreground)" 
+                  tickLine={false} 
+                  axisLine={false} 
+                  width={80}
+                  domain={[0, 'auto']}
+                  allowDecimals={false}
+                  tickFormatter={(value) => {
+                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M kg`;
+                    if (value >= 1000) return `${(value / 1000).toFixed(0)}K kg`;
+                    return `${value} kg`;
+                  }}
+                />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'var(--color-card)', 

@@ -11,6 +11,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
 } from 'recharts';
+import { io } from 'socket.io-client';
 
 // ─────────────────────────────────────────────────────────────────
 // Shared status color system (consistent across admin panel)
@@ -253,27 +254,7 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (Array.isArray(resSales.data)) {
-        const uniqueMap = {};
-
-        resSales.data.forEach(item => {
-          if (!uniqueMap[item.month]) {
-            uniqueMap[item.month] = { ...item };
-          } else {
-            uniqueMap[item.month].sales += item.sales;
-          }
-        });
-
-        const cleanedData = Object.values(uniqueMap);
-
-        const monthOrder = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-        cleanedData.sort((a, b) => {
-          return monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month);
-        });
-
-        console.log("Chart Data:", cleanedData);
-
-        setSalesData([]); 
-        setSalesData(cleanedData);
+        setSalesData(resSales.data);
       }
 
       setLastUpdated(
@@ -287,11 +268,18 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  // Initial fetch + 30-second polling
+  // Initial fetch + Socket connection
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(() => fetchStats(), 30_000);
-    return () => clearInterval(interval);
+    
+    const socket = io("http://localhost:5000");
+    
+    // Listen for dashboard update events
+    socket.on("dashboard_update", () => {
+      fetchStats();
+    });
+    
+    return () => socket.disconnect();
   }, [fetchStats]);
 
   // Delay chart animation until after first render
@@ -575,7 +563,7 @@ export default function AdminDashboard() {
               <BarChart data={userGrowthData} barGap={4} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="month" stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                <YAxis allowDecimals={false} stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                 <Tooltip content={<ThemedTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
                 {!hiddenSeries['Farmers'] && (
                   <Bar dataKey="Farmers" fill="#22C55E" radius={[5, 5, 0, 0]}
@@ -696,7 +684,7 @@ export default function AdminDashboard() {
           <div className="mt-5 pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Wifi className="w-3.5 h-3.5" />
-              Auto-refresh every 30s
+              Real-time updates active
             </span>
             <span className="flex items-center gap-1 text-[#22C55E] font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-ping" />
