@@ -144,6 +144,7 @@
 
   html {
     font-size: var(--font-size);
+    scroll-behavior: smooth;
   }
 
   h1 {
@@ -186,5 +187,24 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg transition-all duration-300 before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-r before:from-[#22C55E]/10 before:to-[#3B82F6]/10 before:blur-xl before:-z-10 before:content-[''] isolate overflow-hidden;
+  }
+  
+  .glass-card::after {
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none -z-10 content-[''];
+    background: radial-gradient(circle at 50% 0%, rgba(74, 222, 128, 0.15) 0%, transparent 60%);
+  }
+
+  .glass-card:hover {
+    @apply bg-white/10 border-green-400/30 shadow-[0_0_40px_rgba(34,197,94,0.25)] scale-[1.02];
+  }
+
+  .glass-card:hover::after {
+    @apply opacity-100;
   }
 }
