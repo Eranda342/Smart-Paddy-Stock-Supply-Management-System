@@ -47,8 +47,11 @@ export default function NotificationDropdown() {
     }
 
     socket.on("newNotification", (notification) => {
-      setNotifications(prev => [notification, ...prev]);
-      toast.success(`Admin Update: ${notification.message || notification.body || "New notification received"}`);
+      // Re-fetch from the server so we always have well-shaped DB documents
+      // (the socket payload is a minimal object without _id / read / createdAt)
+      fetchNotifications();
+      const msg = notification?.message || notification?.body || "New notification received";
+      toast.success(`Admin Update: ${msg}`);
     });
 
     const interval = setInterval(() => {
@@ -61,7 +64,7 @@ export default function NotificationDropdown() {
     };
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => n && !n.read).length;
 
   const prevCount = useRef(0);
 
@@ -144,7 +147,7 @@ export default function NotificationDropdown() {
               No notifications 🔔
             </div>
           ) : (
-            notifications.slice(0, 5).map((n) => (
+            notifications.filter(Boolean).slice(0, 5).map((n) => (
               <div
                 key={n._id}
                 onClick={() => handleNotificationClick(n)}
