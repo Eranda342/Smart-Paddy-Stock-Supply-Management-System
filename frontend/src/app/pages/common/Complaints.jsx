@@ -26,19 +26,22 @@ const StatusBadge = ({ status }) => {
 export default function Complaints() {
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Modal states
   const [selectedDispute, setSelectedDispute] = useState(null);
   const [chats, setChats] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [chatSending, setChatSending] = useState(false);
-  
+
   // Create Modal state
   const [showCreateWrapper, setShowCreateWrapper] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [createForm, setCreateForm] = useState({ title: '', description: '', transactionId: '' });
   const [attachments, setAttachments] = useState([]);
   const [creating, setCreating] = useState(false);
+
+  // Derive the current user's ID from localStorage so we can key the fetch on it
+  const currentUserId = JSON.parse(localStorage.getItem('user') || '{}')._id || null;
 
   // Sockets
   const socketRef = useRef();
@@ -51,8 +54,9 @@ export default function Complaints() {
   useEffect(() => {
     const sock = io(SOCKET_URL);
     socketRef.current = sock;
+    // Only re-fetch on dispute-specific events — NOT dashboard_update
+    // (dashboard_update fires for many unrelated things and causes noisy refetches)
     sock.on('disputeUpdated', () => fetchDisputesRef.current?.());
-    sock.on('dashboard_update', () => fetchDisputesRef.current?.());
     sock.on('newMessage', (msg) => {
       setChats(prev => [...prev, msg]);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -63,10 +67,23 @@ export default function Complaints() {
   }, []);
 
   const fetchDisputes = useCallback(async () => {
+    // Always wipe the list and show spinner BEFORE the request so stale
+    // data from a previous session / user never lingers on screen.
+    setDisputes([]);
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/disputes/my`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!token) return; // No token → nothing to fetch
+      const res = await fetch(`${API_BASE}/disputes/my`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        // e.g. 401 Unauthorized — treat as empty
+        setDisputes([]);
+        return;
+      }
       const data = await res.json();
+      console.log('[Complaints] Fetched disputes for current user:', data.disputes);
       setDisputes(data.disputes || []);
     } catch {
       toast.error('Failed to load complaints');
@@ -75,8 +92,16 @@ export default function Complaints() {
     }
   }, []);
 
-  // Keep ref current so socket handlers always use latest version
+  // Keep ref current so socket handlers always use the latest version
   useEffect(() => { fetchDisputesRef.current = fetchDisputes; }, [fetchDisputes]);
+
+  // Re-fetch (and wipe state first) whenever the active user changes.
+  // This covers the logout → login on the same session scenario.
+  useEffect(() => {
+    setDisputes([]);
+    if (currentUserId) fetchDisputes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUserId]);
 
   const fetchTransactions = async () => {
     if (transactions.length > 0) return;
@@ -102,7 +127,7 @@ export default function Complaints() {
     }
   };
 
-  useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
+
 
   useEffect(() => {
     if (selectedDispute) {

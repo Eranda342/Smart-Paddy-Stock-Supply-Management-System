@@ -2,17 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Sprout, Upload, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
-
-const SRI_LANKAN_DISTRICTS = [
-  "Ampara","Anuradhapura","Badulla","Batticaloa","Colombo","Galle","Gampaha",
-  "Hambantota","Jaffna","Kalutara","Kandy","Kegalle","Kilinochchi","Kurunegala",
-  "Mannar","Matale","Matara","Monaragala","Mullaitivu","Nuwara Eliya",
-  "Polonnaruwa","Puttalam","Ratnapura","Trincomalee","Vavuniya"
-];
-
-const PADDY_TYPES = [
-  "Samba","Keeri Samba","Nadu","Red Rice","White Rice","Basmati","Suwandel"
-];
+import { PADDY_TYPES_GROUPED, DISTRICTS as SRI_LANKAN_DISTRICTS } from "../../constants/paddyTypes";
 
 export default function BusinessDetailsPage() {
 
@@ -285,24 +275,41 @@ export default function BusinessDetailsPage() {
                   <div>
                     <label className="block mb-3">
                       Paddy Types Cultivated
+                      {selectedPaddyTypes.length > 0 && (
+                        <span className="ml-2 text-xs text-[#22C55E] font-normal">
+                          {selectedPaddyTypes.length} selected
+                        </span>
+                      )}
                     </label>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="space-y-4">
 
-                      {PADDY_TYPES.map((type) => (
+                      {Object.entries(PADDY_TYPES_GROUPED).map(([group, types]) => (
 
-                        <button
-                          key={type}
-                          type="button"
-                          onClick={() => togglePaddyType(type)}
-                          className={`px-4 py-2 rounded-lg border ${
-                            selectedPaddyTypes.includes(type)
-                              ? "bg-[#22C55E]/10 border-[#22C55E] text-[#22C55E]"
-                              : "border-border"
-                          }`}
-                        >
-                          {type}
-                        </button>
+                        <div key={group}>
+
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                            {group}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2">
+                            {types.map((type) => (
+                              <button
+                                key={type}
+                                type="button"
+                                onClick={() => togglePaddyType(type)}
+                                className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                                  selectedPaddyTypes.includes(type)
+                                    ? "bg-[#22C55E]/10 border-[#22C55E] text-[#22C55E]"
+                                    : "border-border hover:border-[#22C55E]/40"
+                                }`}
+                              >
+                                {type}
+                              </button>
+                            ))}
+                          </div>
+
+                        </div>
 
                       ))}
 
