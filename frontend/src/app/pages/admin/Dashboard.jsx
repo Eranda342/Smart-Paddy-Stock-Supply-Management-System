@@ -119,35 +119,45 @@ function KpiCard({ icon: Icon, iconBg, iconColor, value, label, badge, badgeColo
   const animated = useCountUp(loading ? null : Number(value) || 0);
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-      {/* Hover shimmer */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at 0% 0%, ${iconBg} 0%, transparent 65%)` }} />
+    <div
+      className="relative overflow-hidden rounded-2xl p-6 border transition-all duration-300 cursor-default group"
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        backdropFilter: 'blur(16px)',
+        borderColor: 'rgba(255,255,255,0.08)',
+      }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = `0 0 30px ${iconColor}22, 0 8px 32px rgba(0,0,0,0.3)`}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+    >
+      {/* Radial glow on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+        style={{ background: `radial-gradient(ellipse at 10% 10%, ${iconColor}18 0%, transparent 60%)` }} />
+      {/* Top border glow line */}
+      <div className="absolute top-0 left-6 right-6 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: `linear-gradient(90deg, transparent, ${iconColor}60, transparent)` }} />
 
-      <div className="flex items-start justify-between mb-3 relative">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: iconBg }}>
+      <div className="flex items-start justify-between mb-4 relative">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
+          style={{ background: `linear-gradient(135deg, ${iconColor}30 0%, ${iconColor}10 100%)`, border: `1px solid ${iconColor}25` }}>
           <Icon className="w-5 h-5" style={{ color: iconColor }} />
         </div>
-        {/* Sparkline top-right */}
-        {!loading && sparkData && (
-          <Sparkline data={sparkData} color={iconColor} />
-        )}
-        {loading && <div className="w-20 h-8 bg-muted animate-pulse rounded-lg" />}
+        {!loading && sparkData && <Sparkline data={sparkData} color={iconColor} />}
+        {loading && <div className="w-20 h-8 bg-white/5 animate-pulse rounded-lg" />}
       </div>
 
-      <div className="relative mt-2">
+      <div className="relative">
         {loading ? (
-          <div className="h-9 w-24 bg-muted animate-pulse rounded-lg mb-1" />
+          <div className="h-9 w-24 bg-white/5 animate-pulse rounded-lg mb-2" />
         ) : (
-          <div className="text-3xl font-bold mb-0.5 tabular-nums tracking-tight">
+          <div className="text-3xl font-bold mb-1 tabular-nums tracking-tight text-white">
             {animated.toLocaleString()}
           </div>
         )}
         <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">{label}</div>
+          <div className="text-sm" style={{ color: 'rgba(148,163,184,0.9)' }}>{label}</div>
           {badge && !loading && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: `${badgeColor}18`, color: badgeColor }}>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: `${badgeColor}20`, color: badgeColor, border: `1px solid ${badgeColor}30` }}>
               {badge}
             </span>
           )}
@@ -162,13 +172,19 @@ function KpiCard({ icon: Icon, iconBg, iconColor, value, label, badge, badgeColo
 // ─────────────────────────────────────────────────────────────────
 function LiveBadge({ lastUpdated }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full border border-border">
+    <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full font-medium"
+      style={{
+        background: 'rgba(34,197,94,0.08)',
+        border: '1px solid rgba(34,197,94,0.2)',
+        color: '#22C55E',
+        backdropFilter: 'blur(8px)',
+      }}>
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-75" />
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E]" />
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-60" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E] shadow-[0_0_6px_#22C55E]" />
       </span>
-      <span className="font-medium text-foreground">Live</span>
-      {lastUpdated && <span className="opacity-60">· {lastUpdated}</span>}
+      <span>Live · Updating now</span>
+      {lastUpdated && <span style={{ color: 'rgba(34,197,94,0.6)' }}>· {lastUpdated}</span>}
     </div>
   );
 }
@@ -179,15 +195,20 @@ function LiveBadge({ lastUpdated }) {
 const ThemedTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border rounded-xl px-3 py-2.5 shadow-2xl text-sm min-w-[130px]">
-      <p className="font-semibold mb-1.5 text-foreground text-xs uppercase tracking-wide opacity-60">{label}</p>
+    <div className="rounded-xl px-4 py-3 shadow-2xl text-sm min-w-[150px]"
+      style={{
+        background: 'rgba(15,23,42,0.95)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(20px)',
+      }}>
+      <p className="font-semibold mb-2 text-xs uppercase tracking-widest" style={{ color: 'rgba(148,163,184,0.7)' }}>{label}</p>
       {payload.map((p, i) => (
-        <div key={i} className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 capitalize text-xs" style={{ color: p.color }}>
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: p.color }} />
+        <div key={i} className="flex items-center justify-between gap-6">
+          <span className="flex items-center gap-2 capitalize text-xs" style={{ color: p.color }}>
+            <span className="w-2 h-2 rounded-full shadow-sm" style={{ background: p.color, boxShadow: `0 0 4px ${p.color}` }} />
             {p.name}
           </span>
-          <span className="font-bold text-foreground">
+          <span className="font-bold text-white">
             {p.name === 'Sales' ? `Rs. ${Number(p.value).toLocaleString()}` : Number(p.value).toLocaleString()}
           </span>
         </div>
@@ -350,20 +371,32 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="max-w-[1320px] mx-auto">
+    <div className="max-w-[1320px] mx-auto relative">
+
+      {/* ── Ambient background glows ── */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #22C55E 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #3B82F6 0%, transparent 70%)' }} />
+      </div>
 
       {/* ── Header ── */}
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-semibold mb-1.5">Admin Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Platform overview · Real-time statistics</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-3"
+            style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22C55E' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
+            Admin Control Panel
+          </div>
+          <h1 className="text-4xl font-bold mb-1.5 tracking-tight" style={{ letterSpacing: '-0.02em' }}>Admin Dashboard</h1>
+          <p className="text-sm" style={{ color: 'rgba(148,163,184,0.8)' }}>Platform overview · Real-time statistics · AgroBridge</p>
         </div>
         <div className="flex items-center gap-3 mt-1">
           <LiveBadge lastUpdated={lastUpdated} />
           <button
             onClick={() => fetchStats(true)}
             disabled={refreshing}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted transition-colors disabled:opacity-50 font-medium"
+            className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl font-medium transition-all duration-200 active:scale-95 disabled:opacity-50"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(148,163,184,0.9)' }}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -475,16 +508,16 @@ export default function AdminDashboard() {
       {/* ── Charts ── */}
       <div className="grid grid-cols-2 gap-6 mb-8">
 
-        {/* Area / Line Chart — Sales Trend */}
-        <div className="bg-card border border-border rounded-2xl p-6">
+        {/* Area Chart — Sales Trend */}
+        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(34,197,94,0.08)]"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold">Sales Trend</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Platform revenue · Last 6 months</p>
+              <h2 className="text-base font-semibold text-white">Sales Trend</h2>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Platform revenue · Last 6 months</p>
             </div>
-            <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-lg font-medium">
-              6M
-            </span>
+            <span className="text-xs font-semibold px-3 py-1 rounded-lg"
+              style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.2)' }}>6M</span>
           </div>
           {salesData.length === 0 ? (
             <EmptyState icon={BarChart2} title="No sales data" description="Sales data will populate as transactions complete." />
@@ -493,65 +526,51 @@ export default function AdminDashboard() {
               <AreaChart data={salesData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="volGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#22C55E" stopOpacity={0.18} />
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity={0.35} />
+                    <stop offset="60%" stopColor="#22C55E" stopOpacity={0.08} />
                     <stop offset="100%" stopColor="#22C55E" stopOpacity={0} />
                   </linearGradient>
+                  <linearGradient id="strokeGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity={0.5} />
+                    <stop offset="50%" stopColor="#22C55E" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.8} />
+                  </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="month" stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis 
-                  stroke="var(--color-muted-foreground)" 
-                  tick={{ fontSize: 11 }} 
-                  tickLine={false} 
-                  axisLine={false} 
-                  width={55}
-                  tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}k` : val} 
-                />
-                <Tooltip content={<ThemedTooltip />} cursor={{ stroke: '#22C55E', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                <Area
-                  key={`salesArea-${salesData.length}`}
-                  type="monotone"
-                  dataKey="sales"
-                  name="Sales"
-                  stroke="#22C55E"
-                  strokeWidth={2.5}
-                  fill="url(#volGrad)"
-                  dot={false}
-                  activeDot={{ r: 5, fill: '#22C55E', strokeWidth: 0 }}
-                  isAnimationActive={chartsVisible}
-                  animationDuration={1400}
-                  animationEasing="ease-out"
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} />
+                <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} width={55}
+                  tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}k` : val} />
+                <Tooltip content={<ThemedTooltip />} cursor={{ stroke: 'rgba(34,197,94,0.3)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                <Area key={`salesArea-${salesData.length}`} type="monotone" dataKey="sales" name="Sales"
+                  stroke="url(#strokeGrad)" strokeWidth={2.5} fill="url(#volGrad)" dot={false}
+                  activeDot={{ r: 6, fill: '#22C55E', strokeWidth: 2, stroke: 'rgba(34,197,94,0.3)' }}
+                  isAnimationActive={chartsVisible} animationDuration={1400} animationEasing="ease-out" />
               </AreaChart>
             </ResponsiveContainer>
           )}
         </div>
 
-        {/* Bar Chart — User Growth with toggle */}
-        <div className="bg-card border border-border rounded-2xl p-6">
+        {/* Bar Chart — User Growth */}
+        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(59,130,246,0.08)]"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold">User Growth</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">New registrations · Last 6 months</p>
+              <h2 className="text-base font-semibold text-white">User Growth</h2>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>New registrations · Last 6 months</p>
             </div>
-            {/* Interactive legend toggles */}
             <div className="flex items-center gap-2">
               {[
                 { key: 'Farmers', color: '#22C55E' },
                 { key: 'Mills',   color: '#3B82F6' },
               ].map(({ key, color }) => (
-                <button
-                  key={key}
-                  onClick={() => toggleSeries(key)}
-                  className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-all duration-200"
+                <button key={key} onClick={() => toggleSeries(key)}
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-all duration-200 font-medium"
                   style={{
-                    borderColor: hiddenSeries[key] ? 'var(--color-border)' : `${color}40`,
-                    background: hiddenSeries[key] ? 'transparent' : `${color}10`,
-                    color: hiddenSeries[key] ? 'var(--color-muted-foreground)' : color,
-                    opacity: hiddenSeries[key] ? 0.5 : 1,
-                  }}
-                >
-                  <span className="w-2 h-2 rounded-full" style={{ background: color }} />
+                    border: `1px solid ${hiddenSeries[key] ? 'rgba(255,255,255,0.08)' : `${color}40`}`,
+                    background: hiddenSeries[key] ? 'transparent' : `${color}15`,
+                    color: hiddenSeries[key] ? 'rgba(148,163,184,0.5)' : color,
+                  }}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: hiddenSeries[key] ? 'rgba(148,163,184,0.3)' : color }} />
                   {key}
                 </button>
               ))}
@@ -561,19 +580,13 @@ export default function AdminDashboard() {
             <EmptyState icon={Users} title="No user data" description="User growth data will appear here." />
           ) : (
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={userGrowthData} barGap={4} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="month" stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} stroke="var(--color-muted-foreground)" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <Tooltip content={<ThemedTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                {!hiddenSeries['Farmers'] && (
-                  <Bar dataKey="Farmers" fill="#22C55E" radius={[5, 5, 0, 0]}
-                    isAnimationActive={chartsVisible} animationDuration={1000} animationEasing="ease-out" />
-                )}
-                {!hiddenSeries['Mills'] && (
-                  <Bar dataKey="Mills" fill="#3B82F6" radius={[5, 5, 0, 0]}
-                    isAnimationActive={chartsVisible} animationDuration={1200} animationEasing="ease-out" />
-                )}
+              <BarChart data={userGrowthData} barGap={6} barCategoryGap="30%" margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} />
+                <YAxis allowDecimals={false} stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} />
+                <Tooltip content={<ThemedTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)', radius: 4 }} />
+                {!hiddenSeries['Farmers'] && <Bar dataKey="Farmers" fill="#22C55E" radius={[6,6,0,0]} isAnimationActive={chartsVisible} animationDuration={1000} animationEasing="ease-out" />}
+                {!hiddenSeries['Mills'] && <Bar dataKey="Mills" fill="#3B82F6" radius={[6,6,0,0]} isAnimationActive={chartsVisible} animationDuration={1200} animationEasing="ease-out" />}
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -582,27 +595,45 @@ export default function AdminDashboard() {
 
       {/* ── Quick Actions ── */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold">Quick Actions</h2>
-          <span className="text-xs text-muted-foreground">Common admin shortcuts</span>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-base font-semibold text-white">Quick Actions</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Jump to any admin module</p>
+          </div>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {QUICK_ACTIONS.map(({ label, desc, icon: Icon, path, color }) => (
             <button
               key={path}
               onClick={() => navigate(path)}
-              className="group bg-card border border-border hover:border-opacity-60 rounded-xl p-4 text-left transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 flex items-center gap-3"
-              style={{ '--action-color': color }}
+              className="group rounded-xl p-4 text-left transition-all duration-200 active:scale-[0.98] flex items-center gap-3"
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = `rgba(255,255,255,0.055)`;
+                e.currentTarget.style.borderColor = `${color}30`;
+                e.currentTarget.style.boxShadow = `0 4px 20px ${color}15, 0 0 0 1px ${color}15`;
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200"
-                style={{ background: `${color}15` }}>
-                <Icon className="w-4 h-4 transition-colors" style={{ color }} />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110"
+                style={{ background: `linear-gradient(135deg, ${color}25, ${color}10)`, border: `1px solid ${color}20` }}>
+                <Icon className="w-4 h-4" style={{ color }} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold truncate">{label}</div>
-                <div className="text-xs text-muted-foreground truncate">{desc}</div>
+                <div className="text-sm font-semibold text-white truncate">{label}</div>
+                <div className="text-xs truncate" style={{ color: 'rgba(148,163,184,0.6)' }}>{desc}</div>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200 shrink-0" />
+              <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 shrink-0" style={{ color: 'rgba(148,163,184,0.6)' }} />
             </button>
           ))}
         </div>
@@ -611,37 +642,43 @@ export default function AdminDashboard() {
       {/* ── Platform Health Footer ── */}
       <div className="grid grid-cols-2 gap-6">
 
-        {/* Progress stats */}
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">Platform Metrics</h3>
+        {/* Platform Metrics with gradient progress bars */}
+        <div className="rounded-2xl p-6"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: 'rgba(148,163,184,0.7)' }}>Platform Metrics</h3>
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="space-y-1.5">
-                  <div className="h-3 w-32 bg-muted animate-pulse rounded" />
-                  <div className="h-1.5 bg-muted animate-pulse rounded-full" />
+            <div className="space-y-5">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="space-y-2">
+                  <div className="h-3 w-32 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                  <div className="h-2 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
                 </div>
               ))}
             </div>
           ) : stats ? (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {[
-                { label: 'Total Users',        value: stats.totalUsers,        color: '#22C55E' },
-                { label: 'Active Listings',    value: stats.activeListings,    color: '#3B82F6' },
-                { label: 'Pending Approvals',  value: stats.pendingApprovals,  color: '#F97316' },
-                { label: 'Total Transactions', value: stats.totalTransactions, color: '#A855F7' },
-              ].map(({ label, value, color }) => {
-                const max = Math.max(stats.totalUsers || 1, stats.activeListings || 1, stats.pendingApprovals || 1, stats.totalTransactions || 1);
-                const pct = Math.round(((value || 0) / max) * 100);
+                { label: 'Total Users',        value: stats.totalUsers,        color: '#22C55E', glow: 'rgba(34,197,94,0.4)' },
+                { label: 'Active Listings',    value: stats.activeListings,    color: '#3B82F6', glow: 'rgba(59,130,246,0.4)' },
+                { label: 'Pending Approvals',  value: stats.pendingApprovals,  color: '#F97316', glow: 'rgba(249,115,22,0.4)' },
+                { label: 'Total Transactions', value: stats.totalTransactions, color: '#A855F7', glow: 'rgba(168,85,247,0.4)' },
+              ].map(({ label, value, color, glow }) => {
+                const max = Math.max(stats.totalUsers||1, stats.activeListings||1, stats.pendingApprovals||1, stats.totalTransactions||1);
+                const pct = Math.round(((value||0)/max)*100);
                 return (
                   <div key={label}>
-                    <div className="flex justify-between text-sm mb-1.5">
-                      <span className="text-muted-foreground text-xs font-medium">{label}</span>
-                      <span className="font-bold text-sm tabular-nums">{(value ?? 0).toLocaleString()}</span>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-xs font-medium" style={{ color: 'rgba(148,163,184,0.8)' }}>{label}</span>
+                      <span className="text-sm font-bold text-white tabular-nums">{(value??0).toLocaleString()}</span>
                     </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div className="h-full rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: `${pct}%`, backgroundColor: color, transitionDelay: '400ms' }} />
+                        style={{
+                          width: `${pct}%`,
+                          background: `linear-gradient(90deg, ${color}cc, ${color})`,
+                          boxShadow: `0 0 8px ${glow}`,
+                          transitionDelay: '400ms',
+                        }} />
                     </div>
                   </div>
                 );
@@ -652,43 +689,55 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* System status */}
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">System Status</h3>
-          <div className="space-y-3">
+        {/* System Status — premium live panel */}
+        <div className="rounded-2xl p-6"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: 'rgba(148,163,184,0.7)' }}>System Status</h3>
+          <div className="space-y-1">
             {[
-              { label: 'API Server',  status: 'Operational', ok: true },
-              { label: 'Database',   status: 'Healthy',     ok: true },
-              { label: 'Socket.IO',  status: 'Connected',   ok: true },
+              { label: 'API Server',  status: 'Operational', ok: true,  icon: Activity },
+              { label: 'Database',   status: 'Healthy',     ok: true,  icon: ShieldCheck },
+              { label: 'Socket.IO',  status: 'Connected',   ok: true,  icon: Wifi },
               {
-                label: 'Pending Approvals',
-                status: (stats?.pendingApprovals ?? 0) > 0
-                  ? `${stats.pendingApprovals} awaiting review`
-                  : 'None pending',
+                label: 'Pending KYC',
+                status: (stats?.pendingApprovals??0) > 0 ? `${stats.pendingApprovals} awaiting review` : 'None pending',
                 ok: !(stats?.pendingApprovals > 0),
+                icon: Users,
               },
               {
                 label: 'Data Sync',
                 status: lastUpdated ? `Last sync ${lastUpdated}` : 'Syncing…',
                 ok: !!lastUpdated,
+                icon: RefreshCw,
               },
-            ].map(({ label, status, ok }) => (
-              <div key={label} className="flex items-center justify-between py-1">
-                <span className="text-sm text-muted-foreground">{label}</span>
-                <span className={`flex items-center gap-1.5 text-xs font-semibold ${ok ? 'text-[#22C55E]' : 'text-orange-400'}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-[#22C55E]' : 'bg-orange-400 animate-pulse'}`} />
+            ].map(({ label, status, ok, icon: StatusIcon }) => (
+              <div key={label} className="flex items-center justify-between py-2.5 rounded-xl px-3 transition-all duration-200 group"
+                style={{ border: '1px solid transparent' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ background: ok ? 'rgba(34,197,94,0.1)' : 'rgba(249,115,22,0.1)' }}>
+                    <StatusIcon className="w-3.5 h-3.5" style={{ color: ok ? '#22C55E' : '#F97316' }} />
+                  </div>
+                  <span className="text-sm font-medium" style={{ color: 'rgba(226,232,240,0.85)' }}>{label}</span>
+                </div>
+                <span className="flex items-center gap-2 text-xs font-semibold" style={{ color: ok ? '#22C55E' : '#F97316' }}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-[#22C55E]' : 'bg-orange-400 animate-pulse'}`}
+                    style={ok ? { boxShadow: '0 0 4px #22C55E' } : {}} />
                   {status}
                 </span>
               </div>
             ))}
           </div>
-          <div className="mt-5 pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
+          <div className="mt-4 pt-4 flex items-center justify-between text-xs"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="flex items-center gap-2" style={{ color: 'rgba(148,163,184,0.6)' }}>
               <Wifi className="w-3.5 h-3.5" />
               Real-time updates active
             </span>
-            <span className="flex items-center gap-1 text-[#22C55E] font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-ping" />
+            <span className="flex items-center gap-2 font-semibold" style={{ color: '#22C55E' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-ping" style={{ boxShadow: '0 0 6px #22C55E' }} />
               All systems operational
             </span>
           </div>

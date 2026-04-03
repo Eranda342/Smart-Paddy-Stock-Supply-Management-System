@@ -1,5 +1,5 @@
-import { TrendingUp, TrendingDown, ShoppingCart, MessageSquare, Package, DollarSign } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+﻿import { TrendingUp, TrendingDown, ShoppingCart, MessageSquare, Package, DollarSign, MapPin, Leaf, FileText, Zap, BarChart2 } from 'lucide-react';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -75,7 +75,7 @@ export default function MillOwnerDashboard() {
     const fmt = (n) => new Intl.NumberFormat("en-LK").format(n || 0);
     const fmtCur = (n) => `Rs. ${fmt(n)}`;
 
-    // ── Header Banner ──────────────────────────────────────────
+    // â”€â”€ Header Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     doc.setFillColor(...DARK);
     doc.rect(0, 0, W, 38, "F");
     doc.setFillColor(...GREEN);
@@ -93,7 +93,7 @@ export default function MillOwnerDashboard() {
 
     doc.setFontSize(8);
     doc.setTextColor(100, 180, 100);
-    doc.text(`Generated: ${now.toLocaleDateString("en-LK", { weekday:"long", year:"numeric", month:"long", day:"numeric" })}  ·  ${now.toLocaleTimeString("en-LK")}`, 14, 31);
+    doc.text(`Generated: ${now.toLocaleDateString("en-LK", { weekday:"long", year:"numeric", month:"long", day:"numeric" })}  Â·  ${now.toLocaleTimeString("en-LK")}`, 14, 31);
 
     // Range badge
     const rangeLabel = range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time";
@@ -106,7 +106,7 @@ export default function MillOwnerDashboard() {
 
     let y = 48;
 
-    // ── Section: Executive Summary ─────────────────────────────
+    // â”€â”€ Section: Executive Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...DARK);
@@ -152,7 +152,7 @@ export default function MillOwnerDashboard() {
     });
     y += Math.ceil(kpis.length / 3) * rowH + 6;
 
-    // ── Section: Monthly Procurement Trend ─────────────────────
+    // â”€â”€ Section: Monthly Procurement Trend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...DARK);
@@ -181,7 +181,7 @@ export default function MillOwnerDashboard() {
     });
     y = doc.lastAutoTable.finalY + 10;
 
-    // ── Section: Procurement by Paddy Type ────────────────────
+    // â”€â”€ Section: Procurement by Paddy Type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...DARK);
@@ -216,7 +216,7 @@ export default function MillOwnerDashboard() {
     // new page if needed
     if (y > H - 70) { doc.addPage(); y = 20; }
 
-    // ── Section: Recent Purchases ─────────────────────────────
+    // â”€â”€ Section: Recent Purchases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...DARK);
@@ -251,7 +251,7 @@ export default function MillOwnerDashboard() {
       margin: { left: 14, right: 14 },
     });
 
-    // ── Footer on every page ───────────────────────────────────
+    // â”€â”€ Footer on every page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const pageCount = doc.internal.getNumberOfPages();
     for (let p = 1; p <= pageCount; p++) {
       doc.setPage(p);
@@ -260,7 +260,7 @@ export default function MillOwnerDashboard() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7.5);
       doc.setTextColor(100, 180, 100);
-      doc.text("AgroBridge · Smart Paddy Stock Supply Management System · Confidential", 14, H - 4.5);
+      doc.text("AgroBridge Â· Smart Paddy Stock Supply Management System Â· Confidential", 14, H - 4.5);
       doc.setTextColor(100, 180, 100);
       doc.text(`Page ${p} of ${pageCount}`, W - 14, H - 4.5, { align: "right" });
     }
@@ -333,263 +333,281 @@ export default function MillOwnerDashboard() {
   const topLocationStr = topLocationEntry?.[0] || "N/A";
 
   return (
-    <div id="dashboard-content" className="w-full animate-fadeIn transition-all duration-300 ease-out">
-      <div className="mb-8 flex flex-wrap sm:flex-row sm:items-center justify-between gap-6">
+    <div id="dashboard-content" className="w-full relative">
+
+      {/* Ambient background glows */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #22C55E 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #3B82F6 0%, transparent 70%)' }} />
+      </div>
+
+      {/* Header */}
+      <div className="mb-8 flex flex-wrap sm:flex-row sm:items-start justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-semibold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your procurement activities</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-3"
+            style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22C55E' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
+            Mill Owner Portal
+          </div>
+          <h1 className="text-4xl font-bold mb-1.5" style={{ letterSpacing: '-0.02em' }}>Dashboard</h1>
+          <p className="text-sm" style={{ color: 'rgba(148,163,184,0.8)' }}>Overview of your procurement activities</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button onClick={toggleTheme} className="px-4 py-2 text-sm font-medium rounded-xl border border-border bg-card/60 backdrop-blur-md text-foreground hover:bg-accent hover:scale-[1.02] shadow-sm transition-all flex items-center gap-2">
-            {theme === "dark" ? "Light Mode ☀️" : "Dark Mode 🌙"}
-          </button>
-          <div className="flex bg-muted/50 p-1 rounded-xl border border-border/50">
-            <button onClick={() => setRange("7d")} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${range === "7d" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>7 Days</button>
-            <button onClick={() => setRange("30d")} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${range === "30d" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>30 Days</button>
-            <button onClick={() => setRange("all")} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${range === "all" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>All Time</button>
+          {/* Live badge */}
+          <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full font-medium"
+            style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', color: '#22C55E', backdropFilter: 'blur(8px)' }}>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E]" style={{ boxShadow: '0 0 6px #22C55E' }} />
+            </span>
+            Live - Updating
           </div>
-          <button onClick={exportPDF} className="relative overflow-hidden px-5 py-2 text-sm font-medium rounded-xl bg-green-500 hover:bg-green-400 text-black shadow-md shadow-green-500/20 hover:shadow-green-500/40 hover:scale-[1.05] active:scale-95 transition-all flex items-center gap-2">
-            Export Report 📄
+          {/* Range pills */}
+          <div className="flex items-center p-1 rounded-xl gap-1" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {[['7d','7 Days'],['30d','30 Days'],['all','All Time']].map(([val, label]) => (
+              <button key={val} onClick={() => setRange(val)}
+                className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200"
+                style={range === val ? { background: '#22C55E', color: '#000', boxShadow: '0 0 12px rgba(34,197,94,0.3)' } : { color: 'rgba(148,163,184,0.7)' }}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {/* Export */}
+          <button onClick={exportPDF}
+            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #22C55E, #16a34a)', color: '#000', boxShadow: '0 0 20px rgba(34,197,94,0.25)' }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45)'}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(34,197,94,0.25)'}>
+            <FileText className="w-4 h-4" />
+            Export Report
           </button>
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 relative">
-        {step === 0 && <div className="absolute -top-6 left-2 font-medium text-green-500 animate-pulse text-sm flex items-center gap-2"><span>📊</span> Your performance overview</div>}
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(34,197,94,0.05)] hover:shadow-[0_0_15px_rgba(34,197,94,0.08)] hover:dark:shadow-[0_0_15px_rgba(34,197,94,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
-          <div className="flex items-center justify-between mb-4 relative z-10 w-full">
-            <div className="w-12 h-12 bg-[#22C55E]/10 rounded-xl flex items-center justify-center shrink-0">
-              <ShoppingCart className="w-6 h-6 text-[#22C55E] group-hover:rotate-6 transition-transform" />
-            </div>
-            <div className="h-10 w-24">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sparkData}>
-                  <Line type="monotone" dataKey="value" stroke="#4ade80" opacity={0.7} strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="relative z-10">
-            <div className="text-3xl font-semibold mb-1"><CountUp end={data?.stats?.activePurchases || 0} duration={1.5} separator="," /></div>
-            <div className="text-sm text-muted-foreground w-full flex items-center justify-between">
-              <span>Active Purchases</span>
-              <span className="text-green-500 text-xs flex items-center gap-1"><TrendingUp className="w-3 h-3" /> 8%</span>
-            </div>
-          </div>
-        </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {[
+          { icon: ShoppingCart, color: '#22C55E', label: 'Active Purchases',      value: data?.stats?.activePurchases       || 0, growth: 8,  prefix: '',     suffix: '' },
+          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Negotiations',  value: data?.stats?.ongoingNegotiations   || 0, growth: 12, prefix: '',     suffix: '' },
+          { icon: Package,      color: '#A855F7', label: 'Monthly Procurement',   value: data?.stats?.monthlyProcurementKg  || 0, growth: 15, prefix: '',     suffix: ' kg' },
+          { icon: DollarSign,   color: '#F59E0B', label: 'Total Spend',           value: data?.stats?.totalSpend            || 0, growth: data?.stats?.growth||0, prefix: 'Rs ', suffix: '' },
+        ].map(({ icon: Icon, color, label, value, growth, prefix, suffix }, i) => (
+          <div key={i}
+            className="relative overflow-hidden rounded-2xl p-6 border cursor-default group transition-all duration-300"
+            style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', borderColor: 'rgba(255,255,255,0.08)' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 0 30px ${color}22, 0 12px 40px rgba(0,0,0,0.3)`; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+          >
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+              style={{ background: `radial-gradient(ellipse at 10% 10%, ${color}18 0%, transparent 60%)` }} />
+            <div className="absolute top-0 left-6 right-6 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              style={{ background: `linear-gradient(90deg, transparent, ${color}60, transparent)` }} />
 
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(59,130,246,0.05)] hover:shadow-[0_0_15px_rgba(59,130,246,0.08)] hover:dark:shadow-[0_0_15px_rgba(59,130,246,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-blue-400 scale-[1.02]" : ""}`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
-          <div className="flex items-center justify-between mb-4 relative z-10 w-full">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0">
-              <MessageSquare className="w-6 h-6 text-blue-500 group-hover:rotate-6 transition-transform" />
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{ background: `linear-gradient(135deg, ${color}30, ${color}10)`, border: `1px solid ${color}25` }}>
+                <Icon className="w-5 h-5" style={{ color }} />
+              </div>
+              <div className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: growth >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: growth >= 0 ? '#22C55E' : '#EF4444' }}>
+                {growth >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {Math.abs(growth).toFixed(1)}%
+              </div>
             </div>
-            <div className="h-10 w-24">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sparkData}>
-                  <Line type="monotone" dataKey="value" stroke="#60a5fa" opacity={0.7} strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="relative z-10">
-            <div className="text-3xl font-semibold mb-1"><CountUp end={data?.stats?.ongoingNegotiations || 0} duration={1.5} separator="," /></div>
-            <div className="text-sm text-muted-foreground w-full flex items-center justify-between">
-              <span>Ongoing Deals</span>
-              <span className="text-blue-500 text-xs flex items-center gap-1"><TrendingUp className="w-3 h-3" /> 12%</span>
-            </div>
-          </div>
-        </div>
 
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(139,92,246,0.05)] hover:shadow-[0_0_15px_rgba(139,92,246,0.08)] hover:dark:shadow-[0_0_15px_rgba(139,92,246,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-purple-400 scale-[1.02]" : ""}`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
-          <div className="flex items-center justify-between mb-4 relative z-10 w-full">
-            <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center shrink-0">
-              <Package className="w-6 h-6 text-purple-500 group-hover:rotate-6 transition-transform" />
+            <div className="text-3xl font-bold mb-1.5 tabular-nums tracking-tight text-white">
+              <CountUp end={value} duration={1.5} separator="," prefix={prefix} suffix={suffix} />
             </div>
-            <div className="h-10 w-24">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sparkData}>
-                  <Line type="monotone" dataKey="value" stroke="#a78bfa" opacity={0.7} strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <div className="text-sm" style={{ color: 'rgba(148,163,184,0.8)' }}>{label}</div>
           </div>
-          <div className="relative z-10">
-            <div className="text-3xl font-semibold mb-1"><CountUp end={data?.stats?.monthlyProcurementKg || 0} duration={1.5} separator="," suffix=" kg" /></div>
-            <div className="text-sm text-muted-foreground w-full flex items-center justify-between">
-              <span>Monthly Procurement</span>
-              <span className="text-purple-500 text-xs flex items-center gap-1"><TrendingUp className="w-3 h-3" /> 15%</span>
-            </div>
-          </div>
-        </div>
-
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_0_10px_rgba(245,158,11,0.05)] hover:shadow-[0_0_15px_rgba(245,158,11,0.08)] hover:dark:shadow-[0_0_15px_rgba(245,158,11,0.08)] rounded-2xl p-4 md:p-6 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden flex flex-col justify-between group ${step === 0 ? "ring-2 ring-orange-400 scale-[1.02]" : ""}`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
-          <div className="flex items-center justify-between mb-4 relative z-10 w-full">
-            <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center shrink-0">
-              <DollarSign className="w-6 h-6 text-orange-500 group-hover:rotate-6 transition-transform" />
-            </div>
-            <div className="h-10 w-24">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sparkData}>
-                  <Line type="monotone" dataKey="value" stroke="#fbbf24" opacity={0.7} strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="relative z-10">
-            <div className="text-3xl font-semibold mb-1">
-              <CountUp end={data?.stats?.totalSpend || 0} duration={1.5} separator="," prefix="Rs " />
-            </div>
-            <div className="text-sm text-muted-foreground w-full flex items-center justify-between">
-              <span>Total Spend</span>
-              <span className={`text-xs flex items-center gap-1 ${(data?.stats?.growth || 0) >= 0 ? "text-green-500" : "text-red-500"}`}>
-                {(data?.stats?.growth || 0) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {Math.abs(data?.stats?.growth || 0).toFixed(1)}%
-              </span>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 relative">
-        {step === 3 && <div className="absolute -top-6 left-2 font-medium text-green-500 animate-pulse text-sm flex items-center gap-2"><span>🧠</span> AI Insights</div>}
-        <div className={`md:col-span-2 bg-card/60 backdrop-blur-md shadow-sm border border-border/50 p-5 rounded-2xl flex items-center justify-center text-sm font-medium text-foreground transition-all duration-300 ${step === 3 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
-          {(() => {
-            let insight = "💡 Procurement is stable this week";
-            const growth = data?.stats?.growth || 0;
-            if (growth > 0) insight = `🚀 Procurement increased ${growth.toFixed(1)}% this month 📈`;
-            else if (growth < 0) insight = `⚠️ Procurement decreased ${Math.abs(growth).toFixed(1)}% this month 📉`;
-            return insight;
-          })()}
+      {/* Insight Strip */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        {/* Procurement insight */}
+        <div className="md:col-span-2 rounded-2xl p-5 flex items-center gap-4"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
+            <Zap className="w-5 h-5 text-[#22C55E]" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold mb-1" style={{ color: 'rgba(148,163,184,0.6)' }}>PROCUREMENT INSIGHT</p>
+            <p className="text-sm font-medium text-white">
+              {(() => {
+                const growth = data?.stats?.growth || 0;
+                if (growth > 0) return `Procurement increased ${growth.toFixed(1)}% this month. Keep sourcing to maintain momentum.`;
+                if (growth < 0) return `Procurement decreased ${Math.abs(growth).toFixed(1)}% this month. Consider expanding your sourcing locations.`;
+                return 'Procurement is stable. Explore new paddy types and districts to diversify supply.';
+              })()}
+            </p>
+          </div>
         </div>
-        
-        <div className={`bg-card/60 backdrop-blur-md shadow-sm border border-border/50 p-5 rounded-2xl flex flex-col justify-center transition-all duration-300 ${step === 3 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
-          <div className="text-sm flex flex-col space-y-3">
-            <div className="flex items-center gap-2 text-muted-foreground"><span className="text-lg">🌾</span> Most Bought: <b className="text-foreground">{data.bestSelling || "N/A"}</b></div>
-            <div className="flex items-center gap-2 text-muted-foreground"><span className="text-lg">📍</span> Highest Sourcing: <b className="text-foreground">{topLocationStr}</b></div>
+
+        {/* Most Bought + Highest Sourcing */}
+        <div className="rounded-2xl p-5 flex flex-col justify-center gap-4"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(34,197,94,0.1)' }}>
+              <Leaf className="w-4 h-4 text-[#22C55E]" />
+            </div>
+            <div>
+              <p className="text-xs font-medium" style={{ color: 'rgba(148,163,184,0.6)' }}>Most Purchased</p>
+              <p className="text-sm font-bold text-white">{data.bestSelling || 'N/A'}</p>
+            </div>
+          </div>
+          <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(59,130,246,0.1)' }}>
+              <MapPin className="w-4 h-4 text-[#3B82F6]" />
+            </div>
+            <div>
+              <p className="text-xs font-medium" style={{ color: 'rgba(148,163,184,0.6)' }}>Highest Sourcing Area</p>
+              <p className="text-sm font-bold text-white">{topLocationStr}</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10 mt-6 relative">
-        {step === 1 && <div className="absolute -top-6 left-2 font-medium text-green-500 animate-pulse text-sm flex items-center gap-2"><span>📈</span> Procurement Trend</div>}
-        {step === 2 && <div className="absolute -top-6 left-[51%] font-medium text-green-500 animate-pulse text-sm flex items-center gap-2"><span>🌾</span> Procurement by Type</div>}
-        
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-6 hover:shadow-[0_0_15px_rgba(34,197,94,0.08)] transition-all duration-300 ${step === 1 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
-          <h2 className="text-xl font-semibold mb-6">Procurement Trend</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            {salesData[0].month === "No Data" ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground font-medium">📊 No data yet — start procuring to see insights</div>
-            ) : (
-              <LineChart data={salesData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+        {/* Procurement Trend - Area chart */}
+        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(34,197,94,0.08)]"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-base font-semibold text-white">Procurement Trend</h2>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Monthly spending - Last 6 months</p>
+            </div>
+            <span className="text-xs font-semibold px-3 py-1 rounded-lg"
+              style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.2)' }}>6M</span>
+          </div>
+          {salesData[0].month === 'No Data' ? (
+            <div className="flex flex-col items-center justify-center h-64 text-sm" style={{ color: 'rgba(148,163,184,0.5)' }}>
+              <BarChart2 className="w-8 h-8 mb-3 opacity-30" />
+              No data yet - start procuring to see insights
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={salesData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#22c55e" />
-                    <stop offset="100%" stopColor="#4ade80" />
+                  <linearGradient id="millAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity={0.35} />
+                    <stop offset="60%" stopColor="#22C55E" stopOpacity={0.08} />
+                    <stop offset="100%" stopColor="#22C55E" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="millStrokeGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity={0.6} />
+                    <stop offset="50%" stopColor="#22C55E" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.8} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.5} />
-                <XAxis dataKey="month" stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} dy={10} />
-                <YAxis 
-                  stroke="var(--color-muted-foreground)" 
-                  tickLine={false} 
-                  axisLine={false} 
-                  width={80}
-                  tickFormatter={(value) => {
-                    if (value >= 1000000) return `Rs ${(value / 1000000).toFixed(1)}M`;
-                    if (value >= 1000) return `Rs ${(value / 1000).toFixed(0)}K`;
-                    return `Rs ${value}`;
-                  }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'var(--color-card)', 
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Line type="monotone" dataKey="sales" stroke="url(#colorGradient)" strokeWidth={4} dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#4ade80', stroke: '#fff' }} isAnimationActive={true} animationDuration={1000} />
-              </LineChart>
-            )}
-          </ResponsiveContainer>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8} />
+                <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} width={72}
+                  tickFormatter={v => v >= 1000000 ? `Rs ${(v/1000000).toFixed(1)}M` : v >= 1000 ? `Rs ${(v/1000).toFixed(0)}K` : `Rs ${v}`} />
+                <Tooltip
+                  contentStyle={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(20px)' }}
+                  cursor={{ stroke: 'rgba(34,197,94,0.3)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                  labelStyle={{ color: 'rgba(148,163,184,0.7)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                  itemStyle={{ color: '#22C55E', fontWeight: 700 }} />
+                <Area type="monotone" dataKey="sales" name="Spend"
+                  stroke="url(#millStrokeGrad)" strokeWidth={2.5} fill="url(#millAreaGrad)"
+                  dot={false} activeDot={{ r: 6, fill: '#22C55E', strokeWidth: 2, stroke: 'rgba(34,197,94,0.3)' }}
+                  isAnimationActive animationDuration={1200} animationEasing="ease-out" />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
-        <div className={`bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-6 hover:shadow-[0_0_15px_rgba(34,197,94,0.08)] transition-all duration-300 w-full overflow-x-auto ${step === 2 ? "ring-2 ring-green-400 scale-[1.02]" : ""}`}>
-          <h2 className="text-xl font-semibold mb-6">Procurement by Paddy Type</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            {procurementData[0].type === "No Data" ? (
-               <div className="flex items-center justify-center h-full text-muted-foreground font-medium">📊 No data yet — start procuring to see insights</div>
-            ) : (
-              <BarChart data={procurementData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.5} />
-                <XAxis dataKey="type" stroke="var(--color-muted-foreground)" tickLine={false} axisLine={false} dy={10} />
-                <YAxis 
-                  stroke="var(--color-muted-foreground)" 
-                  tickLine={false} 
-                  axisLine={false} 
-                  width={80}
-                  domain={[0, 'auto']}
+        {/* Procurement by Paddy Type - Bar chart */}
+        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(59,130,246,0.06)]"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-base font-semibold text-white">Procurement by Paddy Type</h2>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Quantity sourced by type (kg)</p>
+            </div>
+          </div>
+          {procurementData[0].type === 'No Data' ? (
+            <div className="flex flex-col items-center justify-center h-64 text-sm" style={{ color: 'rgba(148,163,184,0.5)' }}>
+              <Leaf className="w-8 h-8 mb-3 opacity-30" />
+              No procurement data yet
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={procurementData} barCategoryGap="30%" margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="millBarGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22C55E" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#16a34a" stopOpacity={0.7} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="type" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8} />
+                <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} width={70}
                   allowDecimals={false}
-                  tickFormatter={(value) => {
-                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M kg`;
-                    if (value >= 1000) return `${(value / 1000).toFixed(0)}K kg`;
-                    return `${value} kg`;
-                  }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'var(--color-card)', 
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Bar dataKey="quantity" fill="#22C55E" radius={[8, 8, 0, 0]} isAnimationActive={true} animationDuration={800} />
+                  tickFormatter={v => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : `${v}`} />
+                <Tooltip
+                  contentStyle={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(20px)' }}
+                  cursor={{ fill: 'rgba(255,255,255,0.02)', radius: 4 }}
+                  labelStyle={{ color: 'rgba(148,163,184,0.7)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                  itemStyle={{ color: '#22C55E', fontWeight: 700 }}
+                  formatter={v => [`${v.toLocaleString()} kg`, 'Quantity']} />
+                <Bar dataKey="quantity" fill="url(#millBarGrad)" radius={[6,6,0,0]}
+                  isAnimationActive animationDuration={900} animationEasing="ease-out" />
               </BarChart>
-            )}
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
       {/* Recent Purchases Table */}
-      <div className="bg-card/70 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col">
-        <div className="p-6 border-b border-border/50">
-          <h2 className="text-xl font-semibold">Recent Purchases</h2>
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div>
+            <h2 className="text-base font-semibold text-white">Recent Purchases</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.6)' }}>Latest procurement transactions</p>
+          </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border">
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Farmer Name</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Paddy Type</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Quantity</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Price</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Action</th>
+              <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                {['Date','Farmer','Paddy Type','Quantity','Price','Status','Action'].map(h => (
+                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(148,163,184,0.6)' }}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {recentActivity.map((item) => (
-                <tr key={item.id} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors">
-                  <td className="p-4">{item.date}</td>
-                  <td className="p-4">{item.farmer}</td>
-                  <td className="p-4">{item.paddyType}</td>
-                  <td className="p-4">{item.quantity}</td>
-                  <td className="p-4">{item.price}</td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${item.statusColor}`}>
+              {recentActivity.length === 0 ? (
+                <tr><td colSpan={7} className="text-center py-12" style={{ color: 'rgba(148,163,184,0.5)' }}>No recent purchases</td></tr>
+              ) : recentActivity.map((item) => (
+                <tr key={item.id}
+                  className="transition-colors duration-150"
+                  style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <td className="px-5 py-4" style={{ color: 'rgba(226,232,240,0.7)' }}>{item.date}</td>
+                  <td className="px-5 py-4 font-medium text-white">{item.farmer}</td>
+                  <td className="px-5 py-4" style={{ color: 'rgba(226,232,240,0.85)' }}>{item.paddyType}</td>
+                  <td className="px-5 py-4" style={{ color: 'rgba(226,232,240,0.7)' }}>{item.quantity}</td>
+                  <td className="px-5 py-4 font-medium" style={{ color: '#22C55E' }}>{item.price}</td>
+                  <td className="px-5 py-4">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${item.statusColor}`}>
                       {item.status}
                     </span>
                   </td>
-                  <td className="p-4">
-                    <button onClick={() => navigate(`/mill-owner/transactions/${item.id}`)} className="text-green-500 hover:text-green-400 font-medium hover:underline text-sm transition-colors">View Details</button>
+                  <td className="px-5 py-4">
+                    <button onClick={() => navigate(`/mill-owner/transactions/${item.id}`)}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-95"
+                      style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.2)' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.1)'}>
+                      View
+                    </button>
                   </td>
                 </tr>
               ))}
