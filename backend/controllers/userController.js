@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 
 
 // ================= REGISTER USER =================
@@ -267,10 +269,187 @@ const uploadAvatar = async (req, res) => {
 };
 
 
+// ================= FORGOT PASSWORD =================
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "There is no user with that email" });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString("hex");
+
+    // Hash token and set to resetPasswordToken field
+    user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    // Set expire (15 minutes)
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset url (Fallback to port 3000 if not in env)
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a request to: \n\n ${resetUrl}\n\nThis link will expire in 15 minutes.\nIf you didn't request this, ignore this email.`;
+
+    const htmlMessage = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Password</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              
+              <!-- MAIN CONTAINER -->
+              <table width="100%" max-width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden;">
+                
+                <!-- HEADER -->
+                <tr>
+                  <td align="center" style="padding: 30px 40px; background-color: #f0fdf4; border-bottom: 1px solid #dcfce7;">
+                    <h1 style="color: #166534; font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">AgroBridge</h1>
+                    <p style="color: #22c55e; font-size: 14px; font-weight: 500; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">Smart Paddy Stock & Supply Platform</p>
+                  </td>
+                </tr>
+
+                <!-- BODY -->
+                <tr>
+                  <td style="padding: 40px;">
+                    
+                    <h2 style="color: #0f172a; font-size: 24px; font-weight: 700; margin: 0 0 20px 0;">Reset Your Password</h2>
+                    
+                    <p style="color: #334155; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+                      Hi ${user.fullName || "there"}, 👋
+                    </p>
+                    
+                    <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 32px 0;">
+                      We received a request to reset your password for your AgroBridge account. You can easily create a new password by clicking the secure link below.
+                    </p>
+
+                    <!-- BUTTON -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="padding-bottom: 32px;">
+                          <table cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td align="center" bgcolor="#22c55e" style="border-radius: 8px; background: linear-gradient(to right, #22c55e, #16a34a); box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.39);">
+                                <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 36px; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+                                  Reset Password
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- BACKUP LINK -->
+                    <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 32px; word-break: break-all;">
+                      <p style="color: #64748b; font-size: 13px; margin: 0 0 8px 0; font-weight: 600;">Button not working? Copy and paste this link:</p>
+                      <a href="${resetUrl}" style="color: #3b82f6; font-size: 13px; text-decoration: underline;">${resetUrl}</a>
+                    </div>
+
+                    <!-- SECURITY NOTICE -->
+                    <div style="background-color: #fff7ed; border-left: 4px solid #f97316; padding: 16px; border-radius: 4px;">
+                      <p style="color: #9a3412; font-size: 14px; margin: 0 0 6px 0; font-weight: 600;">Security Notice</p>
+                      <ul style="margin: 0; padding-left: 20px; color: #c2410c; font-size: 13px; line-height: 1.5;">
+                        <li>This password reset link will expire in exactly <strong>15 minutes</strong> for your security.</li>
+                        <li>If you did not request a password reset, you can safely ignore this email. Your password will remain completely secure.</li>
+                      </ul>
+                    </div>
+
+                  </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                  <td align="center" style="padding: 24px 40px; background-color: #f1f5f9; border-top: 1px solid #e2e8f0;">
+                    <p style="color: #64748b; font-size: 14px; font-weight: 600; margin: 0 0 8px 0;">AgroBridge</p>
+                    <p style="color: #94a3b8; font-size: 12px; margin: 0;">Secure • Transparent • Efficient</p>
+                    <p style="color: #cbd5e1; font-size: 11px; margin: 16px 0 0 0;">&copy; ${new Date().getFullYear()} AgroBridge. All rights reserved.</p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Reset Your Password - AgroBridge",
+        message: message,
+        html: htmlMessage
+      });
+
+      res.status(200).json({ message: "Email sent" });
+    } catch (err) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({ message: "Email could not be sent" });
+    }
+
+  } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// ================= RESET PASSWORD =================
+const resetPassword = async (req, res) => {
+  try {
+    // Get hashed token
+    const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    // Hash and set new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(req.body.password, salt);
+    
+    // Clear token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
   getMyProfile,
   updateProfile,
-  uploadAvatar
+  uploadAvatar,
+  forgotPassword,
+  resetPassword
 };

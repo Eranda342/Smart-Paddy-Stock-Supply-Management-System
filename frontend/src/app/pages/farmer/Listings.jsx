@@ -195,256 +195,164 @@ export default function FarmerListings() {
   );
 
   return (
-    <div className="max-w-[1320px] mx-auto">
-
-      <div className="flex items-center justify-between mb-8">
-
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative">
+      {/* Decorative Orbs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-green-500/5 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative z-10">
         <div>
-          <h1 className="text-3xl font-semibold mb-2">My Listings</h1>
-          <p className="text-muted-foreground">Manage your paddy listings</p>
+          <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">My Listings</h1>
+          <p className="text-white/50 text-sm">Manage your paddy stock supply and inventory</p>
         </div>
-
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-6 py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg font-medium"
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-green-500/25 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500"
         >
           <Plus className="w-5 h-5" />
           Create Listing
         </button>
-
       </div>
 
-      <div className="mb-6">
-
+      <div className="mb-8 flex relative z-10">
         <input
           type="text"
           placeholder="Search by paddy type or district..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
+          className="w-full max-w-md px-5 py-3.5 bg-white/[0.03] border border-white/10 text-white rounded-2xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all placeholder-white/30 backdrop-blur-md shadow-lg"
         />
-
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-
-        <table className="w-full">
-
-          <thead>
-
-            <tr className="border-b border-border bg-muted/50">
-              <th className="text-left p-4">Paddy Type</th>
-              <th className="text-left p-4">Quantity</th>
-              <th className="text-left p-4">Price</th>
-              <th className="text-left p-4">District</th>
-              <th className="text-left p-4">Status</th>
-              <th className="text-left p-4">Actions</th>
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {filteredListings.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center p-6 text-gray-400">
-                  No listings found
-                </td>
+      <div className="bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl relative z-10">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead>
+              <tr className="border-b border-white/5 bg-white/[0.04]">
+                <th className="px-6 py-5 text-xs font-semibold text-white/50 uppercase tracking-widest">Paddy Type</th>
+                <th className="px-6 py-5 text-xs font-semibold text-white/50 uppercase tracking-widest">Quantity</th>
+                <th className="px-6 py-5 text-xs font-semibold text-white/50 uppercase tracking-widest">Price</th>
+                <th className="px-6 py-5 text-xs font-semibold text-white/50 uppercase tracking-widest">District</th>
+                <th className="px-6 py-5 text-xs font-semibold text-white/50 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-5 text-xs font-semibold text-white/50 uppercase tracking-widest">Actions</th>
               </tr>
-            ) : (
-              filteredListings.map((listing) => (
-
-                <tr key={listing._id} className="border-b border-border">
-
-                  <td className="p-4 font-medium">{listing.paddyType}</td>
-                  <td className="p-4">{listing.quantityKg} kg</td>
-                  <td className="p-4">Rs {listing.pricePerKg}/kg</td>
-                  <td className="p-4">{listing.location?.district}</td>
-
-                  <td className="p-4">
-                    <span className="px-3 py-1 rounded-full text-sm bg-green-500/10 text-green-400">
-                      {listing.status}
-                    </span>
-                  </td>
-
-                  <td className="p-4">
-
-                    <div className="flex gap-2">
-
-                      <button
-                        onClick={() => navigate(`/farmer/listings/${listing._id}`)}
-                        className="p-2 hover:bg-muted rounded-lg"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        onClick={() => openEditModal(listing)}
-                        className="p-2 hover:bg-muted rounded-lg"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        onClick={() => handleDeleteListing(listing._id)}
-                        className="p-2 hover:bg-muted rounded-lg text-red-500"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-
+            </thead>
+            <tbody>
+              {filteredListings.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-20 text-white/30">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-14 h-14 bg-white/5 rounded-full flex items-center justify-center mb-2 border border-white/5 pointer-events-none">
+                        <Plus className="w-6 h-6 text-white/20" />
+                      </div>
+                      <p className="text-base font-medium">No listings found</p>
+                      <p className="text-sm">Try adjusting your search or create a new listing.</p>
                     </div>
-
                   </td>
-
                 </tr>
-
-              ))
-            )}
-
-          </tbody>
-
-        </table>
-
+              ) : (
+                filteredListings.map((listing) => (
+                  <tr key={listing._id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-6 py-4 font-medium text-white/95">{listing.paddyType}</td>
+                    <td className="px-6 py-4 text-white/70">{listing.quantityKg.toLocaleString()} kg</td>
+                    <td className="px-6 py-4 text-green-400 font-medium">Rs {listing.pricePerKg}/kg</td>
+                    <td className="px-6 py-4 text-white/70">{listing.location?.district}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide bg-green-500/10 text-green-400 border border-green-500/20">
+                        {listing.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button onClick={() => navigate(`/farmer/listings/${listing._id}`)} className="p-2 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="View">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => openEditModal(listing)} className="p-2 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Edit">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDeleteListing(listing._id)} className="p-2 bg-white/5 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showModal && (
         <>
           <style>{`
             @keyframes overlayFade {
-              from { opacity: 0; }
-              to { opacity: 1; }
+              from { opacity: 0; backdrop-filter: blur(0px); }
+              to { opacity: 1; backdrop-filter: blur(8px); }
             }
             @keyframes modalScale {
-              from { opacity: 0; transform: scale(0.95); }
-              to { opacity: 1; transform: scale(1); }
+              from { opacity: 0; transform: scale(0.95) translateY(10px); }
+              to { opacity: 1; transform: scale(1) translateY(0); }
             }
           `}</style>
-          <div 
-            onClick={closeModal}
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
-            style={{ animation: 'overlayFade 0.2s ease-out forwards' }}
-          >
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              className="bg-gray-900 border border-gray-700 rounded-xl p-8 w-[650px] relative shadow-2xl"
-              style={{ animation: 'modalScale 0.2s ease-out forwards' }}
-            >
-              <button 
-                type="button"
-                onClick={closeModal}
-                className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all cursor-pointer z-50"
-              >
+          <div onClick={closeModal} className="fixed inset-0 bg-[#020617]/80 flex items-center justify-center z-50 p-4" style={{ animation: 'overlayFade 0.3s ease-out forwards' }}>
+            <div onClick={(e) => e.stopPropagation()} className="bg-[#0A1120] border border-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-2xl relative shadow-2xl overflow-hidden" style={{ animation: 'modalScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
+              
+              <button type="button" onClick={closeModal} className="absolute top-6 right-6 p-2 rounded-xl text-white/40 hover:bg-white/5 hover:text-white transition-all">
                 <X className="w-5 h-5" />
               </button>
 
-            <h2 className="text-2xl font-semibold mb-6">
-              {editListingId ? "Edit Listing" : "Create New Listing"}
-            </h2>
+              <h2 className="text-2xl font-bold tracking-tight mb-8 text-white">
+                {editListingId ? "Edit Listing" : "Create New Listing"}
+              </h2>
 
-            <form onSubmit={handleSaveListing} className="space-y-6">
-
-              <div className="grid grid-cols-2 gap-6">
-
-                <div>
-                  <label className="block mb-2 text-sm font-medium">Paddy Type</label>
-                  <select
-                    value={paddyType}
-                    onChange={(e) => setPaddyType(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
-                  >
-                    {PADDY_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
+              <form onSubmit={handleSaveListing} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-white/70">Paddy Type</label>
+                    <select value={paddyType} onChange={(e) => setPaddyType(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all cursor-pointer">
+                      {PADDY_TYPES.map(type => <option key={type} value={type} className="bg-[#0A1120]">{type}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-white/70">Quantity (kg)</label>
+                    <input type="number" value={quantityKg} onChange={(e) => setQuantityKg(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30" required />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-white/70">Price (Rs/kg)</label>
+                    <input type="number" value={pricePerKg} onChange={(e) => setPricePerKg(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30" required />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-white/70">District</label>
+                    <select value={district} onChange={(e) => setDistrict(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all cursor-pointer">
+                      {DISTRICTS.map(d => <option key={d} value={d} className="bg-[#0A1120]">{d}</option>)}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block mb-2 text-sm font-medium">Quantity (kg)</label>
-                  <input
-                    type="number"
-                    value={quantityKg}
-                    onChange={(e) => setQuantityKg(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
-                    required
-                  />
+                  <label className="block mb-2 text-sm font-medium text-white/70">Address</label>
+                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30" />
                 </div>
 
                 <div>
-                  <label className="block mb-2 text-sm font-medium">Price (Rs/kg)</label>
-                  <input
-                    type="number"
-                    value={pricePerKg}
-                    onChange={(e) => setPricePerKg(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
-                    required
-                  />
+                  <label className="block mb-2 text-sm font-medium text-white/70">Description</label>
+                  <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30 resize-none" />
                 </div>
 
-                <div>
-                  <label className="block mb-2 text-sm font-medium">District</label>
-                  <select
-                    value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E]/50 transition-colors"
-                  >
-                    {DISTRICTS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex gap-4 pt-4 mt-8 border-t border-white/10">
+                  <button type="button" onClick={closeModal} className="px-6 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium transition-all rounded-xl">
+                    Cancel
+                  </button>
+                  <button type="submit" className="flex-1 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg hover:shadow-green-500/25 font-semibold rounded-xl transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0A1120] focus:ring-green-500">
+                    {editListingId ? "Update Listing" : "Create Listing"}
+                  </button>
                 </div>
-
-              </div>
-
-              <div>
-                <label className="block mb-2">Address</label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2">Description</label>
-                <textarea
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-600 text-white rounded-lg"
-                />
-              </div>
-
-              <div className="flex gap-4">
-
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white transition-colors rounded-lg"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg font-medium"
-                >
-                  {editListingId ? "Update Listing" : "Create Listing"}
-                </button>
-
-              </div>
-
-            </form>
-
+              </form>
             </div>
           </div>
         </>
       )}
-
     </div>
   );
 }

@@ -51,6 +51,9 @@ const userSchema = new mongoose.Schema(
     default: null
   },
 
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+
 
   // ================= FARMER DETAILS =================
   farmDetails: {

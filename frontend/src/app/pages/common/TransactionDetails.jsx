@@ -531,93 +531,153 @@ export default function TransactionDetails() {
     return null;
   };
 
+  // Stepper Logic
+  const timeline = [
+    {
+      title: "Order Placed",
+      desc: "Contract initialized",
+      isDone: true,
+      isActive: false
+    },
+    {
+      title: "Payment",
+      desc: transaction.paymentStatus === "PAID" ? "Payment secured" : "Awaiting buyer payment",
+      isDone: transaction.paymentStatus === "PAID",
+      isActive: transaction.paymentStatus === "PENDING"
+    },
+    {
+      title: "Logistics",
+      desc: transaction.transportRequired === false ? "Farmer self-delivery" : (transaction.transportRequired === true ? (transaction.transportStatus !== "PENDING" ? "Vehicle assigned & dispatched" : "Awaiting vehicle assignment") : "Pending logistics decision"),
+      isDone: transaction.transportRequired === false || (transaction.transportRequired === true && transaction.transportStatus !== "PENDING"),
+      isActive: transaction.paymentStatus === "PAID" && (transaction.transportRequired === null || (transaction.transportRequired && transaction.transportStatus === "PENDING"))
+    },
+    {
+      title: "Delivery",
+      desc: transaction.status === "COMPLETED" || transaction.status === "DELIVERED" ? "Successfully delivered" : "In transit / Pending",
+      isDone: transaction.status === "COMPLETED" || transaction.status === "DELIVERED",
+      isActive: (transaction.transportRequired === false || (transaction.transportRequired && transaction.transportStatus !== "PENDING")) && (transaction.status !== "COMPLETED" && transaction.status !== "DELIVERED")
+    }
+  ];
+
   return (
-    <div className="max-w-[800px] mx-auto pb-10 pt-4">
+    <div className="max-w-5xl mx-auto pb-16 pt-8 px-4 sm:px-6 relative">
       
+      {/* Decorative Background */}
+      <div className="fixed top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-green-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+
       {/* HEADER */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 relative z-10">
         <button 
           onClick={() => navigate(-1)}
-          className="p-2 hover:bg-muted/50 text-muted-foreground hover:text-foreground rounded-lg transition-colors border border-border bg-card"
+          className="self-start p-2.5 bg-white/[0.03] hover:bg-white/10 text-white/60 hover:text-white rounded-xl border border-white/10 transition-all backdrop-blur-sm"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">
-              Transaction: {transaction.orderNumber}
+          <div className="flex flex-wrap items-center gap-3 mb-1">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Order {transaction.orderNumber}
             </h1>
-            <span className={`text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${getStatusColor(transaction.status)}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md ${
+              transaction.status === 'COMPLETED' || transaction.status === 'DELIVERED' 
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+            }`}>
               {transaction.status.replace("_", " ")}
             </span>
           </div>
-          <p className="text-muted-foreground text-sm mt-1">
-            Review detailed context and execute order workflows below.
+          <p className="text-white/50 text-sm font-medium tracking-wide">
+            Detailed transaction context and live workflow coordination.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
         
-        {/* LEFT */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-5 pb-3 border-b border-border">Order Details</h2>
+        {/* LEFT COLUMN - Order Details */}
+        <div className="lg:col-span-7 space-y-8">
+          <div className="bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/30 to-transparent" />
             
-            <div className="grid grid-cols-2 gap-y-6 gap-x-6">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1 uppercase font-semibold">Buyer (Mill)</p>
-                <p className="font-medium">{getBuyerName(transaction)}</p>
+            <h2 className="text-xl font-bold mb-6 text-white tracking-tight">Order Specifications</h2>
+            
+            <div className="grid grid-cols-2 gap-y-8 gap-x-6">
+              <div className="group">
+                <p className="text-xs text-white/40 mb-1.5 uppercase tracking-widest font-semibold group-hover:text-green-400 transition-colors">Buyer (Mill)</p>
+                <p className="font-semibold text-white/90 text-sm sm:text-base">{getBuyerName(transaction)}</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1 uppercase font-semibold">Farmer</p>
-                <p className="font-medium">{getFarmerName(transaction)}</p>
+              <div className="group">
+                <p className="text-xs text-white/40 mb-1.5 uppercase tracking-widest font-semibold group-hover:text-green-400 transition-colors">Farmer</p>
+                <p className="font-semibold text-white/90 text-sm sm:text-base">{getFarmerName(transaction)}</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1 uppercase font-semibold">Paddy Type</p>
-                <p className="font-medium">{transaction?.listing?.paddyType || "-"}</p>
+              <div className="group">
+                <p className="text-xs text-white/40 mb-1.5 uppercase tracking-widest font-semibold group-hover:text-green-400 transition-colors">Variety</p>
+                <p className="font-semibold text-white/90 text-sm sm:text-base">{transaction?.listing?.paddyType || "-"}</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1 uppercase font-semibold">Quantity</p>
-                <p className="font-medium">{transaction.quantityKg} kg</p>
+              <div className="group">
+                <p className="text-xs text-white/40 mb-1.5 uppercase tracking-widest font-semibold group-hover:text-green-400 transition-colors">Volume</p>
+                <p className="font-semibold text-white/90 text-sm sm:text-base">{Number(transaction.quantityKg).toLocaleString()} kg</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1 uppercase font-semibold">Price per kg</p>
-                <p className="font-medium">{formatMoney(transaction.finalPricePerKg)}</p>
+              <div className="group col-span-2">
+                <p className="text-xs text-white/40 mb-1.5 uppercase tracking-widest font-semibold group-hover:text-green-400 transition-colors">Unit Price</p>
+                <p className="font-semibold text-white/90 text-sm sm:text-base">{formatMoney(transaction.finalPricePerKg)} / kg</p>
               </div>
             </div>
 
-            <div className="mt-8 pt-5 border-t border-border flex justify-between items-center bg-[#161a20] p-5 rounded-xl border border-input">
-              <span className="text-muted-foreground font-semibold">Total Amount</span>
-              <span className="text-2xl font-bold text-[#22C55E]">{formatMoney(transaction.totalAmount)}</span>
+            <div className="mt-8 pt-6 border-t border-white/10 flex justify-between items-center bg-white/[0.03] p-5 rounded-xl">
+              <span className="text-white/60 font-semibold tracking-wide">Total Settlement</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                {formatMoney(transaction.totalAmount)}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="space-y-6">
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-5 pb-3 border-b border-border">Tracking Status</h2>
+        {/* RIGHT COLUMN - Tracking Status & Actions */}
+        <div className="lg:col-span-5 space-y-8">
+          <div className="bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <h2 className="text-xl font-bold mb-8 text-white tracking-tight">Timeline & Progress</h2>
             
-            <div className="space-y-5 mb-8">
-              <div>
-                <span className="text-xs text-muted-foreground uppercase font-semibold">Payment</span>
-                <span className={`block mt-1 px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(transaction.paymentStatus)}`}>
-                  {transaction.paymentStatus}
-                </span>
-              </div>
-              
-              <div>
-                <span className="text-xs text-muted-foreground uppercase font-semibold">Transport</span>
-                <span className={`block mt-1 px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(transaction?.transportStatus)}`}>
-                  {transaction?.transportStatus?.replace("_", " ") || "N/A"}
-                </span>
+            {/* Vertical Stepper Timeline */}
+            <div className="relative mb-10 pl-2">
+              <div className="absolute left-[15px] top-4 bottom-4 w-[2px] bg-white/10" />
+              <div className="space-y-8 relative">
+                {timeline.map((item, idx) => (
+                  <div key={idx} className="flex gap-4 items-start relative">
+                    <div className="mt-1 relative z-10 shrink-0">
+                      {item.isDone ? (
+                        <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.4)]">
+                          <CheckCircle2 className="w-4 h-4 text-[#020617]" />
+                        </div>
+                      ) : item.isActive ? (
+                        <div className="w-7 h-7 rounded-full bg-blue-500/20 border-2 border-blue-500 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-pulse">
+                          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+                        </div>
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-white/5 border-2 border-white/20 flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 bg-white/20 rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className={`text-sm font-bold tracking-wide ${item.isDone ? 'text-white' : item.isActive ? 'text-blue-400' : 'text-white/40'}`}>
+                        {item.title}
+                      </h4>
+                      <p className={`text-xs mt-1 ${item.isDone ? 'text-green-400/80' : item.isActive ? 'text-white/70' : 'text-white/30'}`}>
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="pt-5 border-t border-border">
+            {/* ACTION BLOCK */}
+            <div className="pt-6 border-t border-white/10">
               {renderActions()}
             </div>
+            
           </div>
         </div>
 

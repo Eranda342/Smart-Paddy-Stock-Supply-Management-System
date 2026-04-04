@@ -158,355 +158,305 @@ export default function BusinessDetailsPage() {
 
 
   return (
+    <div className="min-h-screen flex bg-[#020617] text-white overflow-hidden relative">
 
-    <div className="min-h-screen bg-background">
+      {/* Decorative Orbs */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-green-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between px-12 py-6 border-b border-border">
-
-        <Link to="/" className="flex items-center gap-3">
-
-          <div className="w-10 h-10 bg-[#22C55E] rounded-lg flex items-center justify-center">
-            <Sprout className="w-6 h-6 text-[#0F1115]" />
-          </div>
-
-          <span className="text-2xl font-semibold">
-            AgroBridge
-          </span>
-
-        </Link>
-
-        <Link to="/" className="text-muted-foreground hover:text-foreground">
-          Back to Home
-        </Link>
-
-      </div>
-
-
-
-      {/* STEP PROGRESS */}
-      <div className="max-w-2xl mx-auto mt-8 px-8">
-
-        <div className="flex items-center justify-center gap-2 mb-2">
-
-          <div className="w-8 h-8 bg-[#22C55E] text-[#0F1115] rounded-full flex items-center justify-center font-medium">
-            ✓
-          </div>
-
-          <div className="w-20 h-1 bg-[#22C55E]"></div>
-
-          <div className="w-8 h-8 bg-[#22C55E] text-[#0F1115] rounded-full flex items-center justify-center font-medium">
-            ✓
-          </div>
-
-          <div className="w-20 h-1 bg-[#22C55E]"></div>
-
-          <div className="w-8 h-8 bg-[#22C55E] text-[#0F1115] rounded-full flex items-center justify-center font-medium">
-            3
-          </div>
-
-        </div>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Step 3 of 3
-        </p>
-
-      </div>
-
-
-
-      {/* CONTENT */}
-      <div className="flex items-center justify-center px-12 py-12">
-
-        <div className="w-full max-w-[720px]">
-
-          <div className="bg-card border border-border rounded-2xl p-10 shadow-sm">
-
-            <h1 className="text-3xl font-semibold mb-2">
-              Business Details
-            </h1>
-
-            <p className="text-muted-foreground mb-8">
-              {role === "FARMER"
-                ? "Tell us about your farming business"
-                : "Tell us about your rice mill"}
+      {/* Left Panel - Image */}
+      <div className="hidden lg:flex lg:w-5/12 relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1658169139208-c8c49ac873ae?auto=format&fit=crop&w=1080&q=80')",
+          }}
+        />
+        {/* Soft Gradient Overlay matching dark theme */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#020617]/80 via-[#020617]/60 to-[#020617]/90" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#020617]" />
+        
+        <div className="absolute bottom-16 left-12 right-12 z-10">
+          <div className="opacity-100 translate-y-0 transition-all duration-700">
+            <h2 className="text-4xl font-bold mb-4 tracking-tight leading-tight text-white/95">
+              Secure &amp; Transparent <span className="text-green-400">Transactions</span>
+            </h2>
+            <p className="text-lg text-white/70 font-medium">
+              We verify all our partners to ensure the highest level of trust in the marketplace.
             </p>
+          </div>
+        </div>
+      </div>
 
+      {/* Right Panel - Form */}
+      <div className="w-full lg:w-7/12 flex flex-col relative z-10 min-h-screen overflow-y-auto">
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Content Container */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-12 py-10 w-full">
+          
+          <div className="w-full max-w-2xl">
+            {/* Minimal Logo */}
+            <div className="flex justify-center mb-8">
+              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                  <Sprout className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold tracking-tight text-white/90">AgroBridge</span>
+              </Link>
+            </div>
 
-              {/* FARMER FORM */}
+            {/* PROGRESS BAR */}
+            <div className="mb-10 w-full">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                {/* Step 1 Passed */}
+                <div className="w-8 h-8 bg-green-500/20 border-2 border-green-500 text-green-400 rounded-full flex items-center justify-center font-bold">
+                  ✓
+                </div>
+                <div className="w-16 sm:w-24 h-1 bg-green-500 rounded-full relative overflow-hidden" />
+                {/* Step 2 Passed */}
+                <div className="w-8 h-8 bg-green-500/20 border-2 border-green-500 text-green-400 rounded-full flex items-center justify-center font-bold">
+                  ✓
+                </div>
+                <div className="w-16 sm:w-24 h-1 bg-green-500 rounded-full relative overflow-hidden" />
+                {/* Step 3 Active */}
+                <div className="w-8 h-8 bg-green-500 text-[#020617] rounded-full flex items-center justify-center font-bold shadow-[0_0_15px_rgba(34,197,94,0.4)]">
+                  3
+                </div>
+              </div>
+              <p className="text-center text-sm text-white/40 font-medium tracking-wide uppercase">
+                Step 3 of 3 <span className="mx-2">•</span> Business Details
+              </p>
+            </div>
 
-              {role === "FARMER" && (
+            {/* CONTENT CARD */}
+            <div className="bg-white/[0.03] border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden w-full">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
 
-                <>
+              <h1 className="text-3xl font-bold mb-2 tracking-tight text-white">
+                Business Details
+              </h1>
 
-                  <div>
-                    <label className="block mb-2">Operating District</label>
-                    <select
-                      name="district"
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border rounded-lg bg-[#161a20]"
-                      required
-                    >
-                      <option value="">Select district</option>
+              <p className="text-white/50 mb-8 font-medium">
+                {role === "FARMER"
+                  ? "Tell us about your farming business"
+                  : "Tell us about your rice mill"}
+              </p>
 
-                      {SRI_LANKAN_DISTRICTS.map((d) => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
+              <form onSubmit={handleSubmit} className="space-y-6">
 
-                    </select>
-                  </div>
-
-
-                  <div>
-                    <label className="block mb-2">Land Size (Acres)</label>
-                    <input
-                      type="number"
-                      name="landSize"
-                      placeholder="e.g., 10"
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border rounded-lg bg-[#161a20]"
-                      required
-                    />
-                  </div>
-
-
-                  <div>
-                    <label className="block mb-3">
-                      Paddy Types Cultivated
-                      {selectedPaddyTypes.length > 0 && (
-                        <span className="ml-2 text-xs text-[#22C55E] font-normal">
-                          {selectedPaddyTypes.length} selected
-                        </span>
-                      )}
-                    </label>
-
-                    <div className="space-y-4">
-
-                      {Object.entries(PADDY_TYPES_GROUPED).map(([group, types]) => (
-
-                        <div key={group}>
-
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-                            {group}
-                          </p>
-
-                          <div className="flex flex-wrap gap-2">
-                            {types.map((type) => (
-                              <button
-                                key={type}
-                                type="button"
-                                onClick={() => togglePaddyType(type)}
-                                className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
-                                  selectedPaddyTypes.includes(type)
-                                    ? "bg-[#22C55E]/10 border-[#22C55E] text-[#22C55E]"
-                                    : "border-border hover:border-[#22C55E]/40"
-                                }`}
-                              >
-                                {type}
-                              </button>
-                            ))}
-                          </div>
-
-                        </div>
-
-                      ))}
-
+                {/* FARMER FORM */}
+                {role === "FARMER" && (
+                  <>
+                    <div>
+                      <label className="block mb-2 text-sm font-medium text-white/70">Operating District</label>
+                      <select
+                        name="district"
+                        onChange={handleChange}
+                        className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-white/30"
+                        required
+                      >
+                        <option value="">Select district</option>
+                        {SRI_LANKAN_DISTRICTS.map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
                     </div>
 
-                  </div>
-
-
-                  <div>
-                    <label className="block mb-2">
-                      Estimated Monthly Paddy Stock (kg)
-                    </label>
-
-                    <input
-                      type="number"
-                      name="estimatedStock"
-                      placeholder="e.g., 5000"
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border rounded-lg bg-[#161a20]"
-                      required
-                    />
-                  </div>
-
-                </>
-              )}
-
-
-
-              {/* MILL OWNER FORM */}
-
-              {role === "MILL_OWNER" && (
-
-                <>
-
-                  <div>
-                    <label className="block mb-2">
-                      Business Name
-                    </label>
-
-                    <input
-                      name="businessName"
-                      placeholder="Enter your rice mill name"
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border rounded-lg bg-[#161a20]"
-                      required
-                    />
-                  </div>
-
-
-                  <div className="grid grid-cols-2 gap-6">
-
                     <div>
-                      <label className="block mb-2">
-                        Business Registration Number
-                      </label>
-
+                      <label className="block mb-2 text-sm font-medium text-white/70">Land Size (Acres)</label>
                       <input
-                        name="businessRegistrationNumber"
-                        placeholder="e.g., BRN123456"
+                        type="number"
+                        name="landSize"
+                        placeholder="e.g., 10"
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border rounded-lg bg-[#161a20]"
+                        className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-white/30"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block mb-2">
-                        Mill Location (District)
+                      <label className="block mb-3 text-sm font-medium text-white/70">
+                        Paddy Types Cultivated
+                        {selectedPaddyTypes.length > 0 && (
+                          <span className="ml-2 text-xs text-green-400 font-normal">
+                            {selectedPaddyTypes.length} selected
+                          </span>
+                        )}
                       </label>
 
-                      <select
-                        name="millLocation"
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border rounded-lg bg-[#161a20]"
-                        required
-                      >
-                        <option value="">Select district</option>
-
-                        {SRI_LANKAN_DISTRICTS.map((d) => (
-                          <option key={d} value={d}>{d}</option>
+                      <div className="space-y-4">
+                        {Object.entries(PADDY_TYPES_GROUPED).map(([group, types]) => (
+                          <div key={group}>
+                            <p className="text-[11px] font-bold text-white/40 uppercase tracking-wider mb-2">
+                              {group}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {types.map((type) => (
+                                <button
+                                  key={type}
+                                  type="button"
+                                  onClick={() => togglePaddyType(type)}
+                                  className={`px-3 py-1.5 rounded-lg border text-sm transition-all focus:outline-none ${
+                                    selectedPaddyTypes.includes(type)
+                                      ? "bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]"
+                                      : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white"
+                                  }`}
+                                >
+                                  {type}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         ))}
-
-                      </select>
-
+                      </div>
                     </div>
 
-                  </div>
-
-                </>
-              )}
-
-
-
-              {/* DOCUMENT UPLOAD */}
-
-              <div className="border-t border-border pt-6">
-
-                <h3 className="text-xl font-semibold mb-2">
-                  {role === "FARMER"
-                    ? "Land Ownership Verification"
-                    : "Business Verification"}
-                </h3>
-
-                <p className="text-sm text-muted-foreground mb-4">
-
-                  {role === "FARMER"
-                    ? "Upload Land Deed, Lease Agreement, or Government Farming Certificate"
-                    : "Upload Business Registration Certificate, Rice Mill License, or Government Certification"}
-
-                </p>
-
-
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-[#22C55E]/50">
-
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    id="file-upload"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-
-                  <label htmlFor="file-upload" className="cursor-pointer">
-
-                    <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-
-                    <p className="font-medium">
-                      Click to upload or drag and drop
-                    </p>
-
-                    <p className="text-sm text-muted-foreground">
-                      PDF, JPG, or PNG (max 10MB)
-                    </p>
-
-                  </label>
-
-                </div>
-
-                {uploadedFile && (
-                  <p className="text-sm text-[#22C55E] mt-3">
-                    Selected file: {uploadedFile.name}
-                  </p>
+                    <div>
+                      <label className="block mb-2 text-sm font-medium text-white/70">
+                        Estimated Monthly Paddy Stock (kg)
+                      </label>
+                      <input
+                        type="number"
+                        name="estimatedStock"
+                        placeholder="e.g., 5000"
+                        onChange={handleChange}
+                        className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-white/30"
+                        required
+                      />
+                    </div>
+                  </>
                 )}
 
-              </div>
+                {/* MILL OWNER FORM */}
+                {role === "MILL_OWNER" && (
+                  <>
+                    <div>
+                      <label className="block mb-2 text-sm font-medium text-white/70">
+                        Business Name
+                      </label>
+                      <input
+                        name="businessName"
+                        placeholder="Enter your rice mill name"
+                        onChange={handleChange}
+                        className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-white/30"
+                        required
+                      />
+                    </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block mb-2 text-sm font-medium text-white/70">
+                          Business Registration Number
+                        </label>
+                        <input
+                          name="businessRegistrationNumber"
+                          placeholder="e.g., BRN123456"
+                          onChange={handleChange}
+                          className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-white/30"
+                          required
+                        />
+                      </div>
 
+                      <div>
+                        <label className="block mb-2 text-sm font-medium text-white/70">
+                          Mill Location (District)
+                        </label>
+                        <select
+                          name="millLocation"
+                          onChange={handleChange}
+                          className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-white/30"
+                          required
+                        >
+                          <option value="">Select district</option>
+                          {SRI_LANKAN_DISTRICTS.map((d) => (
+                            <option key={d} value={d}>{d}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                )}
 
-              {/* BUTTONS */}
+                {/* DOCUMENT UPLOAD */}
+                <div className="border-t border-white/10 pt-6 mt-6">
+                  <h3 className="text-xl font-semibold mb-2">
+                    {role === "FARMER"
+                      ? "Land Ownership Verification"
+                      : "Business Verification"}
+                  </h3>
+                  <p className="text-sm text-white/50 mb-4">
+                    {role === "FARMER"
+                      ? "Upload Land Deed, Lease Agreement, or Government Farming Certificate"
+                      : "Upload Business Registration Certificate, Rice Mill License, or Government Certification"}
+                  </p>
 
-              <div className="flex gap-4 pt-4">
+                  <div className="border-2 border-dashed border-white/20 bg-white/5 rounded-xl p-8 text-center hover:border-green-500/50 hover:bg-green-500/5 transition-all group">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      id="file-upload"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                    <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
+                      <div className="w-12 h-12 bg-white/10 group-hover:bg-green-500/20 rounded-full flex items-center justify-center mb-4 transition-colors">
+                        <Upload className="w-6 h-6 text-white/60 group-hover:text-green-400 transition-colors" />
+                      </div>
+                      <p className="font-medium text-white/90 group-hover:text-white transition-colors">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-sm text-white/40 mt-1">
+                        PDF, JPG, or PNG (max 10MB)
+                      </p>
+                    </label>
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={() => navigate("/register/account")}
-                  className="px-8 py-3 bg-muted rounded-lg"
-                >
-                  Previous
-                </button>
+                  {uploadedFile && (
+                    <div className="mt-3 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-lg inline-flex items-center gap-2">
+                       <p className="text-sm text-green-400">
+                         {uploadedFile.name}
+                       </p>
+                    </div>
+                  )}
+                </div>
 
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-[#22C55E] hover:bg-[#16A34A] text-[#0F1115] rounded-lg"
-                >
-                  Submit Registration
-                </button>
+                {/* ADVISORY CARD */}
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-5 flex gap-3 mt-6">
+                  <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-white/90 mb-1">
+                      Administrative Verification Required
+                    </h4>
+                    <p className="text-sm text-white/60">
+                      Your account will be reviewed by AgroBridge administrators before trading access is granted.
+                    </p>
+                  </div>
+                </div>
 
-              </div>
+                {/* BUTTONS */}
+                <div className="flex gap-4 pt-6 border-t border-white/10 mt-6 md:mt-8">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/register/account")}
+                    className="px-8 py-3.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-medium rounded-xl transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-xl font-semibold shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500"
+                  >
+                    Submit Registration
+                  </button>
+                </div>
 
-            </form>
-
-
-
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 flex gap-3 mt-6">
-
-              <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-
-              <div>
-
-                <h4 className="font-medium mb-1">
-                  Administrative Verification Required
-                </h4>
-
-                <p className="text-sm text-muted-foreground">
-                  Your account will be reviewed by AgroBridge administrators before trading access is granted.
-                </p>
-
-              </div>
+              </form>
 
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

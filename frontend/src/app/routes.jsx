@@ -2,15 +2,23 @@ import { createBrowserRouter } from "react-router-dom";
 
 // ================= PUBLIC =================
 import LandingPage from "./pages/LandingPage";
+import PaddyTypesPage from "./pages/PaddyTypesPage";
+import FertilizersPage from "./pages/FertilizersPage";
+import TransportPage from "./pages/TransportPage";
+import AboutPage from "./pages/AboutPage";
+
+// ================= AUTH =================
 import LoginPage from "./pages/LoginPage";
 import RoleSelectionPage from "./pages/RoleSelectionPage";
 import AccountInfoPage from "./pages/AccountInfoPage";
 import BusinessDetailsPage from "./pages/BusinessDetailsPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
-import PaddyTypesPage from "./pages/PaddyTypesPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 // ================= LAYOUTS =================
 import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
 import FarmerLayout from "./layouts/FarmerLayout";
 import MillOwnerLayout from "./layouts/MillOwnerLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -52,7 +60,7 @@ import AdminSystemSettings from "./pages/admin/SystemSettings";
 import TransactionDetails from "./pages/common/TransactionDetails";
 import Complaints from "./pages/common/Complaints";
 
-// ================= AUTH =================
+// ================= PROTECTED =================
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -65,6 +73,29 @@ export const router = createBrowserRouter([
         path: "/",
         element: <LandingPage />,
       },
+      {
+        path: "/paddy-types",
+        element: <PaddyTypesPage />,
+      },
+      {
+        path: "/fertilizers",
+        element: <FertilizersPage />,
+      },
+      {
+        path: "/transport",
+        element: <TransportPage />,
+      },
+      {
+        path: "/about",
+        element: <AboutPage />,
+      },
+    ],
+  },
+
+  // ================= AUTH =================
+  {
+    element: <AuthLayout />,
+    children: [
       {
         path: "/login",
         element: <LoginPage />,
@@ -86,8 +117,12 @@ export const router = createBrowserRouter([
         element: <RegistrationSuccessPage />,
       },
       {
-        path: "/paddy-types",
-        element: <PaddyTypesPage />,
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: "/reset-password/:token",
+        element: <ResetPasswordPage />,
       },
     ],
   },

@@ -6,7 +6,9 @@ const {
   loginUser,
   getMyProfile,
   updateProfile,
-  uploadAvatar
+  uploadAvatar,
+  forgotPassword,
+  resetPassword
 } = require("../controllers/userController");
 
 const { protect, checkApproved } = require("../middleware/authMiddleware");
@@ -20,6 +22,10 @@ router.post("/register", upload.single("document"), registerUser);
 // ================= LOGIN =================
 router.post("/login", loginUser);
 
+
+// ================= PASSWORD RESET FLOW =================
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 // ================= GET PROFILE =================
 router.get("/me", protect, checkApproved, getMyProfile);

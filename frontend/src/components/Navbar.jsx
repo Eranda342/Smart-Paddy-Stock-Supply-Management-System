@@ -21,7 +21,6 @@ export default function Navbar() {
 
   const navLinks = [
     { label: "Home",        href: "/" },
-    { label: "Marketplace", href: "/marketplace" },
     { label: "Paddy Types", href: "/paddy-types" },
     { label: "Fertilizers", href: "/fertilizers" },
     { label: "Transport",   href: "/transport" },

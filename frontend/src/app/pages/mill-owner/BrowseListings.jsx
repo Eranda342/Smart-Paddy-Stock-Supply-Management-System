@@ -138,147 +138,106 @@ export default function BrowseListings() {
   }
 
   return (
-    <div className="max-w-[1320px] mx-auto">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative">
+      {/* Decorative Orbs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-green-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2">Browse Listings</h1>
-        <p className="text-muted-foreground">
-          Find paddy harvests from verified farmers
+      <div className="mb-8 relative z-10">
+        <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Browse Listings</h1>
+        <p className="text-white/50 text-sm">
+          Discover and negotiate for verified paddy harvests directly from farmers.
         </p>
       </div>
 
-      <div className="flex gap-6">
-
+      <div className="flex flex-col lg:flex-row gap-8 relative z-10">
         {/* FILTER PANEL */}
-
-        <div className="w-[280px]">
-
-          <div className="bg-card border border-border rounded-2xl p-6 sticky top-8">
-
-            <h2 className="font-semibold mb-6">Filters</h2>
+        <div className="w-full lg:w-[320px] shrink-0">
+          <div className="bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl p-6 shadow-2xl sticky top-8">
+            <h2 className="text-sm font-bold tracking-widest uppercase text-white/50 mb-6">Filters</h2>
 
             <div className="space-y-6">
-
               {/* District */}
-
               <div>
-                <label className="block text-sm font-medium mb-3">
-                  District
-                </label>
-
+                <label className="block text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">District</label>
                 <select
                   value={selectedDistrict}
                   onChange={(e) => setSelectedDistrict(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg bg-[#161a20]"
+                  className="w-full px-4 py-3 bg-[#0A1120] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all cursor-pointer"
                 >
-                  {districts.map((d) => (
-                    <option key={d}>{d}</option>
-                  ))}
+                  {districts.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
 
               {/* Paddy Type */}
-
               <div>
-
-                <label className="block text-sm font-medium mb-3">
-                  Paddy Type
-                </label>
-
+                <label className="block text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Variety</label>
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg bg-[#161a20]"
+                  className="w-full px-4 py-3 bg-[#0A1120] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all cursor-pointer"
                 >
-                  {paddyTypes.map((type) => (
-                    <option key={type}>{type}</option>
-                  ))}
+                  {paddyTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
-
               </div>
 
               {/* Quantity */}
-
               <div>
-
-                <label className="block text-sm font-medium mb-3">
-                  Quantity (kg)
-                </label>
-
-                <div className="space-y-2">
-
+                <label className="block text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Volume (kg)</label>
+                <div className="flex gap-2">
                   <input
                     type="number"
                     placeholder="Min"
                     value={minQty}
                     onChange={(e) => setMinQty(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-[#161a20]"
+                    className="w-full px-3 py-2.5 bg-[#0A1120] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 text-sm placeholder-white/20"
                   />
-
                   <input
                     type="number"
                     placeholder="Max"
                     value={maxQty}
                     onChange={(e) => setMaxQty(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-[#161a20]"
+                    className="w-full px-3 py-2.5 bg-[#0A1120] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 text-sm placeholder-white/20"
                   />
-
                 </div>
-
               </div>
 
               {/* Price */}
-
               <div>
-
-                <label className="block text-sm font-medium mb-3">
-                  Price Range (Rs/kg)
-                </label>
-
-                <div className="space-y-2">
-
+                <label className="block text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Price (Rs/kg)</label>
+                <div className="flex gap-2">
                   <input
                     type="number"
                     placeholder="Min"
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-[#161a20]"
+                    className="w-full px-3 py-2.5 bg-[#0A1120] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 text-sm placeholder-white/20"
                   />
-
                   <input
                     type="number"
                     placeholder="Max"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-[#161a20]"
+                    className="w-full px-3 py-2.5 bg-[#0A1120] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 text-sm placeholder-white/20"
                   />
-
                 </div>
-
               </div>
 
               {/* Sort */}
-
               <div>
-
-                <label className="block text-sm font-medium mb-3">
-                  Sort By Price
-                </label>
-
+                <label className="block text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Sort Order</label>
                 <select
                   value={sortPrice}
                   onChange={(e) => setSortPrice(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg bg-[#161a20]"
+                  className="w-full px-4 py-3 bg-[#0A1120] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500/50 transition-all cursor-pointer text-sm"
                 >
-                  <option value="none">Default</option>
-                  <option value="low">Low → High</option>
-                  <option value="high">High → Low</option>
+                  <option value="none">Recommended</option>
+                  <option value="low">Lowest Price First</option>
+                  <option value="high">Highest Price First</option>
                 </select>
-
               </div>
 
               {/* Reset */}
-
               <button
                 onClick={() => {
                   setSelectedDistrict("All");
@@ -289,122 +248,91 @@ export default function BrowseListings() {
                   setMaxPrice("");
                   setSortPrice("none");
                 }}
-                className="w-full py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm"
+                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium rounded-xl transition-colors text-sm"
               >
-                Reset Filters
+                Reset All Filters
               </button>
-
             </div>
-
           </div>
-
         </div>
 
         {/* LISTINGS GRID */}
-
         <div className="flex-1">
-
           {filteredListings.length === 0 ? (
-
-            <div className="text-center text-muted-foreground mt-20">
-              No listings match your filters
+            <div className="flex flex-col items-center justify-center p-16 text-white/30 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-md">
+              <Package className="w-12 h-12 mb-4 opacity-50" />
+              <p className="text-lg font-medium text-white/50">No listings found</p>
+              <p className="text-sm mt-1">Try adjusting your filters or search criteria.</p>
             </div>
-
           ) : (
-
-            <div className="grid grid-cols-2 gap-6">
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredListings.map((listing) => (
-
                 <div
                   key={listing._id}
-                  className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-all"
+                  className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 relative overflow-hidden group hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(34,197,94,0.12)] transition-all duration-300"
                 >
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                  <div className="flex items-center gap-3 mb-4">
-
-                    <div className="w-10 h-10 bg-[#22C55E]/10 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-[#22C55E]" />
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center shadow-inner">
+                      <User className="w-5 h-5 text-green-400" />
                     </div>
-
                     <div>
-                      <h3 className="font-semibold">
+                      <h3 className="font-semibold text-white text-lg tracking-tight">
                         {listing.owner?.fullName || "Farmer"}
                       </h3>
-                      <span className="text-xs text-green-500">
+                      <span className="text-xs font-semibold text-green-400 bg-green-500/10 px-2.5 py-0.5 rounded-full border border-green-500/20 mt-1 inline-block">
                         ✓ Verified Farmer
                       </span>
                     </div>
-
                   </div>
 
-                  <div className="space-y-3 mb-6">
-
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{listing.location?.district}</span>
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center gap-3 text-sm text-white/70 bg-[#0A1120]/50 p-3 rounded-xl border border-white/5">
+                      <MapPin className="w-4 h-4 text-white/40 shrink-0" />
+                      <span className="font-medium text-white/90">{listing.location?.district}</span>
                     </div>
-
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Package className="w-4 h-4" />
-                      <span>{listing.paddyType}</span>
+                    <div className="flex items-center gap-3 text-sm text-white/70 bg-[#0A1120]/50 p-3 rounded-xl border border-white/5">
+                      <Package className="w-4 h-4 text-white/40 shrink-0" />
+                      <span className="font-medium text-white/90">{listing.paddyType}</span>
                     </div>
-
                   </div>
 
-                  <div className="flex items-center justify-between mb-6 pb-6 border-b border-border">
-
+                  <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
                     <div>
-                      <div className="text-sm text-muted-foreground mb-1">
-                        Price
-                      </div>
-                      <div className="text-xl font-semibold text-[#22C55E]">
-                        Rs {listing.pricePerKg}/kg
-                      </div>
+                      <div className="text-xs text-white/40 font-semibold uppercase tracking-wider mb-1">Rate</div>
+                      <div className="text-xl font-bold text-green-400">Rs {listing.pricePerKg}/kg</div>
                     </div>
-
                     <div className="text-right">
-                      <div className="text-sm text-muted-foreground mb-1">
-                        Available
-                      </div>
-                      <div className="text-xl font-semibold">
-                        {listing.quantityKg} kg
-                      </div>
+                      <div className="text-xs text-white/40 font-semibold uppercase tracking-wider mb-1">Available</div>
+                      <div className="text-xl font-bold text-white">{Number(listing.quantityKg).toLocaleString()} kg</div>
                     </div>
-
                   </div>
 
                   <button
                     onClick={() => handleNegotiate(listing)}
                     disabled={negotiatingId === listing._id}
-                    className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 ${
+                    className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500 ${
                       negotiatingId === listing._id
-                        ? "bg-[#22C55E]/50 text-black/60 cursor-not-allowed"
-                        : "bg-[#22C55E] hover:bg-[#16A34A] text-black hover:scale-[1.02] active:scale-95"
+                        ? "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
+                        : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg hover:shadow-green-500/25"
                     }`}
                   >
                     {negotiatingId === listing._id ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Starting...
+                        <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+                        Initializing...
                       </>
                     ) : (
-                      "Negotiate"
+                      "Start Negotiation"
                     )}
                   </button>
-
                 </div>
-
               ))}
-
             </div>
-
           )}
-
         </div>
-
       </div>
-
     </div>
   );
 

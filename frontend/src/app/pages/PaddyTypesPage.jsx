@@ -954,10 +954,15 @@ export default function PaddyTypesPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(160deg, #020617 0%, #020617 60%, #0a1120 100%)",
+      background: "#020617",
       color: "#fff",
-      fontFamily: "'Inter', 'Outfit', sans-serif"
+      fontFamily: "'Inter', 'Outfit', sans-serif",
+      position: "relative",
+      overflow: "hidden",
     }}>
+
+      <div style={{ position: "absolute", top: "-10%", left: "10%", width: "40vw", height: "40vh", background: "radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 60%)", filter: "blur(100px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "40%", right: "-10%", width: "40vw", height: "40vh", background: "radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 60%)", filter: "blur(100px)", pointerEvents: "none" }} />
 
       {/* ══════════════════════════════════════
           HERO
@@ -965,27 +970,10 @@ export default function PaddyTypesPage() {
       <section style={{
         position: "relative",
         width: "100%",
-        padding: "128px 5% 120px",
+        padding: "128px 5% 80px",
         textAlign: "center",
-        overflow: "hidden",
+        zIndex: 10,
       }}>
-        {/* BG image */}
-        <div aria-hidden style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "url('https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=1920&q=80')",
-          backgroundSize: "cover", backgroundPosition: "center 60%",
-          opacity: 0.20, zIndex: 0,
-        }} />
-        <div aria-hidden style={{
-          position: "absolute", inset: 0,
-          background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34,197,94,0.12) 0%, transparent 70%)",
-          zIndex: 1, pointerEvents: "none",
-        }} />
-        <div aria-hidden style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: 120,
-          background: "linear-gradient(to bottom, transparent, #020617)", zIndex: 2,
-        }} />
-
         <motion.div
           variants={stagger} initial="hidden" animate="show"
           style={{ position: "relative", zIndex: 3, maxWidth: 780, margin: "0 auto" }}
