@@ -242,10 +242,10 @@ export default function AdminLayout() {
         }
       `}</style>
 
-      <div className="flex h-screen bg-background">
+      <div className="flex min-h-screen bg-background">
 
         {/* ═══ SIDEBAR ═══ */}
-        <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0">
+        <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
           {/* Logo */}
           <div className="p-5 border-b border-sidebar-border">
             <Link to="/admin" className="flex items-center gap-3">
@@ -304,10 +304,10 @@ export default function AdminLayout() {
         </div>
 
         {/* ═══ MAIN CONTENT ═══ */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0">
 
           {/* Top Navbar */}
-          <div className="h-[64px] border-b border-border bg-card flex items-center justify-between px-8 shrink-0">
+          <div className="h-[64px] border-b border-border bg-card flex items-center justify-between px-8 shrink-0 sticky top-0 z-40">
 
             {/* Search */}
             <div className="flex-1 max-w-md">
@@ -389,7 +389,7 @@ export default function AdminLayout() {
           </div>
 
           {/* Page Content */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1">
             <div className="p-8">
               <Outlet />
             </div>

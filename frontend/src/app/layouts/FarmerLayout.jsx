@@ -110,11 +110,11 @@ export default function FarmerLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex min-h-screen bg-background">
 
       {/* Sidebar */}
 
-      <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col">
+      <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
 
         <div className="p-6 border-b border-sidebar-border">
 
@@ -183,11 +183,11 @@ export default function FarmerLayout() {
 
       {/* Main Content */}
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top Navbar */}
 
-        <div className="h-[72px] border-b border-border bg-card flex items-center justify-between px-8">
+        <div className="h-[72px] border-b border-border bg-card flex items-center justify-between px-8 sticky top-0 z-40">
 
           <div className="flex-1 max-w-md">
 
@@ -232,7 +232,7 @@ export default function FarmerLayout() {
 
         {/* Page Content */}
 
-        <main className="flex-1 w-full overflow-auto bg-background dark:bg-gradient-to-b dark:from-[#0B0F19] dark:to-[#0A0D16]">
+        <main className="flex-1 w-full bg-background dark:bg-gradient-to-b dark:from-[#0B0F19] dark:to-[#0A0D16]">
 
           <div className="w-full px-6 md:px-10 lg:px-14 py-8">
             <Outlet />

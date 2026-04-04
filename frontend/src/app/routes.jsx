@@ -7,8 +7,10 @@ import RoleSelectionPage from "./pages/RoleSelectionPage";
 import AccountInfoPage from "./pages/AccountInfoPage";
 import BusinessDetailsPage from "./pages/BusinessDetailsPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
+import PaddyTypesPage from "./pages/PaddyTypesPage";
 
 // ================= LAYOUTS =================
+import MainLayout from "./layouts/MainLayout";
 import FarmerLayout from "./layouts/FarmerLayout";
 import MillOwnerLayout from "./layouts/MillOwnerLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -57,28 +59,37 @@ export const router = createBrowserRouter([
 
   // ================= PUBLIC =================
   {
-    path: "/",
-    element: <LandingPage />,
-  },
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/register/role",
-    element: <RoleSelectionPage />,
-  },
-  {
-    path: "/register/account",
-    element: <AccountInfoPage />,
-  },
-  {
-    path: "/register/business",
-    element: <BusinessDetailsPage />,
-  },
-  {
-    path: "/register/success",
-    element: <RegistrationSuccessPage />,
+    element: <MainLayout />,
+    children: [
+      {
+        path: "/",
+        element: <LandingPage />,
+      },
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/register/role",
+        element: <RoleSelectionPage />,
+      },
+      {
+        path: "/register/account",
+        element: <AccountInfoPage />,
+      },
+      {
+        path: "/register/business",
+        element: <BusinessDetailsPage />,
+      },
+      {
+        path: "/register/success",
+        element: <RegistrationSuccessPage />,
+      },
+      {
+        path: "/paddy-types",
+        element: <PaddyTypesPage />,
+      },
+    ],
   },
 
   // ================= FARMER =================
