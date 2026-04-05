@@ -259,13 +259,6 @@ const updateNegotiationStatus = async (req, res) => {
 
       const listing = await Listing.findById(negotiation.listing._id);
 
-      const existingTransaction = await Transaction.findOne({ listing: listing._id });
-      if (existingTransaction) {
-        return res.status(400).json({
-          message: "This listing is already sold"
-        });
-      }
-
       const lastOffer = negotiation.messages
         .filter(m => m.offeredPrice)
         .slice(-1)[0];
@@ -279,7 +272,7 @@ const updateNegotiationStatus = async (req, res) => {
 
       if (quantity > listing.availableQuantityKg) {
         return res.status(400).json({
-          message: "Not enough paddy available"
+          message: "Exceeds remaining available quantity"
         });
       }
 
@@ -290,25 +283,51 @@ const updateNegotiationStatus = async (req, res) => {
       const feePercent = settings?.platformFeePercentage ?? 5;
       const platformFee = parseFloat(((totalAmount * feePercent) / 100).toFixed(2));
 
-      // Reduce listing stock
-      listing.availableQuantityKg -= quantity;
+      try {
+        const updatedListing = await Listing.findOneAndUpdate(
+          {
+            _id: listing._id,
+            availableQuantityKg: { $gte: quantity }
+          },
+          {
+            $inc: { availableQuantityKg: -quantity }
+          },
+          { new: true }
+        );
 
-      listing.status = "CLOSED";
+        if (!updatedListing) {
+          return res.status(400).json({
+            message: "Listing already fulfilled or insufficient quantity"
+          });
+        }
 
-      await listing.save();
+        if (updatedListing.listingType === "SELL") {
+          updatedListing.status = updatedListing.availableQuantityKg <= 0 ? "SOLD" : "ACTIVE";
+        } else if (updatedListing.listingType === "BUY") {
+          updatedListing.status = updatedListing.availableQuantityKg <= 0 ? "FULFILLED" : "ACTIVE";
+        }
 
-      // Create transaction
-      const transaction = await Transaction.create({
-        negotiation: negotiation._id,
-        listing: listing._id,
-        farmer: negotiation.farmer,
-        millOwner: negotiation.millOwner,
-        finalPricePerKg: finalPrice,
-        quantityKg: quantity,
-        totalAmount: totalAmount,
-        platformFee: platformFee,
-        status: "ORDER_CREATED"
-      });
+        await updatedListing.save();
+
+        // Create transaction
+        const transaction = await Transaction.create({
+          negotiation: negotiation._id,
+          listing: listing._id,
+          farmer: negotiation.farmer,
+          millOwner: negotiation.millOwner,
+          finalPricePerKg: finalPrice,
+          quantityKg: quantity,
+          totalAmount: totalAmount,
+          platformFee: platformFee,
+          status: "ORDER_CREATED"
+        });
+
+      } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+          message: "Transaction failed safely"
+        });
+      }
 
       // Create transport request
       

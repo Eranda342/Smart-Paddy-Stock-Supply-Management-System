@@ -205,15 +205,38 @@ export default function MillOwnerListings() {
               {listings.map((listing) => (
                 <tr key={listing._id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
                   <td className="px-5 py-4 font-medium">{listing.paddyType}</td>
-                  <td className="px-5 py-4">{listing.quantityKg} kg</td>
+                  <td className="px-5 py-4">
+                    {(() => {
+                      const total = listing.quantityKg;
+                      const available = listing.availableQuantityKg;
+                      const fulfilled = total - available;
+                      const percentage = total > 0 ? Math.round((fulfilled / total) * 100) : 0;
+                      return (
+                        <div className="flex flex-col gap-1.5 w-48">
+                          <div className="flex justify-between text-xs font-medium text-muted-foreground">
+                            <span>{percentage}% completed</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-muted overflow-hidden rounded-full">
+                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${percentage}%` }}></div>
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {fulfilled.toLocaleString()}kg / {total.toLocaleString()}kg fulfilled
+                            <span className="block opacity-75 mt-0.5">Remaining: {available.toLocaleString()}kg</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </td>
                   <td className="px-5 py-4">Rs {listing.pricePerKg}/kg</td>
                   <td className="px-5 py-4">{listing.location?.district || "—"}</td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border ${
                       listing.status === "ACTIVE"
-                        ? "text-green-400 bg-green-400/10 border-green-400/20"
-                        : listing.status === "COMPLETED"
-                        ? "text-blue-400 bg-blue-400/10 border-blue-400/20"
+                        ? "text-green-500 bg-green-500/10 border-green-500/20"
+                        : listing.status === "SOLD"
+                        ? "text-blue-500 bg-blue-500/10 border-blue-500/20"
+                        : listing.status === "FULFILLED"
+                        ? "text-purple-500 bg-purple-500/10 border-purple-500/20"
                         : "text-muted-foreground bg-muted/40 border-border"
                     }`}>
                       {listing.status || "ACTIVE"}
@@ -407,9 +430,36 @@ export default function MillOwnerListings() {
                   </div>
                   <div className="bg-muted/40 border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
-                      <Package className="w-3.5 h-3.5" /> Quantity
+                      <Package className="w-3.5 h-3.5" /> Quantity Progress
                     </div>
-                    <p className="font-semibold text-base">{viewListing.quantityKg.toLocaleString()} kg</p>
+                    {(() => {
+                      const total = viewListing.quantityKg;
+                      const available = viewListing.availableQuantityKg;
+                      const fulfilled = total - available;
+                      const percentage = total > 0 ? Math.round((fulfilled / total) * 100) : 0;
+                      return (
+                        <div>
+                          <div className="flex justify-between items-end mb-2">
+                            <p className="font-semibold text-lg">{percentage}% completed</p>
+                          </div>
+                          <div className="h-2 w-full bg-muted overflow-hidden rounded-full mb-3">
+                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${percentage}%` }}></div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                            <div>
+                              <span className="text-foreground font-medium">{fulfilled.toLocaleString()} kg</span>
+                              <br />
+                              <span className="text-xs">Fulfilled</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-foreground font-medium">{available.toLocaleString()} kg</span>
+                              <br />
+                              <span className="text-xs">Remaining</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -440,7 +490,11 @@ export default function MillOwnerListings() {
                       <p className="text-xs text-muted-foreground font-medium mb-1">Status</p>
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border ${
                         viewListing.status === "ACTIVE"
-                          ? "text-green-400 bg-green-400/10 border-green-400/20"
+                          ? "text-green-500 bg-green-500/10 border-green-500/20"
+                          : viewListing.status === "SOLD"
+                          ? "text-blue-500 bg-blue-500/10 border-blue-500/20"
+                          : viewListing.status === "FULFILLED"
+                          ? "text-purple-500 bg-purple-500/10 border-purple-500/20"
                           : "text-muted-foreground bg-muted/40 border-border"
                       }`}>
                         {viewListing.status || "ACTIVE"}

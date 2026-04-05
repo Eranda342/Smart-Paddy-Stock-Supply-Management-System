@@ -657,7 +657,7 @@ return(
         <span className={`text-[10px] font-bold tracking-wider uppercase mb-1 block ${isMe ? "text-black/60" : msg.type === "COUNTER" ? "text-amber-500" : "text-[#22C55E]"}`}>
           {msg.type}
         </span>
-        <p className="font-semibold text-lg">Rs {msg.offeredPrice} / kg{msg.quantityKg ? ` • ${msg.quantityKg} kg` : ""}</p>
+        <p className="font-semibold text-lg">Price: Rs {msg.offeredPrice}{msg.quantityKg ? ` • Qty: ${msg.quantityKg} kg` : ""}</p>
         <p className={`text-sm mt-1 ${isMe ? "text-black/80" : "text-muted-foreground"}`}>{msg.message}</p>
       </div>
     ) : msg.type === "SYSTEM" ? (
@@ -769,14 +769,6 @@ className="px-6 py-3 bg-[#22C55E] text-black rounded-lg"
 <div className="flex gap-2">
 
 <input
-type="number"
-placeholder="Counter price"
-value={counterPrice}
-onChange={(e)=>setCounterPrice(e.target.value)}
-className="px-3 py-2 border rounded-lg bg-[#161a20]"
-/>
-
-<input
   type="number"
   placeholder={`Qty (max ${availableQty || selected?.listing?.quantityKg || 0} kg)`}
   min="1"
@@ -792,6 +784,14 @@ className="px-3 py-2 border rounded-lg bg-[#161a20]"
     }
   }}
   className="px-3 py-2 border rounded-lg bg-[#161a20]"
+/>
+
+<input
+type="number"
+placeholder="Counter price (Rs)"
+value={counterPrice}
+onChange={(e)=>setCounterPrice(e.target.value)}
+className="px-3 py-2 border rounded-lg bg-[#161a20]"
 />
 
 <button

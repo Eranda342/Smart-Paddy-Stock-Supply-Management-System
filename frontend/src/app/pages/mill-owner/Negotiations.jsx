@@ -571,7 +571,7 @@ export default function MillOwnerNegotiations() {
                                 {msg.type}
                               </span>
                               <p className="font-semibold text-lg">
-                                Rs {msg.offeredPrice} / kg{msg.quantityKg ? ` • ${msg.quantityKg} kg` : ""}
+                                Price: Rs {msg.offeredPrice}{msg.quantityKg ? ` • Qty: ${msg.quantityKg} kg` : ""}
                               </p>
                               <p className={`text-sm mt-1 ${isMe ? "text-black/80" : "text-muted-foreground"}`}>
                                 {msg.message}
@@ -669,13 +669,6 @@ export default function MillOwnerNegotiations() {
                     <div className="flex gap-2 flex-wrap">
                       <input
                         type="number"
-                        placeholder="Counter price (Rs)"
-                        value={counterPrice}
-                        onChange={(e) => setCounterPrice(e.target.value)}
-                        className="px-3 py-2 border rounded-lg bg-[#161a20] text-sm w-40"
-                      />
-                      <input
-                        type="number"
                         placeholder={`Qty (max ${availableQty || selected?.listing?.quantityKg || 0} kg)`}
                         value={counterQuantity}
                         min="1"
@@ -687,6 +680,13 @@ export default function MillOwnerNegotiations() {
                           else setCounterQuantity(e.target.value);
                         }}
                         className="px-3 py-2 border rounded-lg bg-[#161a20] text-sm w-44"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Counter price (Rs)"
+                        value={counterPrice}
+                        onChange={(e) => setCounterPrice(e.target.value)}
+                        className="px-3 py-2 border rounded-lg bg-[#161a20] text-sm w-40"
                       />
                       <button
                         onClick={sendCounterOffer}

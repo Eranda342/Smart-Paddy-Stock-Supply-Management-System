@@ -380,7 +380,7 @@ export default function BrowseListings() {
 
                   </div>
 
-                  <div className="flex items-center justify-between mb-6 pb-6 border-b border-border">
+                  <div className="flex items-center justify-between mb-3">
 
                     <div>
                       <div className="text-sm text-muted-foreground mb-1">
@@ -393,14 +393,32 @@ export default function BrowseListings() {
 
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground mb-1">
-                        Requested
+                        Total Requested
                       </div>
                       <div className="text-xl font-semibold">
-                        {listing.quantityKg} kg
+                        {listing.quantityKg.toLocaleString()} kg
                       </div>
                     </div>
 
                   </div>
+
+                  {(() => {
+                    const total = listing.quantityKg;
+                    const available = listing.availableQuantityKg;
+                    const fulfilled = total - available;
+                    const percentage = total > 0 ? Math.round((fulfilled / total) * 100) : 0;
+                    return (
+                      <div className="mb-6 pb-6 border-b border-border">
+                        <div className="flex justify-between text-xs font-semibold mb-1">
+                          <span className="text-[#22C55E]">{percentage > 0 ? `${percentage}% already fulfilled!` : 'Be the first to fulfill!'}</span>
+                          <span className="text-foreground">Only {available.toLocaleString()}kg remaining</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted overflow-hidden rounded-full">
+                          <div className="h-full bg-[#22C55E] rounded-full transition-all duration-500" style={{ width: `${percentage}%` }}></div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <button
                     onClick={() => handleNegotiate(listing)}
