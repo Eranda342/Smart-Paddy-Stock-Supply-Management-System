@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Sprout, Eye, EyeOff, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Sprout, Eye, EyeOff, ShieldCheck, CheckCircle2, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { API } from "../../api/api";
@@ -99,7 +99,20 @@ export default function LoginPage() {
       {/* Right Panel - Form */}
       <div className="w-full lg:w-7/12 flex flex-col relative z-10 min-h-screen overflow-y-auto">
 
-
+        {/* Back to Home Button */}
+        <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 hidden sm:block">
+          <Link to="/" className="flex items-center gap-2 text-white/50 hover:text-white transition-colors group bg-white/[0.03] px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 backdrop-blur-md">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium text-sm">Back to Home</span>
+          </Link>
+        </div>
+        
+        {/* Mobile Back Button */}
+        <div className="absolute top-6 left-6 z-20 sm:hidden">
+          <Link to="/" className="flex items-center justify-center w-10 h-10 text-white/50 hover:text-white transition-colors bg-white/[0.03] rounded-full border border-white/10 backdrop-blur-md">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+        </div>
         {/* Login Container */}
         <div className="flex-1 flex items-center justify-center px-6 sm:px-12 py-10">
           <motion.div 

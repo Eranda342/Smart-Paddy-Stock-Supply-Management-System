@@ -196,9 +196,7 @@ export default function FarmerListings() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative">
-      {/* Decorative Orbs */}
-      <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-green-500/5 rounded-full blur-[120px] pointer-events-none" />
-      
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative z-10">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">My Listings</h1>

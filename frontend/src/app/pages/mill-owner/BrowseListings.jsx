@@ -139,10 +139,6 @@ export default function BrowseListings() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative">
-      {/* Decorative Orbs */}
-      <div className="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-green-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
-
       <div className="mb-8 relative z-10">
         <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Browse Listings</h1>
         <p className="text-white/50 text-sm">

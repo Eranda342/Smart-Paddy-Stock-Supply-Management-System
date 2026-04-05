@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import NotificationDropdown from "../components/NotificationDropdown";
+import GlobalSearchBar from "../components/GlobalSearchBar";
 
 export default function MillOwnerLayout() {
   const location = useLocation();
@@ -141,15 +142,8 @@ export default function MillOwnerLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
         <div className="h-[72px] border-b border-border bg-card flex items-center justify-between px-8 sticky top-0 z-40">
-          <div className="flex-1 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-              />
-            </div>
+          <div className="flex-1 max-w-md flex items-center pr-4">
+            <GlobalSearchBar rolePath="/mill-owner" />
           </div>
 
           <div className="flex items-center gap-4">

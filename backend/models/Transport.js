@@ -54,6 +54,7 @@ const transportSchema = new mongoose.Schema(
   status: {
     type: String,
     enum: [
+      "ASSIGNED",
       "SCHEDULED",
       "IN_TRANSIT",
       "DELIVERED"

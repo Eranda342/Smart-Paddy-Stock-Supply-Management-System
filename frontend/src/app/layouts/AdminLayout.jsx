@@ -6,6 +6,7 @@ import {
   AlertCircle, Settings, CheckCheck, X, RefreshCw, Info
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import GlobalSearchBar from '../components/GlobalSearchBar';
 
 // ─────────────────────────────────────────────────────────────────
 // Sidebar helpers
@@ -310,16 +311,8 @@ export default function AdminLayout() {
           <div className="h-[64px] border-b border-border bg-card flex items-center justify-between px-8 shrink-0 sticky top-0 z-40">
 
             {/* Search */}
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  id="admin-search"
-                  placeholder="Search users, listings, transactions..."
-                  className="w-full pl-9 pr-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 text-sm transition-all"
-                />
-              </div>
+            <div className="flex-1 max-w-md flex items-center pr-4">
+              <GlobalSearchBar rolePath="/admin" />
             </div>
 
             {/* Right controls */}

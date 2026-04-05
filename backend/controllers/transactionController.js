@@ -371,6 +371,8 @@ const assignTransport = async (req, res) => {
 
     let resolvedVehicleNumber = manualNumber;
     let resolvedVehicleType = manualType;
+    let resolvedDriverName = "N/A";
+    let resolvedDriverPhone = "N/A";
 
     if (vehicleId) {
       const Vehicle = require("../models/Vehicle");
@@ -380,6 +382,8 @@ const assignTransport = async (req, res) => {
       }
       resolvedVehicleNumber = vehicleDoc.vehicleNumber;
       resolvedVehicleType = vehicleDoc.type;
+      resolvedDriverName = vehicleDoc.driverName || "N/A";
+      resolvedDriverPhone = vehicleDoc.driverPhone || "N/A";
       transaction.vehicle = vehicleId;
     }
 
@@ -396,6 +400,22 @@ const assignTransport = async (req, res) => {
     };
 
     await transaction.save();
+    
+    // --- Create Transport Record Non-Blocking ---
+    try {
+      const Transport = require("../models/Transport");
+      await Transport.create({
+        vehicleType: resolvedVehicleType,
+        driverName: resolvedDriverName,
+        driverPhone: resolvedDriverPhone,
+        transactions: [transaction._id],
+        status: "ASSIGNED"
+      });
+    } catch (transportErr) {
+      console.error("Failed to create transport record:", transportErr);
+    }
+    // ---------------------------------------------
+
     if (global.io) {
       global.io.emit("dashboard_update");
     }
