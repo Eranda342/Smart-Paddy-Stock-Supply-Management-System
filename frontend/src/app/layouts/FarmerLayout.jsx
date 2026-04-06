@@ -167,17 +167,13 @@ export default function FarmerLayout() {
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
-
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-sidebar-foreground hover:bg-sidebar-accent transition-all duration-200"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-sidebar-foreground hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 border border-transparent transition-all duration-200 group"
           >
-
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-
+            <LogOut className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <span className="font-medium">Logout</span>
           </button>
-
         </div>
 
       </div>

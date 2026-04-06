@@ -296,9 +296,9 @@ export default function AdminLayout() {
           <div className="p-3 border-t border-sidebar-border">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-sidebar-foreground hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 text-sm group"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-sidebar-foreground hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 border border-transparent transition-all duration-200 text-sm group"
             >
-              <LogOut className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+              <LogOut className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
               <span className="font-medium">Logout</span>
             </button>
           </div>
