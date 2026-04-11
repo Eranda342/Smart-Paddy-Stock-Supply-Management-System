@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import NotificationDropdown from "../components/NotificationDropdown";
 import GlobalSearchBar from "../components/GlobalSearchBar";
 import { Button } from "../components/ui/button";
+import Logo from "../components/ui/Logo";
 
 export default function MillOwnerLayout() {
   const location = useLocation();
@@ -95,14 +96,8 @@ export default function MillOwnerLayout() {
       {/* Sidebar */}
       <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
         <div className="p-6 border-b border-sidebar-border">
-          <Link to="/mill-owner" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#22C55E] rounded-lg flex items-center justify-center">
-              <Sprout className="w-6 h-6 text-[#0F1115]" />
-            </div>
-            <div>
-              <div className="text-lg font-semibold">AgroBridge</div>
-              <div className="text-xs text-muted-foreground">Mill Owner Portal</div>
-            </div>
+          <Link to="/mill-owner" className="block">
+            <Logo size="md" subtitle="Mill Owner Portal" />
           </Link>
         </div>
 

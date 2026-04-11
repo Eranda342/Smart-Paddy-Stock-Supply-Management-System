@@ -7,6 +7,7 @@ import {
   X, AlertTriangle, Phone, Mail, Hash, MapPin, Layers, Calendar
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import { FormTextarea } from '../../components/ui/form-fields';
 
 const API = 'http://localhost:5000/api/admin';
 
@@ -214,12 +215,12 @@ function RejectModal({ user, onConfirm, onClose, loading }) {
           <p className="text-sm text-muted-foreground">
             Optionally provide a reason. The user will not see this — it's for admin records.
           </p>
-          <textarea
+          <FormTextarea
+            name="reason"
             value={reason}
             onChange={e => setReason(e.target.value)}
             rows={3}
             placeholder="Reason for rejection (optional)..."
-            className="w-full px-3 py-2.5 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-400/30 resize-none transition-all"
           />
           <div className="flex gap-3">
             <Button

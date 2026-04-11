@@ -1,68 +1,66 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sprout, Eye, EyeOff, ShieldCheck, CheckCircle2, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { API } from "../../api/api";
+import { loginSchema } from "../lib/schemas";
+import Logo from "../components/ui/Logo";
 
 export default function LoginPage() {
-
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     document.title = "Login | AgroBridge";
   }, []);
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  });
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     try {
       const res = await fetch(API.login, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email,
-          password
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email, password: data.password }),
       });
 
-      const data = await res.json();
-      console.log(data);
+      const json = await res.json();
 
       if (res.ok) {
+        localStorage.setItem("token", json.token);
+        localStorage.setItem("user", JSON.stringify(json.user));
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        const role = data.user.role.toLowerCase();
-
-        if (role === "farmer") {
-          navigate("/farmer");
-        } 
-        else if (role === "mill_owner") {
-          navigate("/mill-owner");
-        } 
-        else if (role === "admin") {
-          navigate("/admin");
-        }
-
+        const role = json.user.role.toLowerCase();
+        if (role === "farmer") navigate("/farmer");
+        else if (role === "mill_owner") navigate("/mill-owner");
+        else if (role === "admin") navigate("/admin");
       } else {
-        toast.error(data.message || "Login failed");
+        toast.error(json.message || "Login failed");
       }
-
     } catch (error) {
       console.error(error);
       toast.error("Server error");
     }
   };
+
+  // Shared input class for the auth pages (dark themed)
+  const inputCls = (hasError) =>
+    `w-full px-4 py-3.5 bg-[#0A1120] border rounded-xl focus:outline-none focus:ring-1 transition-all text-white placeholder-white/30 ${
+      hasError
+        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+        : "border-white/10 focus:border-green-500 focus:ring-green-500"
+    }`;
 
   return (
     <div className="min-h-screen flex bg-[#020617] text-white overflow-hidden relative">
@@ -80,10 +78,8 @@ export default function LoginPage() {
               "url('https://images.unsplash.com/photo-1658169139208-c8c49ac873ae?auto=format&fit=crop&w=1080&q=80')",
           }}
         />
-        {/* Soft Gradient Overlay matching dark theme */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#020617]/80 via-[#020617]/60 to-[#020617]/90" />
         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#020617]" />
-        
         <div className="absolute bottom-16 left-12 right-12 z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <h2 className="text-4xl font-bold mb-4 tracking-tight leading-tight text-white/95">
@@ -99,57 +95,54 @@ export default function LoginPage() {
       {/* Right Panel - Form */}
       <div className="w-full lg:w-7/12 flex flex-col relative z-10 min-h-screen overflow-y-auto">
 
-        {/* Back to Home Button */}
+        {/* Back to Home */}
         <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 hidden sm:block">
           <Link to="/" className="flex items-center gap-2 text-white/50 hover:text-white transition-colors group bg-white/[0.03] px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 backdrop-blur-md">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium text-sm">Back to Home</span>
           </Link>
         </div>
-        
-        {/* Mobile Back Button */}
         <div className="absolute top-6 left-6 z-20 sm:hidden">
           <Link to="/" className="flex items-center justify-center w-10 h-10 text-white/50 hover:text-white transition-colors bg-white/[0.03] rounded-full border border-white/10 backdrop-blur-md">
             <ArrowLeft className="w-5 h-5" />
           </Link>
         </div>
-        {/* Login Container */}
+
         <div className="flex-1 flex items-center justify-center px-6 sm:px-12 py-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="w-full max-w-[480px]"
           >
             <div className="bg-white/[0.03] border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-              {/* Inner subtle glow */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
 
-              {/* Minimal Logo */}
+              {/* Logo */}
               <div className="flex justify-center mb-6">
-                <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-                    <Sprout className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-xl font-bold tracking-tight text-white/90">AgroBridge</span>
+                <Link to="/" className="hover:opacity-80 transition-opacity">
+                  <Logo size="md" />
                 </Link>
               </div>
 
               <h1 className="text-3xl font-bold mb-2 tracking-tight">Welcome Back</h1>
               <p className="text-white/50 mb-8 font-medium">Log in to manage your operations securely.</p>
 
-              <form onSubmit={handleLogin} className="space-y-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
                 {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-white/70 mb-2">Email Address</label>
                   <input
+                    {...register("email")}
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white placeholder-white/30"
+                    className={inputCls(!!errors.email)}
                     placeholder="Enter your email"
-                    required
                   />
+                  {errors.email && (
+                    <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Password */}
@@ -157,12 +150,10 @@ export default function LoginPage() {
                   <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
                   <div className="relative">
                     <input
+                      {...register("password")}
                       type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-3.5 bg-[#0A1120] border border-white/10 rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all text-white pr-12 placeholder-white/30"
+                      className={`${inputCls(!!errors.password)} pr-12`}
                       placeholder="Enter your password"
-                      required
                     />
                     <button
                       type="button"
@@ -172,6 +163,9 @@ export default function LoginPage() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1.5 text-xs text-red-400">{errors.password.message}</p>
+                  )}
                 </div>
 
                 {/* Remember & Forgot */}
@@ -188,24 +182,22 @@ export default function LoginPage() {
                     </div>
                     <span className="text-sm text-white/60 group-hover:text-white/90 transition-colors">Remember me</span>
                   </label>
-                  <Link 
-                    to="/forgot-password"
-                    className="text-sm font-medium text-green-400 hover:text-green-300 transition-colors"
-                  >
+                  <Link to="/forgot-password" className="text-sm font-medium text-green-400 hover:text-green-300 transition-colors">
                     Forgot Password?
                   </Link>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full py-3.5 mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-xl font-semibold text-[15px] shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500"
+                  disabled={isSubmitting || !isValid}
+                  className="w-full py-3.5 mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-xl font-semibold text-[15px] shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                 >
-                  Sign In
+                  {isSubmitting ? "Signing In…" : "Sign In"}
                 </button>
               </form>
 
-              {/* Divider & Social (Visual Only) */}
+              {/* Divider */}
               <div className="mt-8 relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-white/10"></div>
@@ -227,14 +219,13 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {/* Create Account Link */}
+              {/* Create Account */}
               <div className="text-center mt-8 text-sm">
                 <span className="text-white/60">Don't have an account? </span>
                 <Link to="/register/role" className="text-green-400 font-semibold hover:text-green-300 transition-colors">
                   Create an account
                 </Link>
               </div>
-
             </div>
 
             {/* Trust Indicators */}
@@ -248,7 +239,6 @@ export default function LoginPage() {
                 <span className="hidden leading-none sm:inline">Verified Partners</span>
               </div>
             </div>
-
           </motion.div>
         </div>
       </div>

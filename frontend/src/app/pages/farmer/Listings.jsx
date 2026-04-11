@@ -4,7 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { PADDY_TYPES, DISTRICTS } from "../../../constants/paddyTypes";
 import toast from "react-hot-toast";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormInput, FormSelect, FormTextarea } from "../../components/ui/form-fields";
 import { Button } from "../../components/ui/button";
+import { listingSchema } from "../../lib/schemas";
 
 const socket = io("http://localhost:5000");
 
@@ -17,23 +21,27 @@ export default function FarmerListings() {
   const [search, setSearch] = useState("");
   const [editListingId, setEditListingId] = useState(null);
 
-  const [paddyType, setPaddyType] = useState("Samba");
-  const [quantityKg, setQuantityKg] = useState("");
-  const [pricePerKg, setPricePerKg] = useState("");
-  const [district, setDistrict] = useState("Anuradhapura");
-  const [address, setAddress] = useState("");
-  const [description, setDescription] = useState("");
-
   const token = localStorage.getItem("token");
 
-  const resetForm = () => {
-    setPaddyType("Samba");
-    setQuantityKg("");
-    setPricePerKg("");
-    setDistrict("Anuradhapura");
-    setAddress("");
-    setDescription("");
-  };
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm({
+    resolver: zodResolver(listingSchema),
+    mode: "onChange",
+    defaultValues: {
+      paddyType: PADDY_TYPES[0],
+      quantityKg: "",
+      pricePerKg: "",
+      district: DISTRICTS[0],
+      address: "",
+      description: "",
+    },
+  });
+
 
   const fetchListings = async () => {
     try {
@@ -68,43 +76,34 @@ export default function FarmerListings() {
 
   const closeModal = () => setShowModal(false);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        closeModal();
-      }
-    };
-    if (showModal) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [showModal]);
-
   const openCreateModal = () => {
     setEditListingId(null);
-    resetForm();
+    reset({
+      paddyType: PADDY_TYPES[0],
+      quantityKg: "",
+      pricePerKg: "",
+      district: DISTRICTS[0],
+      address: "",
+      description: "",
+    });
     setShowModal(true);
   };
 
   const openEditModal = (listing) => {
-
     setEditListingId(listing._id);
-
-    setPaddyType(listing.paddyType);
-    setQuantityKg(listing.quantityKg);
-    setPricePerKg(listing.pricePerKg);
-    setDistrict(listing.location?.district || "Anuradhapura");
-    setAddress(listing.location?.address || "");
-    setDescription(listing.description || "");
-
+    reset({
+      paddyType: listing.paddyType,
+      quantityKg: String(listing.quantityKg),
+      pricePerKg: String(listing.pricePerKg),
+      district: listing.location?.district || DISTRICTS[0],
+      address: listing.location?.address || "",
+      description: listing.description || "",
+    });
     setShowModal(true);
   };
 
-  const handleSaveListing = async (e) => {
-    e.preventDefault();
-
+  const handleSaveListing = async (data) => {
     try {
-
       const url = editListingId
         ? `http://localhost:5000/api/listings/${editListingId}`
         : "http://localhost:5000/api/listings";
@@ -112,55 +111,39 @@ export default function FarmerListings() {
       const method = editListingId ? "PUT" : "POST";
 
       const res = await fetch(url, {
-        method: method,
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           listingType: "SELL",
-          paddyType,
-          quantityKg,
-          pricePerKg,
-          district,
-          address,
-          description,
+          paddyType: data.paddyType,
+          quantityKg: Number(data.quantityKg),
+          pricePerKg: Number(data.pricePerKg),
+          district: data.district,
+          address: data.address,
+          description: data.description,
         }),
       });
 
-      const data = await res.json();
+      const json = await res.json();
 
       if (res.ok) {
-
         toast.success(editListingId ? "Listing updated successfully" : "Listing created successfully", {
-          style: {
-            borderRadius: "8px",
-            background: "#1f2937",
-            color: "#fff",
-          },
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" },
         });
-
         closeModal();
         setEditListingId(null);
-
-        resetForm();
         fetchListings();
-
       } else {
-        toast.error(data.message || "Failed to create listing", {
-          style: {
-            borderRadius: "8px",
-            background: "#1f2937",
-            color: "#fff",
-          },
+        toast.error(json.message || "Failed to save listing", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" },
         });
       }
-
     } catch (error) {
       console.error(error);
-      toast.error("Server error", {
-        style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
-      });
+      toast.error("Server error", { style: { borderRadius: "8px", background: "#1f2937", color: "#fff" } });
     }
   };
 
@@ -299,58 +282,87 @@ export default function FarmerListings() {
             }
           `}</style>
           <div onClick={closeModal} className="fixed inset-0 bg-[#020617]/80 flex items-center justify-center z-50 p-4" style={{ animation: 'overlayFade 0.3s ease-out forwards' }}>
-            <div onClick={(e) => e.stopPropagation()} className="bg-[#0A1120] border border-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-2xl relative shadow-2xl overflow-hidden" style={{ animation: 'modalScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
+            <div onClick={(e) => e.stopPropagation()} className="bg-[#0A1120] border border-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-2xl relative shadow-2xl" style={{ animation: 'modalScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
               
               <Button type="button" variant="ghost" size="icon" onClick={closeModal} className="absolute top-6 right-6 text-white/40 hover:bg-white/5 hover:text-white">
                 <X className="w-5 h-5" />
               </Button>
-
               <h2 className="text-2xl font-bold tracking-tight mb-8 text-white">
                 {editListingId ? "Edit Listing" : "Create New Listing"}
               </h2>
 
-              <form onSubmit={handleSaveListing} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">Paddy Type</label>
-                    <select value={paddyType} onChange={(e) => setPaddyType(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all cursor-pointer">
-                      {PADDY_TYPES.map(type => <option key={type} value={type} className="bg-[#0A1120]">{type}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">Quantity (kg)</label>
-                    <input type="number" value={quantityKg} onChange={(e) => setQuantityKg(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30" required />
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">Price (Rs/kg)</label>
-                    <input type="number" value={pricePerKg} onChange={(e) => setPricePerKg(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30" required />
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">District</label>
-                    <select value={district} onChange={(e) => setDistrict(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all cursor-pointer">
-                      {DISTRICTS.map(d => <option key={d} value={d} className="bg-[#0A1120]">{d}</option>)}
-                    </select>
-                  </div>
+              <form onSubmit={handleSubmit(handleSaveListing)} className="space-y-5" noValidate>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Controller
+                    control={control}
+                    name="paddyType"
+                    render={({ field }) => (
+                      <FormSelect
+                        label="Paddy Type"
+                        options={PADDY_TYPES}
+                        error={errors.paddyType?.message}
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                      />
+                    )}
+                  />
+                  <FormInput
+                    label="Quantity (kg)"
+                    type="number"
+                    placeholder="e.g. 500"
+                    error={errors.quantityKg?.message}
+                    {...register("quantityKg")}
+                  />
+                  <FormInput
+                    label="Price (Rs/kg)"
+                    type="number"
+                    placeholder="e.g. 120"
+                    error={errors.pricePerKg?.message}
+                    {...register("pricePerKg")}
+                  />
+                  <Controller
+                    control={control}
+                    name="district"
+                    render={({ field }) => (
+                      <FormSelect
+                        label="District"
+                        options={DISTRICTS}
+                        error={errors.district?.message}
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                      />
+                    )}
+                  />
                 </div>
 
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-white/70">Address</label>
-                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30" />
-                </div>
+                <FormInput
+                  label="Address"
+                  type="text"
+                  placeholder="Street, village, or area"
+                  error={errors.address?.message}
+                  {...register("address")}
+                />
 
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-white/70">Description</label>
-                  <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 bg-white/[0.03] border border-white/10 text-white rounded-xl focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-white/30 resize-none" />
-                </div>
+                <FormTextarea
+                  label="Description"
+                  rows={4}
+                  placeholder="Quality notes, harvest date, storage conditions…"
+                  error={errors.description?.message}
+                  {...register("description")}
+                />
 
                 <div className="flex gap-4 pt-4 mt-8 border-t border-white/10">
                   <Button type="button" variant="secondary" onClick={closeModal}
                     className="px-6 border-white/10 bg-white/5 text-white hover:bg-white/10">
                     Cancel
                   </Button>
-                  <Button type="submit" variant="primary" className="flex-1">
-                    {editListingId ? "Update Listing" : "Create Listing"}
+                  <Button type="submit" variant="primary" className="flex-1" disabled={isSubmitting || !isValid}>
+                    {isSubmitting ? "Saving…" : editListingId ? "Update Listing" : "Create Listing"}
                   </Button>
                 </div>
               </form>

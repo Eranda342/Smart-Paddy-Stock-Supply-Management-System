@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/ui/button";
+import { FormInput } from "../../components/ui/form-fields";
 
 const BASE_URL = "http://localhost:5000";
 const PHONE_REGEX = /^(\+94|0)[0-9]{9}$/;
@@ -258,55 +259,36 @@ export default function FarmerProfile() {
           <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
           <div className="grid grid-cols-2 gap-6">
 
-            <div>
-              <label className="block mb-2 text-sm font-medium">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="fullName"
-                value={user?.fullName || ""}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Full Name"
+              name="fullName"
+              value={user?.fullName || ""}
+              onChange={handleChange}
+              required
+            />
 
-            <div>
-              <label className="block mb-2 text-sm font-medium text-muted-foreground">NIC Number</label>
-              <input
-                value={user?.nic || ""}
-                disabled
-                className="w-full px-4 py-3 bg-[#161a20] border border-transparent rounded-lg opacity-50 cursor-not-allowed"
-              />
-            </div>
+            <FormInput
+              label="NIC Number"
+              value={user?.nic || ""}
+              disabled
+            />
 
-            <div>
-              <label className="flex items-center gap-1.5 mb-2 text-sm font-medium text-muted-foreground">
-                <Mail className="w-3.5 h-3.5" /> Email Address
-              </label>
-              <input
-                value={user?.email || ""}
-                disabled
-                className="w-full px-4 py-3 bg-[#161a20] border border-transparent rounded-lg opacity-50 cursor-not-allowed"
-              />
-            </div>
+            <FormInput
+              label="Email Address"
+              icon={<Mail className="w-3.5 h-3.5" />}
+              value={user?.email || ""}
+              disabled
+            />
 
-            <div>
-              <label className="flex items-center gap-1.5 mb-2 text-sm font-medium">
-                <Phone className="w-3.5 h-3.5 text-muted-foreground" /> Mobile Number
-              </label>
-              <input
-                name="phone"
-                value={user?.phone || ""}
-                onChange={handleChange}
-                placeholder="+94711234567 or 0711234567"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-              {user?.phone && !PHONE_REGEX.test(user.phone) && (
-                <p className="text-xs text-amber-500 mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> Use format: +94XXXXXXXXX or 0XXXXXXXXX
-                </p>
-              )}
-            </div>
+            <FormInput
+              label="Mobile Number"
+              name="phone"
+              value={user?.phone || ""}
+              onChange={handleChange}
+              placeholder="+94711234567 or 0711234567"
+              icon={<Phone className="w-3.5 h-3.5" />}
+              error={user?.phone && !PHONE_REGEX.test(user.phone) ? "Use format: +94XXXXXXXXX or 0XXXXXXXXX" : ""}
+            />
 
           </div>
         </div>
@@ -319,42 +301,33 @@ export default function FarmerProfile() {
           </div>
           <div className="grid grid-cols-2 gap-6">
 
-            <div>
-              <label className="block mb-2 text-sm font-medium">Operating District</label>
-              <input
-                name="operatingDistrict"
-                value={user?.farmDetails?.operatingDistrict || ""}
-                onChange={handleFarmChange}
-                placeholder="e.g. Colombo"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Operating District"
+              name="operatingDistrict"
+              value={user?.farmDetails?.operatingDistrict || ""}
+              onChange={handleFarmChange}
+              placeholder="e.g. Colombo"
+            />
 
-            <div>
-              <label className="block mb-2 text-sm font-medium">Land Size (Acres)</label>
-              <input
-                type="number"
-                name="landSize"
-                min="0"
-                value={user?.farmDetails?.landSize || ""}
-                onChange={handleFarmChange}
-                placeholder="e.g. 5"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Land Size (Acres)"
+              name="landSize"
+              type="number"
+              min="0"
+              value={user?.farmDetails?.landSize || ""}
+              onChange={handleFarmChange}
+              placeholder="e.g. 5"
+            />
 
-            <div>
-              <label className="block mb-2 text-sm font-medium">Est. Monthly Stock (kg)</label>
-              <input
-                type="number"
-                name="estimatedMonthlyStock"
-                min="0"
-                value={user?.farmDetails?.estimatedMonthlyStock || ""}
-                onChange={handleFarmChange}
-                placeholder="e.g. 2000"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Est. Monthly Stock (kg)"
+              name="estimatedMonthlyStock"
+              type="number"
+              min="0"
+              value={user?.farmDetails?.estimatedMonthlyStock || ""}
+              onChange={handleFarmChange}
+              placeholder="e.g. 2000"
+            />
 
             <div className="col-span-2">
               <label className="block mb-2 text-sm font-medium">Paddy Types Cultivated</label>
@@ -371,12 +344,11 @@ export default function FarmerProfile() {
                   )
                 )}
               </div>
-              <input
+              <FormInput
                 name="paddyTypesCultivated"
                 value={(user?.farmDetails?.paddyTypesCultivated || []).join(", ")}
                 onChange={handlePaddyChange}
                 placeholder="e.g. Samba, Nadu, Keeri Samba"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
               />
               <p className="text-xs text-muted-foreground mt-1.5">Separate multiple types with commas</p>
             </div>

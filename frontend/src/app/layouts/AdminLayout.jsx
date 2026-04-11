@@ -8,6 +8,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import GlobalSearchBar from '../components/GlobalSearchBar';
 import { Button } from '../components/ui/button';
+import Logo from '../components/ui/Logo';
 
 // ─────────────────────────────────────────────────────────────────
 // Sidebar helpers
@@ -250,14 +251,8 @@ export default function AdminLayout() {
         <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
           {/* Logo */}
           <div className="p-5 border-b border-sidebar-border">
-            <Link to="/admin" className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-[#22C55E] rounded-lg flex items-center justify-center shadow-[0_0_16px_rgba(34,197,94,0.35)]">
-                <Sprout className="w-5 h-5 text-[#0F1115]" />
-              </div>
-              <div>
-                <div className="text-base font-semibold leading-tight">AgroBridge</div>
-                <div className="text-[10px] text-muted-foreground font-medium tracking-wide">ADMIN PORTAL</div>
-              </div>
+            <Link to="/admin">
+              <Logo size="md" subtitle="ADMIN PORTAL" />
             </Link>
           </div>
 

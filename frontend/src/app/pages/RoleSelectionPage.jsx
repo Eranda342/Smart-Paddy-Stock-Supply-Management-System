@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Sprout, User, Building2 } from "lucide-react";
+import { User, Building2 } from "lucide-react";
+import Logo from "../components/ui/Logo";
 
 export default function RoleSelectionPage() {
 
@@ -58,11 +59,8 @@ export default function RoleSelectionPage() {
           <div className="w-full max-w-2xl">
             {/* Minimal Logo */}
             <div className="flex justify-center mb-8">
-              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-                  <Sprout className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold tracking-tight text-white/90">AgroBridge</span>
+              <Link to="/" className="hover:opacity-80 transition-opacity">
+                <Logo size="md" />
               </Link>
             </div>
 

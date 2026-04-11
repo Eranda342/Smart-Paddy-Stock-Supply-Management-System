@@ -16,6 +16,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import Logo from "../components/ui/Logo";
 
 
 
@@ -381,9 +382,8 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="border-t border-white/5 py-8 bg-black/40">
         <div className="max-w-[1320px] mx-auto px-[5%] lg:px-[10%] flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
-            <Sprout className="w-5 h-5 text-[#22C55E]" />
-            <span className="font-bold text-white">AgroBridge SaaS</span>
+          <div className="flex items-center opacity-80 hover:opacity-100 transition-opacity">
+            <Logo size="sm" subtitle="SaaS" />
           </div>
           <div className="text-sm text-white/40">
             © 2026 AgroBridge. Modernizing Sri Lanka's Paddy Supply Chain.

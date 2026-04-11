@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/ui/button";
+import { FormInput } from "../../components/ui/form-fields";
 
 const BASE_URL = "http://localhost:5000";
 const PHONE_REGEX = /^(\+94|0)[0-9]{9}$/;
@@ -259,55 +260,36 @@ export default function MillOwnerProfile() {
           <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
           <div className="grid grid-cols-2 gap-6">
 
-            <div>
-              <label className="block mb-2 text-sm font-medium">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="fullName"
-                value={user?.fullName || ""}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Full Name"
+              name="fullName"
+              value={user?.fullName || ""}
+              onChange={handleChange}
+              required
+            />
 
-            <div>
-              <label className="block mb-2 text-sm font-medium text-muted-foreground">NIC Number</label>
-              <input
-                value={user?.nic || ""}
-                disabled
-                className="w-full px-4 py-3 bg-[#161a20] border border-transparent rounded-lg opacity-50 cursor-not-allowed"
-              />
-            </div>
+            <FormInput
+              label="NIC Number"
+              value={user?.nic || ""}
+              disabled
+            />
 
-            <div>
-              <label className="flex items-center gap-1.5 mb-2 text-sm font-medium text-muted-foreground">
-                <Mail className="w-3.5 h-3.5" /> Email Address
-              </label>
-              <input
-                value={user?.email || ""}
-                disabled
-                className="w-full px-4 py-3 bg-[#161a20] border border-transparent rounded-lg opacity-50 cursor-not-allowed"
-              />
-            </div>
+            <FormInput
+              label="Email Address"
+              icon={<Mail className="w-3.5 h-3.5" />}
+              value={user?.email || ""}
+              disabled
+            />
 
-            <div>
-              <label className="flex items-center gap-1.5 mb-2 text-sm font-medium">
-                <Phone className="w-3.5 h-3.5 text-muted-foreground" /> Mobile Number
-              </label>
-              <input
-                name="phone"
-                value={user?.phone || ""}
-                onChange={handleChange}
-                placeholder="+94711234567 or 0711234567"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-              {user?.phone && !PHONE_REGEX.test(user.phone) && (
-                <p className="text-xs text-amber-500 mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> Use format: +94XXXXXXXXX or 0XXXXXXXXX
-                </p>
-              )}
-            </div>
+            <FormInput
+              label="Mobile Number"
+              name="phone"
+              value={user?.phone || ""}
+              onChange={handleChange}
+              placeholder="+94711234567 or 0711234567"
+              icon={<Phone className="w-3.5 h-3.5" />}
+              error={user?.phone && !PHONE_REGEX.test(user.phone) ? "Use format: +94XXXXXXXXX or 0XXXXXXXXX" : ""}
+            />
 
           </div>
         </div>
@@ -322,70 +304,50 @@ export default function MillOwnerProfile() {
           <div className="grid grid-cols-2 gap-6">
 
             <div className="col-span-2">
-              <label className="block mb-2 text-sm font-medium">Business Name</label>
-              <input
+              <FormInput
+                label="Business Name"
                 name="businessName"
                 value={user?.businessDetails?.businessName || ""}
                 onChange={handleBusinessChange}
                 placeholder="e.g. Silva Rice Mills (Pvt) Ltd"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
               />
             </div>
 
-            <div>
-              <label className="block mb-2 text-sm font-medium text-muted-foreground">Registration Number</label>
-              <input
-                value={user?.businessDetails?.businessRegistrationNumber || ""}
-                disabled
-                placeholder="Assigned during registration"
-                className="w-full px-4 py-3 bg-[#161a20] border border-transparent rounded-lg opacity-50 cursor-not-allowed"
-              />
-              <p className="text-xs text-muted-foreground mt-1.5">Cannot be changed after registration</p>
-            </div>
+            <FormInput
+              label="Registration Number"
+              value={user?.businessDetails?.businessRegistrationNumber || ""}
+              disabled
+              placeholder="Assigned during registration"
+            />
 
-            <div>
-              <label className="flex items-center gap-1.5 mb-2 text-sm font-medium">
-                <MapPin className="w-3.5 h-3.5 text-muted-foreground" /> Mill Location
-              </label>
-              <input
-                name="millLocation"
-                value={user?.businessDetails?.millLocation || ""}
-                onChange={handleBusinessChange}
-                placeholder="e.g. Colombo, Western Province"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Mill Location"
+              name="millLocation"
+              icon={<MapPin className="w-3.5 h-3.5" />}
+              value={user?.businessDetails?.millLocation || ""}
+              onChange={handleBusinessChange}
+              placeholder="e.g. Colombo, Western Province"
+            />
 
-            <div>
-              <label className="block mb-2 text-sm font-medium">Mill Capacity (tonnes/day)</label>
-              <input
-                type="number"
-                name="millCapacity"
-                min="0"
-                value={user?.businessDetails?.millCapacity || ""}
-                onChange={handleBusinessChange}
-                placeholder="e.g. 50"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Mill Capacity (tonnes/day)"
+              name="millCapacity"
+              type="number"
+              min="0"
+              value={user?.businessDetails?.millCapacity || ""}
+              onChange={handleBusinessChange}
+              placeholder="e.g. 50"
+            />
 
-            <div>
-              <label className="flex items-center gap-1.5 mb-2 text-sm font-medium">
-                <Phone className="w-3.5 h-3.5 text-muted-foreground" /> Business Phone
-              </label>
-              <input
-                name="businessPhone"
-                value={user?.businessDetails?.businessPhone || ""}
-                onChange={handleBusinessChange}
-                placeholder="+94112345678"
-                className="w-full px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 transition-all"
-              />
-              {user?.businessDetails?.businessPhone && !PHONE_REGEX.test(user.businessDetails.businessPhone) && (
-                <p className="text-xs text-amber-500 mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> Use format: +94XXXXXXXXX or 0XXXXXXXXX
-                </p>
-              )}
-            </div>
+            <FormInput
+              label="Business Phone"
+              name="businessPhone"
+              icon={<Phone className="w-3.5 h-3.5" />}
+              value={user?.businessDetails?.businessPhone || ""}
+              onChange={handleBusinessChange}
+              placeholder="+94112345678"
+              error={user?.businessDetails?.businessPhone && !PHONE_REGEX.test(user.businessDetails.businessPhone) ? "Use format: +94XXXXXXXXX or 0XXXXXXXXX" : ""}
+            />
 
           </div>
         </div>

@@ -3,31 +3,40 @@ import { Plus, Trash2, X, Eye, Pencil, MapPin, Package, DollarSign, Tag, AlertTr
 import { io } from "socket.io-client";
 import { PADDY_TYPES, DISTRICTS } from "../../../constants/paddyTypes";
 import toast from "react-hot-toast";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormInput, FormSelect } from "../../components/ui/form-fields";
 import { Button } from "../../components/ui/button";
+import { buyRequestSchema } from "../../lib/schemas";
 
 const socket = io("http://localhost:5000");
 
 export default function MillOwnerListings() {
 
   const [listings, setListings] = useState([]);
-
-  // Create / Edit modal
   const [showModal, setShowModal] = useState(false);
-  const [editListing, setEditListing] = useState(null); // null = create, object = edit
-
-  // View modal
+  const [editListing, setEditListing] = useState(null);
   const [viewListing, setViewListing] = useState(null);
-
-  // Delete confirmation modal
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
-  // Form fields
-  const [paddyType, setPaddyType] = useState("Samba");
-  const [quantityKg, setQuantityKg] = useState("");
-  const [pricePerKg, setPricePerKg] = useState("");
-  const [district, setDistrict] = useState("Anuradhapura");
-
   const token = localStorage.getItem("token");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm({
+    resolver: zodResolver(buyRequestSchema),
+    mode: "onChange",
+    defaultValues: {
+      paddyType: PADDY_TYPES[0],
+      quantityKg: "",
+      pricePerKg: "",
+      district: DISTRICTS[0],
+    },
+  });
 
   // ── Fetch ──
   const fetchListings = async () => {
@@ -61,79 +70,58 @@ export default function MillOwnerListings() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ── Helpers ──
-  const resetForm = () => {
-    setPaddyType("Samba");
-    setQuantityKg("");
-    setPricePerKg("");
-    setDistrict("Anuradhapura");
-    setEditListing(null);
-  };
-
   const openCreate = () => {
-    resetForm();
+    setEditListing(null);
+    reset({ paddyType: PADDY_TYPES[0], quantityKg: "", pricePerKg: "", district: DISTRICTS[0] });
     setShowModal(true);
   };
 
   const openEdit = (listing) => {
     setEditListing(listing);
-    setPaddyType(listing.paddyType);
-    setQuantityKg(listing.quantityKg);
-    setPricePerKg(listing.pricePerKg);
-    setDistrict(listing.location?.district || "Anuradhapura");
+    reset({
+      paddyType: listing.paddyType,
+      quantityKg: String(listing.quantityKg),
+      pricePerKg: String(listing.pricePerKg),
+      district: listing.location?.district || DISTRICTS[0],
+    });
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
-    resetForm();
+    setEditListing(null);
   };
 
-  // ── Create ──
-  const handleCreateListing = async (e) => {
-    e.preventDefault();
+  // ── Create / Update (merged) ──
+  const handleSaveListing = async (data) => {
     try {
-      const res = await fetch("http://localhost:5000/api/listings", {
-        method: "POST",
+      const url = editListing
+        ? `http://localhost:5000/api/listings/${editListing._id}`
+        : "http://localhost:5000/api/listings";
+      const method = editListing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ listingType: "BUY", paddyType, quantityKg, pricePerKg, district }),
+        body: JSON.stringify({
+          listingType: "BUY",
+          paddyType: data.paddyType,
+          quantityKg: Number(data.quantityKg),
+          pricePerKg: Number(data.pricePerKg),
+          district: data.district,
+        }),
       });
-      if (res.ok) {
-        toast.success("Buy request created");
-        closeModal();
-        fetchListings();
-      } else {
-        const data = await res.json();
-        toast.error(data.message || "Failed to create request");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Server error");
-    }
-  };
 
-  // ── Edit / Update ──
-  const handleUpdateListing = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`http://localhost:5000/api/listings/${editListing._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ paddyType, quantityKg, pricePerKg, district }),
-      });
       if (res.ok) {
-        toast.success("Buy request updated");
+        toast.success(editListing ? "Buy request updated" : "Buy request created");
         closeModal();
         fetchListings();
       } else {
-        const data = await res.json();
-        toast.error(data.message || "Failed to update request");
+        const json = await res.json();
+        toast.error(json.message || "Failed to save request");
       }
     } catch (error) {
       console.error(error);
@@ -309,66 +297,62 @@ export default function MillOwnerListings() {
                 {isEditing ? "Update the details of your request below." : "Fill in the details to post a new purchase request."}
               </p>
 
-              <form onSubmit={isEditing ? handleUpdateListing : handleCreateListing} className="space-y-4">
+              <form onSubmit={handleSubmit(handleSaveListing)} className="space-y-4" noValidate>
 
-                <div>
-                  <label className="text-sm font-medium mb-1.5 block">Paddy Type</label>
-                  <select
-                    value={paddyType}
-                    onChange={(e) => setPaddyType(e.target.value)}
-                    className="w-full p-3 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/50"
-                  >
-                    {PADDY_TYPES.map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
+                <Controller
+                  control={control}
+                  name="paddyType"
+                  render={({ field }) => (
+                    <FormSelect
+                      label="Paddy Type"
+                      options={PADDY_TYPES}
+                      error={errors.paddyType?.message}
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                    />
+                  )}
+                />
 
-                <div>
-                  <label className="text-sm font-medium mb-1.5 block">Quantity (kg)</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 5000"
-                    value={quantityKg}
-                    onChange={(e) => setQuantityKg(e.target.value)}
-                    className="w-full p-3 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 transition-colors"
-                    required
-                    min="1"
-                  />
-                </div>
+                <FormInput
+                  label="Quantity (kg)"
+                  type="number"
+                  placeholder="e.g. 5000"
+                  error={errors.quantityKg?.message}
+                  {...register("quantityKg")}
+                />
 
-                <div>
-                  <label className="text-sm font-medium mb-1.5 block">Price per kg (Rs)</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 120"
-                    value={pricePerKg}
-                    onChange={(e) => setPricePerKg(e.target.value)}
-                    className="w-full p-3 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 transition-colors"
-                    required
-                    min="1"
-                  />
-                </div>
+                <FormInput
+                  label="Price per kg (Rs)"
+                  type="number"
+                  placeholder="e.g. 120"
+                  error={errors.pricePerKg?.message}
+                  {...register("pricePerKg")}
+                />
 
-                <div>
-                  <label className="text-sm font-medium mb-1.5 block">District</label>
-                  <select
-                    value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full p-3 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22C55E]/50"
-                  >
-                    {DISTRICTS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
+                <Controller
+                  control={control}
+                  name="district"
+                  render={({ field }) => (
+                    <FormSelect
+                      label="District"
+                      options={DISTRICTS}
+                      error={errors.district?.message}
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                    />
+                  )}
+                />
 
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="secondary" onClick={closeModal} className="w-1/2">
                     Cancel
                   </Button>
-                  <Button type="submit" variant="primary" className="w-1/2">
-                    {isEditing ? "Save Changes" : "Create Request"}
+                  <Button type="submit" variant="primary" className="w-1/2" disabled={isSubmitting || !isValid}>
+                    {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Request"}
                   </Button>
                 </div>
 

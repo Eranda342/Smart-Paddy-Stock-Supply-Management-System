@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Loader2 } from 'lucide-react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../components/ui/button';
+import { FormInput, FormSelect } from '../../components/ui/form-fields';
+import { vehicleSchema } from '../../lib/schemas';
 
 export default function MillOwnerVehicles() {
   const [vehicles, setVehicles] = useState([]);
@@ -163,97 +167,83 @@ export default function MillOwnerVehicles() {
 
 // ================= MODAL =================
 function AddVehicleModal({ onClose, onSubmit }) {
-  const [form, setForm] = useState({
-    vehicleNumber: "",
-    type: "Truck",
-    capacityKg: "",
-    driverName: "",
-    driverPhone: ""
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm({
+    resolver: zodResolver(vehicleSchema),
+    mode: "onChange",
+    defaultValues: {
+      vehicleNumber: "",
+      type: "Truck",
+      capacityKg: "",
+      driverName: "",
+      driverPhone: "",
+    },
   });
 
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({ ...form, capacityKg: Number(form.capacityKg) });
+  const onValid = (data) => {
+    onSubmit({ ...data, capacityKg: Number(data.capacityKg) });
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
       <div className="bg-card border border-border rounded-2xl p-8 max-w-xl w-full">
         <h2 className="text-2xl font-semibold mb-6">Add New Vehicle</h2>
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block mb-2">Vehicle Number</label>
-              <input
-                type="text"
-                name="vehicleNumber"
-                value={form.vehicleNumber}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-input-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-                placeholder="e.g., LK-AB-1234"
-              />
-            </div>
-            <div>
-              <label className="block mb-2">Vehicle Type</label>
-              <select
-                name="type"
-                value={form.type}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-input-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-              >
-                <option>Truck</option>
-                <option>Lorry</option>
-                <option>Van</option>
-              </select>
-            </div>
-            <div>
-              <label className="block mb-2">Capacity (kg)</label>
-              <input
-                type="number"
-                name="capacityKg"
-                value={form.capacityKg}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-input-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-                placeholder="e.g., 2000"
-              />
-            </div>
-            <div>
-              <label className="block mb-2">Driver Name</label>
-              <input
-                type="text"
-                name="driverName"
-                value={form.driverName}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-input-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-                placeholder="Driver's full name"
-              />
-            </div>
+        <form className="space-y-4" onSubmit={handleSubmit(onValid)} noValidate>
+          <div className="grid grid-cols-2 gap-4">
+            <FormInput
+              label="Vehicle Number"
+              placeholder="e.g., LK-AB-1234"
+              error={errors.vehicleNumber?.message}
+              {...register("vehicleNumber")}
+            />
+            <Controller
+              control={control}
+              name="type"
+              render={({ field }) => (
+                <FormSelect
+                  label="Vehicle Type"
+                  options={["Truck", "Lorry", "Van"]}
+                  error={errors.type?.message}
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                />
+              )}
+            />
+            <FormInput
+              label="Capacity (kg)"
+              type="number"
+              placeholder="e.g., 2000"
+              error={errors.capacityKg?.message}
+              {...register("capacityKg")}
+            />
+            <FormInput
+              label="Driver Name"
+              placeholder="Driver's full name"
+              error={errors.driverName?.message}
+              {...register("driverName")}
+            />
             <div className="col-span-2">
-              <label className="block mb-2">Driver Phone</label>
-              <input
+              <FormInput
+                label="Driver Phone"
                 type="tel"
-                name="driverPhone"
-                value={form.driverPhone}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-input-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                 placeholder="+94 XX XXX XXXX"
+                error={errors.driverPhone?.message}
+                {...register("driverPhone")}
               />
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 pt-2">
             <Button type="button" variant="secondary" onClick={onClose} className="px-6">
               Cancel
             </Button>
-            <Button type="submit" variant="primary" className="flex-1">
-              Save Vehicle
+            <Button type="submit" variant="primary" className="flex-1" disabled={isSubmitting || !isValid}>
+              {isSubmitting ? "Saving…" : "Save Vehicle"}
             </Button>
           </div>
         </form>

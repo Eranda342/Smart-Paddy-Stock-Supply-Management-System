@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Bell, Send, Users, BellOff, CheckCircle, Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
+import { Button } from '../../components/ui/button';
+import { FormInput, FormTextarea } from '../../components/ui/form-fields';
 
 const API_BASE = 'http://localhost:5000/api';
 const SOCKET_URL = 'http://localhost:5000';
@@ -109,13 +111,10 @@ export default function AdminNotifications() {
           <h1 className="text-3xl font-semibold mb-1">Notifications Center</h1>
           <p className="text-muted-foreground">Send system-wide announcements and manage notification history</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#22C55E] hover:bg-[#16A34A] text-[#0F1115] font-medium rounded-xl transition-colors text-sm"
-        >
+        <Button variant="primary" onClick={() => setShowForm(!showForm)}>
           <Plus className="w-4 h-4" />
           New Notification
-        </button>
+        </Button>
       </div>
 
       {/* Stats */}
@@ -170,45 +169,42 @@ export default function AdminNotifications() {
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">Title *</label>
-              <input
-                value={form.title}
-                onChange={e => setForm({ ...form, title: e.target.value })}
-                placeholder="Notification title..."
-                maxLength={80}
-                className="w-full px-4 py-2.5 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 transition-all"
-              />
-            </div>
+            <FormInput
+              label="Title"
+              required
+              name="title"
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+              placeholder="Notification title..."
+              maxLength={80}
+            />
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Message *</label>
-              <textarea
+              <FormTextarea
+                label="Message"
+                required
+                name="body"
                 value={form.body}
                 onChange={e => setForm({ ...form, body: e.target.value })}
                 placeholder="Write your announcement..."
                 rows={4}
                 maxLength={500}
-                className="w-full px-4 py-2.5 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 resize-none transition-all"
               />
               <p className="text-xs text-muted-foreground text-right mt-1">{form.body.length}/500</p>
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="primary"
                 onClick={handleSend}
                 disabled={sending}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[#22C55E] hover:bg-[#16A34A] text-[#0F1115] font-medium rounded-xl transition-colors text-sm disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
                 {sending ? 'Sending...' : 'Send Notification'}
-              </button>
-              <button
-                onClick={() => setShowForm(false)}
-                className="px-5 py-2.5 bg-muted hover:bg-muted/70 rounded-xl text-sm transition-colors"
-              >
+              </Button>
+              <Button variant="secondary" onClick={() => setShowForm(false)}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -257,12 +253,14 @@ export default function AdminNotifications() {
                     </span>
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => handleDelete(notif._id)}
-                  className="p-2 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                  className="opacity-0 group-hover:opacity-100 shrink-0 text-red-400 hover:bg-red-500/10"
                 >
-                  <Trash2 className="w-4 h-4 text-red-400" />
-                </button>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             ))}
           </div>

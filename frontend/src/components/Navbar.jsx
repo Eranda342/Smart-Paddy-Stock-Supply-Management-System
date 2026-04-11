@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sprout, Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
+import Logo from "../app/components/ui/Logo";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -58,34 +59,8 @@ export default function Navbar() {
           }}
         >
           {/* LEFT: Logo */}
-          <Link
-            to="/"
-            style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}
-          >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                background: "linear-gradient(135deg, #22C55E, #10B981)",
-                borderRadius: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 0 20px rgba(34,197,94,0.35)",
-              }}
-            >
-              <Sprout style={{ width: 18, height: 18, color: "#020617" }} />
-            </div>
-            <span
-              style={{
-                fontSize: "1.1rem",
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-                color: "#fff",
-              }}
-            >
-              AgroBridge
-            </span>
+          <Link to="/" style={{ textDecoration: "none", flexShrink: 0 }}>
+            <Logo size="md" />
           </Link>
 
           {/* CENTER: Nav pill */}
