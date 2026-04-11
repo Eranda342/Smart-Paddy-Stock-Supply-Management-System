@@ -3,6 +3,7 @@ import { Plus, Trash2, X, Eye, Pencil, MapPin, Package, DollarSign, Tag, AlertTr
 import { io } from "socket.io-client";
 import { PADDY_TYPES, DISTRICTS } from "../../../constants/paddyTypes";
 import toast from "react-hot-toast";
+import { Button } from "../../components/ui/button";
 
 const socket = io("http://localhost:5000");
 
@@ -172,13 +173,10 @@ export default function MillOwnerListings() {
           <h1 className="text-3xl font-semibold mb-2">Buy Requests</h1>
           <p className="text-muted-foreground">Create and manage your paddy purchase requests</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-6 py-3 bg-[#22C55E] hover:bg-[#16a34a] text-black rounded-lg font-medium transition-colors"
-        >
+        <Button variant="primary" size="lg" onClick={openCreate}>
           <Plus className="w-5 h-5" />
           Create Request
-        </button>
+        </Button>
       </div>
 
       {/* ── Table ── */}
@@ -245,29 +243,29 @@ export default function MillOwnerListings() {
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       {/* View */}
-                      <button
+                      <Button variant="ghost" size="icon"
                         onClick={() => setViewListing(listing)}
                         title="View details"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                       >
                         <Eye className="w-4 h-4" />
-                      </button>
+                      </Button>
                       {/* Edit */}
-                      <button
+                      <Button variant="ghost" size="icon"
                         onClick={() => openEdit(listing)}
                         title="Edit request"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10 transition-colors"
+                        className="text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10 transition-colors"
                       >
                         <Pencil className="w-4 h-4" />
-                      </button>
+                      </Button>
                       {/* Delete */}
-                      <button
+                      <Button variant="ghost" size="icon"
                         onClick={() => setConfirmDeleteId(listing._id)}
                         title="Delete request"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                        className="text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -294,13 +292,15 @@ export default function MillOwnerListings() {
               className="bg-card p-8 rounded-xl w-[500px] border border-border shadow-2xl relative"
               style={{ animation: "modalScale 0.2s ease-out forwards" }}
             >
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={closeModal}
-                className="absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                className="absolute top-4 right-4 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
 
               <h2 className="text-xl font-semibold mb-1">
                 {isEditing ? "Edit Buy Request" : "Create Buy Request"}
@@ -364,19 +364,12 @@ export default function MillOwnerListings() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="w-1/2 bg-muted hover:bg-muted/70 p-3 text-foreground rounded-lg font-medium transition-colors"
-                  >
+                  <Button type="button" variant="secondary" onClick={closeModal} className="w-1/2">
                     Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="w-1/2 bg-[#22C55E] hover:bg-[#16a34a] p-3 text-black rounded-lg font-medium transition-colors"
-                  >
+                  </Button>
+                  <Button type="submit" variant="primary" className="w-1/2">
                     {isEditing ? "Save Changes" : "Create Request"}
-                  </button>
+                  </Button>
                 </div>
 
               </form>
@@ -402,12 +395,14 @@ export default function MillOwnerListings() {
               className="bg-card p-8 rounded-xl w-[500px] border border-border shadow-2xl relative"
               style={{ animation: "modalScale 0.2s ease-out forwards" }}
             >
-              <button
+              <Button
                 onClick={() => setViewListing(null)}
-                className="absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
 
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-[#22C55E]/10 flex items-center justify-center">
@@ -509,18 +504,20 @@ export default function MillOwnerListings() {
               </div>
 
               <div className="flex gap-3 mt-6">
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => { setViewListing(null); openEdit(viewListing); }}
-                  className="flex-1 flex items-center justify-center gap-2 bg-muted hover:bg-muted/70 p-3 rounded-lg font-medium transition-colors"
+                  className="flex-1"
                 >
                   <Pencil className="w-4 h-4" /> Edit Request
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
                   onClick={() => setViewListing(null)}
-                  className="flex-1 bg-[#22C55E] hover:bg-[#16a34a] p-3 text-black rounded-lg font-medium transition-colors"
+                  className="flex-1"
                 >
                   Close
-                </button>
+                </Button>
               </div>
 
             </div>
@@ -551,18 +548,12 @@ export default function MillOwnerListings() {
             </p>
 
             <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmDeleteId(null)}
-                className="flex-1 py-3 bg-muted hover:bg-muted/70 text-foreground rounded-xl font-medium transition-colors"
-              >
+              <Button variant="secondary" onClick={() => setConfirmDeleteId(null)} className="flex-1">
                 Cancel
-              </button>
-              <button
-                onClick={handleDeleteListing}
-                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors"
-              >
+              </Button>
+              <Button variant="danger" onClick={handleDeleteListing} className="flex-1">
                 Yes, Delete
-              </button>
+              </Button>
             </div>
           </div>
         </div>

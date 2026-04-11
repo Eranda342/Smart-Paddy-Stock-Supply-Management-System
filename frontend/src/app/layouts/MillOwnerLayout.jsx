@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import NotificationDropdown from "../components/NotificationDropdown";
 import GlobalSearchBar from "../components/GlobalSearchBar";
+import { Button } from "../components/ui/button";
 
 export default function MillOwnerLayout() {
   const location = useLocation();
@@ -128,13 +129,14 @@ export default function MillOwnerLayout() {
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
-          <button
+          <Button
+            variant="ghost-danger"
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-sidebar-foreground hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 border border-transparent transition-all duration-200 group"
+            className="w-full justify-start px-4 py-3 group"
           >
             <LogOut className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
-            <span className="font-medium">Logout</span>
-          </button>
+            <span>Logout</span>
+          </Button>
         </div>
       </div>
 

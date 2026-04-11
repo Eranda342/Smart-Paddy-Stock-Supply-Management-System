@@ -6,6 +6,7 @@ import {
   ShieldCheck, ShieldX, Clock, FileText, Tractor, Building2,
   X, AlertTriangle, Phone, Mail, Hash, MapPin, Layers, Calendar
 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 
 const API = 'http://localhost:5000/api/admin';
 
@@ -89,12 +90,9 @@ function DocModal({ user, onClose }) {
           </div>
           <div className="flex items-center gap-2">
             <RoleBadge role={user.role} />
-            <button
-              onClick={onClose}
-              className="ml-2 p-2 hover:bg-muted rounded-lg transition-colors"
-            >
+            <Button variant="ghost" size="icon" onClick={onClose} className="ml-2">
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -208,9 +206,9 @@ function RejectModal({ user, onConfirm, onClose, loading }) {
               <p className="text-xs text-muted-foreground">{user.fullName}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+          <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
         <div className="p-6 space-y-4">
           <p className="text-sm text-muted-foreground">
@@ -224,19 +222,17 @@ function RejectModal({ user, onConfirm, onClose, loading }) {
             className="w-full px-3 py-2.5 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-400/30 resize-none transition-all"
           />
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="danger"
               onClick={() => onConfirm(reason)}
               disabled={loading}
-              className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl text-sm transition-colors disabled:opacity-50"
+              className="flex-1"
             >
               {loading ? 'Rejecting…' : 'Confirm Reject'}
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 bg-muted hover:bg-muted/70 rounded-xl text-sm transition-colors"
-            >
+            </Button>
+            <Button variant="secondary" onClick={onClose} className="flex-1">
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -305,31 +301,31 @@ function UserRow({ user, onApprove, onReject, onView, actionLoading }) {
       {/* Actions */}
       <td className="px-4 py-4">
         <div className="flex items-center gap-1.5">
-          <button
+          <Button variant="ghost" size="icon"
             onClick={() => onView(user)}
             title="View Details"
-            className="p-2 hover:bg-blue-400/10 rounded-lg transition-colors"
+            className="text-blue-400 hover:bg-blue-400/10"
           >
-            <Eye className="w-4 h-4 text-blue-400" />
-          </button>
+            <Eye className="w-4 h-4" />
+          </Button>
           {vstatus === 'PENDING' && (
             <>
-              <button
+              <Button variant="ghost" size="icon"
                 onClick={() => onApprove(user)}
                 disabled={isLoading}
                 title="Approve"
-                className="p-2 hover:bg-green-400/10 rounded-lg transition-colors disabled:opacity-40"
+                className="text-green-400 hover:bg-green-400/10 disabled:opacity-40"
               >
-                <CheckCircle className="w-4 h-4 text-green-400" />
-              </button>
-              <button
+                <CheckCircle className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon"
                 onClick={() => onReject(user)}
                 disabled={isLoading}
                 title="Reject"
-                className="p-2 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-40"
+                className="text-red-400 hover:bg-red-400/10 disabled:opacity-40"
               >
-                <XCircle className="w-4 h-4 text-red-400" />
-              </button>
+                <XCircle className="w-4 h-4" />
+              </Button>
             </>
           )}
           {isLoading && (
@@ -473,13 +469,15 @@ export default function PendingVerifications() {
             Review farmer &amp; mill owner KYC submissions — approve or reject with reason
           </p>
         </div>
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={refresh}
-          className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/70 rounded-lg transition-colors text-sm font-medium"
+          className="flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* ── Stat cards (clickable filter) ── */}

@@ -6,6 +6,7 @@ import {
   ShieldCheck, ShieldX, Clock, FileText, Tractor, Building2,
   X, AlertTriangle, Phone, Mail, Hash, MapPin, Layers, Calendar, Ban, Trash2, Download
 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 
 const API = 'http://localhost:5000/api/admin';
 
@@ -98,9 +99,9 @@ function RejectModal({ user, onConfirm, onClose, loading }) {
               <p className="text-xs text-muted-foreground">{user.fullName}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+        <Button onClick={onClose} variant="ghost" size="icon">
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
         <div className="p-6 space-y-4">
           <p className="text-sm text-muted-foreground">
@@ -114,16 +115,17 @@ function RejectModal({ user, onConfirm, onClose, loading }) {
             className="w-full px-3 py-2.5 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-400/30 resize-none transition-all"
           />
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="danger"
               onClick={() => onConfirm(reason)}
               disabled={loading}
-              className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl text-sm transition-colors disabled:opacity-50"
+              className="flex-1"
             >
               {loading ? 'Rejecting…' : 'Confirm Reject'}
-            </button>
-            <button onClick={onClose} className="flex-1 py-2.5 bg-muted hover:bg-muted/70 rounded-xl text-sm transition-colors">
+            </Button>
+            <Button variant="secondary" onClick={onClose} className="flex-1">
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -169,9 +171,9 @@ function UserModal({ user, onClose, onAction, actionLoading }) {
                 </div>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg transition-colors">
+            <Button onClick={onClose} variant="ghost" size="icon">
               <X className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-8">
@@ -235,39 +237,42 @@ function UserModal({ user, onClose, onAction, actionLoading }) {
             </div>
           </div>
 
-          {/* Section 4: Actions inside modal */}
           <div className="shrink-0 p-4 border-t border-border bg-muted/20 flex gap-3 justify-end items-center">
             {user.role !== 'ADMIN' && (
               <>
-                <button 
+                <Button 
+                  variant={user.isBlocked ? 'ghost' : 'secondary'}
                   onClick={() => onAction(user, user.isBlocked ? 'unblock' : 'block')}
                   disabled={actionLoading === user._id}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${user.isBlocked ? 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30' : 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/30'}`}
+                  className={user.isBlocked ? 'text-amber-500 hover:bg-amber-500/10' : 'text-gray-400 hover:bg-gray-500/10'}
+                  size="sm"
                 >
                   {user.isBlocked ? 'Unblock User' : 'Block User'}
-                </button>
+                </Button>
                 
                 {(vstatus === 'PENDING' || vstatus === 'APPROVED') && !user.isBlocked && (
-                  <button 
+                  <Button 
+                    variant="danger"
+                    size="sm"
                     onClick={() => setRejectMode(true)}
                     disabled={actionLoading === user._id}
-                    className="px-4 py-2 bg-red-500/20 text-red-500 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     Reject
-                  </button>
+                  </Button>
                 )}
                 
                 {(vstatus === 'PENDING' || vstatus === 'REJECTED') && !user.isBlocked && (
-                  <button 
+                  <Button 
+                    variant="primary"
+                    size="sm"
                     onClick={() => {
                       onAction(user, 'approve');
                       onClose();
                     }}
                     disabled={actionLoading === user._id}
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     Approve
-                  </button>
+                  </Button>
                 )}
               </>
             )}
@@ -276,9 +281,9 @@ function UserModal({ user, onClose, onAction, actionLoading }) {
                 System admin actions are restricted.
               </span>
             )}
-            <button onClick={onClose} className="px-4 py-2 bg-muted hover:bg-muted/70 rounded-lg text-sm font-medium transition-colors ml-2">
+            <Button variant="secondary" size="sm" onClick={onClose} className="ml-2">
               Close
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -390,13 +395,15 @@ export default function AdminUsers() {
             View and manage all registered accounts
           </p>
         </div>
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={fetchUsers}
-          className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/70 rounded-lg transition-colors text-sm font-medium"
+          className="flex items-center gap-2"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* ── Filters ── */}
@@ -479,37 +486,43 @@ export default function AdminUsers() {
                       
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => setViewUser(user)} title="View Details" className="p-1.5 hover:bg-blue-500/10 text-blue-400 rounded-lg transition-colors">
+                          <Button variant="ghost" size="icon" onClick={() => setViewUser(user)} title="View Details"
+                            className="text-blue-400 hover:bg-blue-500/10">
                             <Eye className="w-4 h-4" />
-                          </button>
+                          </Button>
                           
                           {user.role !== 'ADMIN' && (
                             <>
                               {(vstatus === 'PENDING' || vstatus === 'REJECTED') && !user.isBlocked && (
-                                <button onClick={() => handleAction(user, 'approve')} title="Approve Verification" disabled={actionLoading === user._id} className="p-1.5 hover:bg-green-500/10 text-green-500 rounded-lg transition-colors disabled:opacity-50">
+                                <Button variant="ghost" size="icon" onClick={() => handleAction(user, 'approve')} title="Approve Verification" disabled={actionLoading === user._id}
+                                  className="text-green-500 hover:bg-green-500/10 disabled:opacity-50">
                                   <CheckCircle className="w-4 h-4" />
-                                </button>
+                                </Button>
                               )}
                               
                               {(vstatus === 'PENDING' || vstatus === 'APPROVED') && !user.isBlocked && (
-                                <button onClick={() => setViewUser({ ...user, rejectPrompt: true })} title="Reject Verification" disabled={actionLoading === user._id} className="p-1.5 hover:bg-red-500/10 text-red-400 rounded-lg transition-colors disabled:opacity-50">
+                                <Button variant="ghost" size="icon" onClick={() => setViewUser({ ...user, rejectPrompt: true })} title="Reject Verification" disabled={actionLoading === user._id}
+                                  className="text-red-400 hover:bg-red-500/10 disabled:opacity-50">
                                   <XCircle className="w-4 h-4" />
-                                </button>
+                                </Button>
                               )}
 
                               {user.isBlocked ? (
-                                <button onClick={() => handleAction(user, 'unblock')} title="Unblock User" disabled={actionLoading === user._id} className="p-1.5 hover:bg-amber-500/10 text-amber-500 rounded-lg transition-colors disabled:opacity-50">
+                                <Button variant="ghost" size="icon" onClick={() => handleAction(user, 'unblock')} title="Unblock User" disabled={actionLoading === user._id}
+                                  className="text-amber-500 hover:bg-amber-500/10 disabled:opacity-50">
                                   <ShieldCheck className="w-4 h-4" />
-                                </button>
+                                </Button>
                               ) : (
-                                <button onClick={() => handleAction(user, 'block')} title="Block / Suspend User" disabled={actionLoading === user._id} className="p-1.5 hover:bg-gray-500/20 text-gray-400 rounded-lg transition-colors disabled:opacity-50">
+                                <Button variant="ghost" size="icon" onClick={() => handleAction(user, 'block')} title="Block / Suspend User" disabled={actionLoading === user._id}
+                                  className="text-gray-400 hover:bg-gray-500/20 disabled:opacity-50">
                                   <Ban className="w-4 h-4" />
-                                </button>
+                                </Button>
                               )}
                               
-                              <button onClick={() => handleAction(user, 'delete')} title="Delete User Permanently" disabled={actionLoading === user._id} className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors disabled:opacity-50">
+                              <Button variant="ghost" size="icon" onClick={() => handleAction(user, 'delete')} title="Delete User Permanently" disabled={actionLoading === user._id}
+                                className="text-red-500 hover:bg-red-500/10 disabled:opacity-50">
                                 <Trash2 className="w-4 h-4" />
-                              </button>
+                              </Button>
                             </>
                           )}
                         </div>

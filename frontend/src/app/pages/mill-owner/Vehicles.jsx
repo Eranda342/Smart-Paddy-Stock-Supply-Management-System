@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Loader2 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 
 export default function MillOwnerVehicles() {
   const [vehicles, setVehicles] = useState([]);
@@ -72,13 +73,10 @@ export default function MillOwnerVehicles() {
           <h1 className="text-3xl font-semibold mb-2">Vehicle Management</h1>
           <p className="text-muted-foreground">Manage your transport fleet</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-[#22C55E] hover:bg-[#16A34A] text-[#0F1115] rounded-lg transition-all duration-200 font-medium"
-        >
+        <Button variant="primary" size="lg" onClick={() => setShowModal(true)}>
           <Plus className="w-5 h-5" />
           Add Vehicle
-        </button>
+        </Button>
       </div>
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -132,15 +130,15 @@ export default function MillOwnerVehicles() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
-                        <button className="p-2 hover:bg-muted rounded-lg transition-colors">
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted">
                           <Edit className="w-4 h-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button variant="ghost" size="icon"
                           onClick={() => deleteVehicle(v._id)}
-                          className="p-2 hover:bg-muted rounded-lg transition-colors text-destructive"
+                          className="text-destructive hover:bg-red-500/10"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -251,19 +249,12 @@ function AddVehicleModal({ onClose, onSubmit }) {
             </div>
           </div>
           <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 bg-muted hover:bg-muted/80 rounded-lg transition-all duration-200"
-            >
+            <Button type="button" variant="secondary" onClick={onClose} className="px-6">
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 py-3 bg-[#22C55E] hover:bg-[#16A34A] text-[#0F1115] rounded-lg transition-all duration-200 font-medium"
-            >
+            </Button>
+            <Button type="submit" variant="primary" className="flex-1">
               Save Vehicle
-            </button>
+            </Button>
           </div>
         </form>
       </div>

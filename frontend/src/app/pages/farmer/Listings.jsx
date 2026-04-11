@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { PADDY_TYPES, DISTRICTS } from "../../../constants/paddyTypes";
 import toast from "react-hot-toast";
+import { Button } from "../../components/ui/button";
 
 const socket = io("http://localhost:5000");
 
@@ -202,13 +203,15 @@ export default function FarmerListings() {
           <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">My Listings</h1>
           <p className="text-white/50 text-sm">Manage your paddy stock supply and inventory</p>
         </div>
-        <button
+        <Button
+          variant="primary"
+          size="lg"
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-green-500/25 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500"
+          className="shadow-lg"
         >
           <Plus className="w-5 h-5" />
           Create Listing
-        </button>
+        </Button>
       </div>
 
       <div className="mb-8 flex relative z-10">
@@ -261,15 +264,18 @@ export default function FarmerListings() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <button onClick={() => navigate(`/farmer/listings/${listing._id}`)} className="p-2 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="View">
+                        <Button variant="ghost" size="icon" onClick={() => navigate(`/farmer/listings/${listing._id}`)} title="View"
+                          className="text-white/60 hover:text-white hover:bg-white/10">
                           <Eye className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => openEditModal(listing)} className="p-2 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Edit">
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => openEditModal(listing)} title="Edit"
+                          className="text-white/60 hover:text-white hover:bg-white/10">
                           <Edit className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDeleteListing(listing._id)} className="p-2 bg-white/5 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete">
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteListing(listing._id)} title="Delete"
+                          className="text-white/60 hover:text-red-400 hover:bg-red-500/10">
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -296,9 +302,9 @@ export default function FarmerListings() {
             <div onClick={(e) => e.stopPropagation()} className="bg-[#0A1120] border border-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-2xl relative shadow-2xl overflow-hidden" style={{ animation: 'modalScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}>
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
               
-              <button type="button" onClick={closeModal} className="absolute top-6 right-6 p-2 rounded-xl text-white/40 hover:bg-white/5 hover:text-white transition-all">
+              <Button type="button" variant="ghost" size="icon" onClick={closeModal} className="absolute top-6 right-6 text-white/40 hover:bg-white/5 hover:text-white">
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
 
               <h2 className="text-2xl font-bold tracking-tight mb-8 text-white">
                 {editListingId ? "Edit Listing" : "Create New Listing"}
@@ -339,12 +345,13 @@ export default function FarmerListings() {
                 </div>
 
                 <div className="flex gap-4 pt-4 mt-8 border-t border-white/10">
-                  <button type="button" onClick={closeModal} className="px-6 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium transition-all rounded-xl">
+                  <Button type="button" variant="secondary" onClick={closeModal}
+                    className="px-6 border-white/10 bg-white/5 text-white hover:bg-white/10">
                     Cancel
-                  </button>
-                  <button type="submit" className="flex-1 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg hover:shadow-green-500/25 font-semibold rounded-xl transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0A1120] focus:ring-green-500">
+                  </Button>
+                  <Button type="submit" variant="primary" className="flex-1">
                     {editListingId ? "Update Listing" : "Create Listing"}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>

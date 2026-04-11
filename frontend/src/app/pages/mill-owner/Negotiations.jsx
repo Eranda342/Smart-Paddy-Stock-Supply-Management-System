@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Send, CheckCircle2, User, Check, CheckCheck, Trash2, Ban, Pencil } from "lucide-react";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
+import { Button } from "../../components/ui/button";
 
 const socket = io("http://localhost:5000");
 
@@ -652,12 +653,14 @@ export default function MillOwnerNegotiations() {
                       placeholder="Type a message..."
                       className="flex-1 px-4 py-3 bg-[#161a20] border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                     />
-                    <button
+                    <Button
+                      variant="primary"
+                      size="icon"
                       onClick={sendMessage}
-                      className="px-6 py-3 bg-[#22C55E] text-black rounded-lg hover:bg-[#16A34A] transition-colors"
+                      className="w-12 h-12"
                     >
                       <Send className="w-5 h-5" />
-                    </button>
+                    </Button>
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -688,13 +691,14 @@ export default function MillOwnerNegotiations() {
                         onChange={(e) => setCounterPrice(e.target.value)}
                         className="px-3 py-2 border rounded-lg bg-[#161a20] text-sm w-40"
                       />
-                      <button
+                      <Button variant="ghost"
                         onClick={sendCounterOffer}
-                        className="px-4 py-2 bg-yellow-500/10 text-yellow-500 rounded-lg text-sm hover:bg-yellow-500/20 transition-colors"
+                        className="px-4 py-2 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20"
                       >
                         Counter Offer
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
                         disabled={isQuantityInvalid}
                         onClick={() => updateStatus("ACCEPTED")}
                         className={`px-4 py-2 rounded-lg text-sm transition-colors ${
@@ -704,13 +708,13 @@ export default function MillOwnerNegotiations() {
                         }`}
                       >
                         Accept
-                      </button>
-                      <button
+                      </Button>
+                      <Button variant="ghost"
                         onClick={() => updateStatus("REJECTED")}
-                        className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm hover:bg-red-500/20 transition-colors"
+                        className="px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20"
                       >
                         Reject
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

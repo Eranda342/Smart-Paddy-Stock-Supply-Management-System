@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Settings, Save, ToggleLeft, ToggleRight, Info, Shield, Sliders, DollarSign, Clock, LayoutDashboard, Database } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Button } from '../../components/ui/button';
 
 const API_BASE = 'http://localhost:5000/api/admin/settings';
 
@@ -88,14 +89,16 @@ export default function AdminSettings() {
           <h1 className="text-3xl font-semibold mb-2">System Settings</h1>
           <p className="text-muted-foreground">Configure live platform parameters and automation thresholds</p>
         </div>
-        <button
+        <Button
+          variant="primary"
+          size="lg"
           onClick={handleSave}
           disabled={saving || loading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-background font-semibold rounded-xl transition-all shadow-sm shadow-primary/20 disabled:opacity-50"
+          className="shadow-sm shadow-primary/20"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Synchronizing Pipeline...' : 'Deploy Changes'}
-        </button>
+        </Button>
       </div>
 
       <div className="flex items-start gap-4 p-4 bg-muted/40 border border-border rounded-xl">

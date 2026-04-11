@@ -4,6 +4,7 @@ import {
   Phone, Mail, Camera, User, Sprout
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Button } from "../../components/ui/button";
 
 const BASE_URL = "http://localhost:5000";
 const PHONE_REGEX = /^(\+94|0)[0-9]{9}$/;
@@ -226,17 +227,19 @@ export default function FarmerProfile() {
                   ? `${user.farmDetails.operatingDistrict} District`
                   : "Location not set"}
               </p>
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingAvatar}
-                className="px-4 py-2 text-sm bg-[#22C55E]/10 border border-[#22C55E]/30 text-[#22C55E] rounded-lg hover:bg-[#22C55E]/20 transition-colors flex items-center gap-2"
+                className="border border-[#22C55E]/30 bg-[#22C55E]/10 text-[#22C55E] hover:bg-[#22C55E]/20"
               >
                 {uploadingAvatar ? (
                   <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...</>
                 ) : (
                   <><Camera className="w-3.5 h-3.5" /> Change Photo</>
                 )}
-              </button>
+              </Button>
               <p className="text-xs text-muted-foreground mt-2">JPG, PNG, or GIF · Max 5MB</p>
             </div>
 
@@ -416,21 +419,19 @@ export default function FarmerProfile() {
 
         {/* ===== SAVE BUTTON ===== */}
         <div className="flex justify-end pt-2">
-          <button
+          <Button
+            variant="primary"
+            size="lg"
             onClick={handleSave}
             disabled={saving}
-            className={`px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-              saving
-                ? "bg-[#22C55E]/50 text-black/60 cursor-not-allowed"
-                : "bg-[#22C55E] hover:bg-[#16A34A] text-black hover:scale-[1.02] active:scale-95"
-            }`}
+            className="px-8"
           >
             {saving ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
             ) : (
               "Save Changes"
             )}
-          </button>
+          </Button>
         </div>
 
       </div>

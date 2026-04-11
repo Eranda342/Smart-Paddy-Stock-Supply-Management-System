@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, User, Package, RefreshCw } from "lucide-react";
 import { io } from "socket.io-client";
+import { Button } from "../../components/ui/button";
 
 const socket = io("http://localhost:5000");
 
@@ -182,13 +183,13 @@ export default function BrowseListings() {
           </p>
         </div>
 
-        <button
+        <Button variant="secondary" size="sm"
           onClick={() => fetchListings(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-all"
+          className="flex items-center gap-2"
         >
           <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       <div className="flex gap-6">
@@ -309,7 +310,7 @@ export default function BrowseListings() {
 
               </div>
 
-              <button
+              <Button variant="secondary" className="w-full"
                 onClick={() => {
                   setSelectedDistrict("All");
                   setSelectedType("All");
@@ -319,10 +320,9 @@ export default function BrowseListings() {
                   setMaxPrice("");
                   setSortPrice("none");
                 }}
-                className="w-full py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm"
               >
                 Reset Filters
-              </button>
+              </Button>
 
             </div>
 
@@ -420,12 +420,13 @@ export default function BrowseListings() {
                     );
                   })()}
 
-                  <button
+                  <Button
+                    variant="primary"
+                    className="w-full"
                     onClick={() => handleNegotiate(listing)}
-                    className="w-full py-3 bg-[#22C55E] hover:bg-[#16A34A] text-black rounded-lg font-medium"
                   >
                     Negotiate
-                  </button>
+                  </Button>
 
                 </div>
 

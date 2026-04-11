@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, User, Package, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import { Button } from "../../components/ui/button";
 
 const socket = io("http://localhost:5000");
 
@@ -234,7 +235,7 @@ export default function BrowseListings() {
               </div>
 
               {/* Reset */}
-              <button
+              <Button variant="secondary"
                 onClick={() => {
                   setSelectedDistrict("All");
                   setSelectedType("All");
@@ -244,10 +245,10 @@ export default function BrowseListings() {
                   setMaxPrice("");
                   setSortPrice("none");
                 }}
-                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium rounded-xl transition-colors text-sm"
+                className="w-full border-white/10 bg-white/5 text-white hover:bg-white/10"
               >
                 Reset All Filters
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -305,24 +306,21 @@ export default function BrowseListings() {
                     </div>
                   </div>
 
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={() => handleNegotiate(listing)}
                     disabled={negotiatingId === listing._id}
-                    className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500 ${
-                      negotiatingId === listing._id
-                        ? "bg-white/5 border border-white/10 text-white/50 cursor-not-allowed"
-                        : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg hover:shadow-green-500/25"
-                    }`}
+                    className="w-full py-3.5"
                   >
                     {negotiatingId === listing._id ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         Initializing...
                       </>
                     ) : (
                       "Start Negotiation"
                     )}
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>

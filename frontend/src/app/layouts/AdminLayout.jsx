@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import GlobalSearchBar from '../components/GlobalSearchBar';
+import { Button } from '../components/ui/button';
 
 // ─────────────────────────────────────────────────────────────────
 // Sidebar helpers
@@ -141,9 +142,9 @@ function NotificationDropdown({ onClose, pendingKyc }) {
             </span>
           )}
         </div>
-        <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
+        <Button variant="ghost" size="icon" onClick={onClose} className="w-7 h-7">
           <X className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
+        </Button>
       </div>
 
       {/* Notification list */}
@@ -294,13 +295,14 @@ export default function AdminLayout() {
 
           {/* Logout */}
           <div className="p-3 border-t border-sidebar-border">
-            <button
+            <Button
+              variant="ghost-danger"
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-sidebar-foreground hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 border border-transparent transition-all duration-200 text-sm group"
+              className="w-full justify-start px-4 py-2.5 text-sm group"
             >
               <LogOut className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-              <span className="font-medium">Logout</span>
-            </button>
+              <span>Logout</span>
+            </Button>
           </div>
         </div>
 
@@ -319,20 +321,24 @@ export default function AdminLayout() {
             <div className="flex items-center gap-2">
 
               {/* Theme toggle */}
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={toggleTheme}
-                className="w-9 h-9 rounded-lg bg-muted hover:bg-muted/70 flex items-center justify-center transition-colors"
                 title="Toggle theme"
+                className="bg-muted hover:bg-muted/70"
               >
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
+              </Button>
 
               {/* Notification Bell */}
               <div className="relative">
-                <button
+                <Button
                   id="admin-notifications-btn"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowNotifications((v) => !v)}
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 relative ${
+                  className={`relative ${
                     showNotifications ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-muted hover:bg-muted/70'
                   }`}
                   title="Notifications"
@@ -343,7 +349,7 @@ export default function AdminLayout() {
                       {totalUnread}
                     </span>
                   )}
-                </button>
+                </Button>
 
                 {showNotifications && (
                   <NotificationDropdown

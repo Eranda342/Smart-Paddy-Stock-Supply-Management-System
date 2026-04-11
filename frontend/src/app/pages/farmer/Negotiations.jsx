@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { Send, CheckCircle2, Building2, Check, CheckCheck, Trash2, Ban, Pencil } from "lucide-react";
+import { Building2, Send, CheckCircle2, User, Check, CheckCheck, Trash2, Ban, Pencil } from "lucide-react";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
+import { Button } from "../../components/ui/button";
 
 const socket=io("http://localhost:5000");
 
@@ -749,12 +750,12 @@ placeholder="Type message..."
 className="flex-1 px-4 py-3 bg-[#161a20] border border-input rounded-lg"
 />
 
-<button
+<Button variant="primary" size="icon"
 onClick={sendMessage}
-className="px-6 py-3 bg-[#22C55E] text-black rounded-lg"
+className="w-12 h-12"
 >
 <Send className="w-5 h-5"/>
-</button>
+</Button>
 
 </div>
 
@@ -794,14 +795,14 @@ onChange={(e)=>setCounterPrice(e.target.value)}
 className="px-3 py-2 border rounded-lg bg-[#161a20]"
 />
 
-<button
+<Button variant="ghost"
 onClick={sendCounterOffer}
-className="px-4 py-2 bg-yellow-500/10 text-yellow-500 rounded-lg text-sm transition-colors hover:bg-yellow-500/20"
+className="px-4 py-2 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20"
 >
 Counter Offer
-</button>
+</Button>
 
-<button
+<Button variant="ghost"
   disabled={isQuantityInvalid}
   onClick={() => updateStatus("ACCEPTED")}
   className={`px-4 py-2 rounded-lg text-sm transition-colors ${
@@ -811,14 +812,14 @@ Counter Offer
   }`}
 >
 Accept
-</button>
+</Button>
 
-<button
+<Button variant="ghost"
 onClick={()=>updateStatus("REJECTED")}
-className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm transition-colors hover:bg-red-500/20"
+className="px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20"
 >
 Reject
-</button>
+</Button>
 
 </div>
 </div>
