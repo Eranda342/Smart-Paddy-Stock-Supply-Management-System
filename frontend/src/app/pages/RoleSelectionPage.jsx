@@ -1,21 +1,82 @@
 import { Link, useNavigate } from "react-router-dom";
-import { User, Building2 } from "lucide-react";
+import { useState } from "react";
+import { User, Building2, Loader2 } from "lucide-react";
 import Logo from "../components/ui/Logo";
+import toast from "react-hot-toast";
+import { API } from "../../api/api";
 
+/**
+ * RoleSelectionPage  (/register/role)
+ *
+ * Step 1 of the registration flow.
+ *
+ * For NORMAL (email/password) users:
+ *   - No token in localStorage at this point.
+ *   - Role is saved ONLY in localStorage (temp) for the registration flow.
+ *   - Backend receives role as part of the final POST /api/users/register call.
+ *
+ * For GOOGLE OAuth users:
+ *   - Token IS in localStorage (set by OAuthSuccessPage).
+ *   - Role is persisted to the DATABASE via PUT /users/set-role.
+ *   - DO NOT write role to localStorage for OAuth users —
+ *     all subsequent guards use DB state via resolveUserDestination.
+ *
+ * Both paths lead to /register/account on success.
+ */
 export default function RoleSelectionPage() {
 
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(null); // tracks which button is loading
 
-  const handleRoleSelect = (role) => {
+  const handleRoleSelect = async (role) => {
+    setLoading(role);
 
-    // Clear previous registration data
+    // Clear any stale registration data from a previous attempt
     localStorage.removeItem("accountInfo");
 
-    // Save selected role for registration steps
-    localStorage.setItem("role", role);
+    const oauthToken = localStorage.getItem("token");
 
-    // Navigate to account information page
-    navigate("/register/account");
+    if (oauthToken) {
+      // ── GOOGLE OAuth user: persist role to DB ─────────────────────────────
+      try {
+        const res = await fetch(API.setRole, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${oauthToken}`,
+          },
+          body: JSON.stringify({ role }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to set role");
+        }
+
+        // Sync the cached user object so ProtectedRoute reflects the new role.
+        // DO NOT write 'role' to localStorage for OAuth users — all routing
+        // is driven by the DB state via resolveUserDestination.
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
+        navigate("/register/account");
+      } catch (err) {
+        console.error("SET ROLE ERROR:", err);
+        toast.error(err.message || "Could not save your role. Please try again.", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" },
+        });
+      } finally {
+        setLoading(null);
+      }
+    } else {
+      // ── Normal registration: role stored temporarily in localStorage ───────
+      // Will be sent to the server as part of the final /register call.
+      localStorage.setItem("role", role);
+      navigate("/register/account");
+      setLoading(null);
+    }
   };
 
   return (
@@ -103,12 +164,17 @@ export default function RoleSelectionPage() {
                 {/* FARMER CARD */}
                 <button
                   onClick={() => handleRoleSelect("FARMER")}
-                  className="bg-white/5 border border-white/10 hover:border-green-500/50 hover:bg-white/[0.08] rounded-2xl p-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(34,197,94,0.12)] group relative overflow-hidden"
+                  disabled={!!loading}
+                  className="bg-white/5 border border-white/10 hover:border-green-500/50 hover:bg-white/[0.08] rounded-2xl p-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(34,197,94,0.12)] group relative overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                 >
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   <div className="w-14 h-14 bg-green-500/10 group-hover:bg-green-500/20 border border-green-500/20 rounded-xl flex items-center justify-center mb-6 transition-all shadow-inner relative z-10">
-                    <User className="w-7 h-7 text-green-400 group-hover:scale-110 transition-transform" />
+                    {loading === "FARMER" ? (
+                      <Loader2 className="w-7 h-7 text-green-400 animate-spin" />
+                    ) : (
+                      <User className="w-7 h-7 text-green-400 group-hover:scale-110 transition-transform" />
+                    )}
                   </div>
 
                   <h2 className="text-xl font-bold mb-3 text-white tracking-tight relative z-10">
@@ -123,7 +189,7 @@ export default function RoleSelectionPage() {
                   <ul className="space-y-3 text-sm text-white/60 relative z-10">
                     <li className="flex items-center gap-2.5">
                       <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                      Create & manage listings
+                      Create &amp; manage listings
                     </li>
                     <li className="flex items-center gap-2.5">
                       <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
@@ -139,12 +205,17 @@ export default function RoleSelectionPage() {
                 {/* MILL OWNER CARD */}
                 <button
                   onClick={() => handleRoleSelect("MILL_OWNER")}
-                  className="bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-white/[0.08] rounded-2xl p-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)] group relative overflow-hidden"
+                  disabled={!!loading}
+                  className="bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-white/[0.08] rounded-2xl p-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)] group relative overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                 >
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   <div className="w-14 h-14 bg-blue-500/10 group-hover:bg-blue-500/20 border border-blue-500/20 rounded-xl flex items-center justify-center mb-6 transition-all shadow-inner relative z-10">
-                    <Building2 className="w-7 h-7 text-blue-400 group-hover:scale-110 transition-transform" />
+                    {loading === "MILL_OWNER" ? (
+                      <Loader2 className="w-7 h-7 text-blue-400 animate-spin" />
+                    ) : (
+                      <Building2 className="w-7 h-7 text-blue-400 group-hover:scale-110 transition-transform" />
+                    )}
                   </div>
 
                   <h2 className="text-xl font-bold mb-3 text-white tracking-tight relative z-10">

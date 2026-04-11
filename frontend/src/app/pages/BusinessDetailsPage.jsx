@@ -4,14 +4,18 @@ import { Upload, AlertCircle } from "lucide-react";
 import Logo from "../components/ui/Logo";
 import toast from "react-hot-toast";
 import { PADDY_TYPES_GROUPED, DISTRICTS as SRI_LANKAN_DISTRICTS } from "../../constants/paddyTypes";
+import { resolveUserDestination } from "../lib/resolveUserDestination";
+import { API } from "../../api/api";
 
 export default function BusinessDetailsPage() {
 
   const navigate = useNavigate();
 
-  const [role, setRole] = useState("");
+  const [role, setRole]                       = useState("");
+  const [isRejected, setIsRejected]           = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   const [selectedPaddyTypes, setSelectedPaddyTypes] = useState([]);
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFile, setUploadedFile]       = useState(null);
 
   const [formData, setFormData] = useState({
     district: "",
@@ -24,22 +28,49 @@ export default function BusinessDetailsPage() {
 
   useEffect(() => {
 
-    const savedRole = localStorage.getItem("role");
+    const token       = localStorage.getItem("token");
     const accountInfo = localStorage.getItem("accountInfo");
 
-    if (!savedRole) {
-      navigate("/register/role");
-      return;
+    if (token) {
+      // ── OAuth / resubmit context: DB-driven guard ──────────────────────
+      // Allow through if:
+      //   resolveUserDestination === "/register/business"  (new profile, doc missing)
+      //   resolveUserDestination === "/rejected"           (resubmit flow)
+      fetch(API.profile, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.ok ? r.json() : Promise.reject(new Error("profile fetch failed")))
+        .then(({ user }) => {
+          const currentPath = window.location.pathname;
+          const destination = resolveUserDestination(user, currentPath);
+          
+          if (destination !== currentPath) {
+            navigate(destination, { replace: true });
+          } else {
+            setRole(user.role);
+            // Check natively if this is a rejected user resubmitting
+            const isFarmer = user.role === "FARMER";
+            const details = isFarmer ? user.farmDetails : user.businessDetails;
+            if (details?.verificationStatus === "REJECTED") {
+              setIsRejected(true);
+              setRejectionReason(details.rejectionReason);
+            }
+          }
+        })
+        .catch(() => navigate("/login", { replace: true }));
+    } else {
+      // ── Normal registration: role from localStorage, accountInfo required ───
+      if (!accountInfo) {
+        navigate("/register/account", { replace: true });
+        return;
+      }
+      const savedRole = localStorage.getItem("role");
+      if (!savedRole) {
+        navigate("/register/role", { replace: true });
+        return;
+      }
+      setRole(savedRole.toUpperCase().replace("-", "_"));
     }
-
-    if (!accountInfo) {
-      navigate("/register/account");
-      return;
-    }
-
-    const normalizedRole = savedRole.toUpperCase().replace("-", "_");
-
-    setRole(normalizedRole);
 
   }, [navigate]);
 
@@ -77,6 +108,66 @@ export default function BusinessDetailsPage() {
 
     e.preventDefault();
 
+    const oauthToken = localStorage.getItem("token");
+
+    // ── RESUBMIT FLOW (REJECTED user with token) ──────────────────────────
+    if (isRejected && oauthToken) {
+      if (!uploadedFile) {
+        toast.error("Please upload a new document to resubmit.", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+        });
+        return;
+      }
+
+      // Fetch complete accountInfo staged from Step 1
+      const accountInfo = JSON.parse(localStorage.getItem("accountInfo") || "{}");
+
+      if (!accountInfo.phone || !accountInfo.nic) {
+        toast.error("Missing personal details. Please restart from Step 2.", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+        });
+        navigate("/register/account");
+        return;
+      }
+
+      const formDataToSend = new FormData();
+      formDataToSend.append("document", uploadedFile);
+      formDataToSend.append("phone", accountInfo.phone);
+      formDataToSend.append("nic", accountInfo.nic);
+
+      if (role === "FARMER") {
+        formDataToSend.append("operatingDistrict", formData.district);
+      } else {
+        formDataToSend.append("millLocation", formData.millLocation);
+      }
+
+      try {
+        const res = await fetch(API.resubmit, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${oauthToken}` },
+          body: formDataToSend,
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Resubmission failed");
+
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.removeItem("accountInfo");
+
+        toast.success("Application resubmitted! Awaiting admin review.", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+        });
+        navigate("/register/success");
+      } catch (err) {
+        console.error("RESUBMIT ERROR:", err);
+        toast.error(err.message || "Resubmission failed. Please try again.", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
+        });
+      }
+      return;
+    }
+
+    // ── NORMAL / OAUTH NEW PROFILE ─────────────────────────────────────
     const accountInfo = JSON.parse(localStorage.getItem("accountInfo"));
 
     if (!accountInfo) {
@@ -87,66 +178,65 @@ export default function BusinessDetailsPage() {
       return;
     }
 
+    // ── Build FormData (identical shape for both endpoints) ───────────────
     const formDataToSend = new FormData();
 
     formDataToSend.append("fullName", accountInfo.fullName);
     formDataToSend.append("email", accountInfo.email);
     formDataToSend.append("phone", accountInfo.phone);
     formDataToSend.append("nic", accountInfo.nic);
-    formDataToSend.append("password", accountInfo.password);
+    formDataToSend.append("password", accountInfo.password || "");
     formDataToSend.append("role", role);
 
-
     if (role === "FARMER") {
-
       formDataToSend.append("operatingDistrict", formData.district);
       formDataToSend.append("landSize", formData.landSize);
       formDataToSend.append("estimatedMonthlyStock", formData.estimatedStock);
       formDataToSend.append("paddyTypesCultivated", JSON.stringify(selectedPaddyTypes));
-
     }
 
-
     if (role === "MILL_OWNER") {
-
       formDataToSend.append("businessName", formData.businessName);
       formDataToSend.append("businessRegistrationNumber", formData.businessRegistrationNumber);
       formDataToSend.append("millLocation", formData.millLocation);
-
     }
-
 
     if (uploadedFile) {
       formDataToSend.append("document", uploadedFile);
     }
 
-
     try {
 
-      const res = await fetch("http://localhost:5000/api/users/register", {
-        method: "POST",
-        body: formDataToSend
-      });
+      let url    = "http://localhost:5000/api/users/register";
+      let method = "POST";
+      const headers = {};
 
+      if (oauthToken) {
+        // OAuth user completing profile for the first time
+        url    = "http://localhost:5000/api/auth/complete-profile";
+        method = "PUT";
+        headers["Authorization"] = `Bearer ${oauthToken}`;
+      }
+
+      const res  = await fetch(url, { method, headers, body: formDataToSend });
       const data = await res.json();
 
       if (res.ok) {
-
         localStorage.removeItem("accountInfo");
         localStorage.removeItem("role");
 
+        if (oauthToken && data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
         navigate("/register/success");
-
       } else {
-
         toast.error(data.message || "Registration failed", {
           style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
         });
-
       }
 
     } catch (error) {
-
       console.error(error);
       toast.error("Server error", {
         style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
@@ -229,10 +319,24 @@ export default function BusinessDetailsPage() {
 
             {/* CONTENT CARD */}
             <div className="bg-white/[0.03] border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden w-full">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
+              <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent ${isRejected ? "via-orange-500/50" : "via-green-500/50"} to-transparent`} />
+
+              {/* Resubmit context banner */}
+              {isRejected && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 flex gap-3 items-start">
+                  <span className="text-red-400 text-lg leading-none mt-0.5">⚠️</span>
+                  <div>
+                    <p className="text-sm font-semibold text-red-500 mb-0.5">Your previous submission was rejected</p>
+                    <p className="text-xs text-white/50 leading-relaxed">
+                      Reason: <span className="text-white/80 font-medium">"{rejectionReason || "Document unclear"}"</span><br/>
+                      Please upload a corrected document
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <h1 className="text-3xl font-bold mb-2 tracking-tight text-white">
-                Business Details
+                {isRejected ? "Resubmit Application" : "Business Details"}
               </h1>
 
               <p className="text-white/50 mb-8 font-medium">
@@ -443,9 +547,13 @@ export default function BusinessDetailsPage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded-xl font-semibold shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] focus:ring-green-500"
+                    className={`flex-1 py-3.5 rounded-xl font-semibold hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#020617] ${
+                      isRejected
+                        ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] focus:ring-orange-500"
+                        : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] focus:ring-green-500"
+                    } text-white`}
                   >
-                    Submit Registration
+                    {isRejected ? "Resubmit Application" : "Submit Registration"}
                   </button>
                 </div>
 

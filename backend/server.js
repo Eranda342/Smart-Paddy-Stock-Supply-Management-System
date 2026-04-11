@@ -4,8 +4,12 @@ const http = require("http");
 const path = require("path");
 const { Server } = require("socket.io");
 const swaggerUi = require("swagger-ui-express");
+const passport = require("passport");
 require("dotenv").config();
 const openapi = require("./docs/openapi");
+
+// ================= PASSPORT (Google OAuth) =================
+require("./config/passportGoogle");
 
 // ================= DATABASE =================
 const connectDB = require("./config/db");
@@ -40,6 +44,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize()); // Passport – stateless (session: false)
 
 // ================= API DOCS =================
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapi));
@@ -57,8 +62,9 @@ app.get("/", (req, res) => {
 });
 
 // ================= API ROUTES =================
-app.use("/api/users", userRoutes);       // existing user routes
-app.use("/api/auth", userRoutes);        // alias: register + login via /api/auth
+app.use("/api/users", userRoutes);                          // existing user routes
+app.use("/api/auth", userRoutes);                           // alias: register + login via /api/auth
+app.use("/api/auth", require("./routes/authGoogle"));       // Google OAuth routes
 app.use("/api/listings", listingRoutes);
 app.use("/api/negotiations", negotiationRoutes);
 app.use("/api/transactions", transactionRoutes);

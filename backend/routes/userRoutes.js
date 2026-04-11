@@ -8,7 +8,11 @@ const {
   updateProfile,
   uploadAvatar,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  setRole,
+  getOwnProfile,
+  updateBasicInfo,
+  resubmit,
 } = require("../controllers/userController");
 
 const { protect, checkApproved } = require("../middleware/authMiddleware");
@@ -27,8 +31,26 @@ router.post("/login", loginUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
-// ================= GET PROFILE =================
+// ================= GET PROFILE (approved users — dashboard etc.) =================
 router.get("/me", protect, checkApproved, getMyProfile);
+
+
+// ================= GET OWN PROFILE (any auth user — onboarding/pending/rejected) =================
+router.get("/profile", protect, getOwnProfile);
+
+
+// ================= UPDATE BASIC INFO (OAuth onboarding — phone+NIC to DB) =================
+// No checkApproved: used by AccountInfoPage for OAuth users before BusinessDetailsPage.
+router.put("/profile", protect, updateBasicInfo);
+
+
+// ================= SET ROLE (Google OAuth onboarding only) =================
+router.put("/set-role", protect, setRole);
+
+
+// ================= RESUBMIT APPLICATION (REJECTED users — no checkApproved) =================
+// Allows a REJECTED user to upload a new document and re-enter the PENDING queue.
+router.put("/resubmit", protect, upload.single("document"), resubmit);
 
 
 // ================= UPDATE PROFILE =================

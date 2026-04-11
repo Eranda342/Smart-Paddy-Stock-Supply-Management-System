@@ -15,6 +15,8 @@ import BusinessDetailsPage from "./pages/BusinessDetailsPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import OAuthSuccessPage from "./pages/OAuthSuccessPage";
+import RejectedPage from "./pages/RejectedPage";
 
 // ================= LAYOUTS =================
 import MainLayout from "./layouts/MainLayout";
@@ -223,6 +225,20 @@ export const router = createBrowserRouter([
 
       { path: "*", element: <AdminDashboard /> }
     ],
+  },
+
+  // ================= OAUTH SUCCESS (bare – no layout, no auth guard) =================
+  // The backend redirects here after Google OAuth with ?token=<JWT>
+  {
+    path: "/oauth-success",
+    element: <OAuthSuccessPage />,
+  },
+
+  // ================= REJECTED (bare – no layout, no auth guard) =================
+  // Shown when verificationStatus === "REJECTED"
+  {
+    path: "/rejected",
+    element: <RejectedPage />,
   },
 
 ]);

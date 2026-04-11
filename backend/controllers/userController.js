@@ -444,6 +444,162 @@ const resetPassword = async (req, res) => {
 };
 
 
+
+// ================= SET ROLE (OAuth onboarding — no checkApproved) =================
+// PUT /api/users/set-role
+// Allows a new Google OAuth user to assign themselves a FARMER or MILL_OWNER role.
+// Protected by JWT (protect) but NOT checkApproved — the account is still PENDING.
+const setRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+
+    const allowedRoles = ["FARMER", "MILL_OWNER"];
+    if (!role || !allowedRoles.includes(role.toUpperCase())) {
+      return res.status(400).json({ message: "role must be FARMER or MILL_OWNER." });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Security: only allow role assignment for Google OAuth accounts
+    if (!user.googleId) {
+      return res.status(403).json({ message: "Role is fixed for email/password accounts." });
+    }
+
+    user.role = role.toUpperCase();
+    await user.save({ validateBeforeSave: false });
+
+    const updated = await User.findById(user._id).select("-password");
+    return res.status(200).json({ message: "Role set successfully", user: updated });
+  } catch (error) {
+    console.error("SET ROLE ERROR:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// ================= GET OWN PROFILE (no checkApproved — for onboarding) =================
+// GET /api/users/profile
+// Used by OAuthSuccessPage and onboarding pages to fetch the full user object
+// regardless of verificationStatus. Regular /me has checkApproved which blocks
+// PENDING/REJECTED users.
+const getOwnProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error("GET OWN PROFILE ERROR:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// ================= UPDATE BASIC INFO (OAuth onboarding — no checkApproved) =================
+// PUT /api/users/profile
+// Called by AccountInfoPage for Google OAuth users to persist phone + NIC to the DB
+// immediately, so subsequent DB-driven guards can read the correct fields.
+// Also accepts optional fullName and password.
+const updateBasicInfo = async (req, res) => {
+  try {
+    const { phone, nic, fullName, password } = req.body;
+
+    if (!phone || !nic) {
+      return res.status(400).json({ message: "phone and nic are required." });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.phone = phone.trim();
+    user.nic   = nic.trim();
+    if (fullName && fullName.trim()) user.fullName = fullName.trim();
+
+    if (password && password.trim().length >= 6) {
+      const bcrypt = require("bcryptjs");
+      const salt   = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password.trim(), salt);
+    }
+
+    await user.save({ validateBeforeSave: false });
+
+    const updated = await User.findById(user._id).select("-password");
+    return res.status(200).json({ message: "Basic info updated", user: updated });
+  } catch (error) {
+    console.error("UPDATE BASIC INFO ERROR:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// ================= RESUBMIT APPLICATION (REJECTED users only) =================
+// PUT /api/users/resubmit
+// Allows a previously REJECTED user to upload a new document and move back to PENDING.
+// Uses protect only (no checkApproved) — REJECTED users cannot pass checkApproved.
+// Accepts multipart/form-data; file field name must be "document".
+const resubmit = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isFarmer    = user.role === "FARMER";
+    const isMill      = user.role === "MILL_OWNER";
+
+    if (!isFarmer && !isMill) {
+      return res.status(400).json({ message: "Invalid role for resubmission." });
+    }
+
+    const currentStatus = isFarmer
+      ? user.farmDetails?.verificationStatus
+      : user.businessDetails?.verificationStatus;
+
+    if (currentStatus !== "REJECTED") {
+      return res.status(400).json({
+        message: "Only rejected applications can be resubmitted.",
+      });
+    }
+
+    // ─── Update optional basic-info fields ──────────────────────────────────
+    const { phone, nic, operatingDistrict, millLocation } = req.body;
+    if (phone) user.phone = phone.trim();
+    if (nic)   user.nic   = nic.trim();
+
+    // ─── New document file (required) ───────────────────────────────────────
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Document is required for resubmission"
+      });
+    }
+    const newDocFilename = req.file.filename;
+
+    // ─── Reset verification status and clear rejection reason ───────────────
+    if (isFarmer) {
+      user.farmDetails.operatingDistrict  = operatingDistrict || user.farmDetails.operatingDistrict;
+      user.farmDetails.landDocument       = newDocFilename;
+      user.farmDetails.verificationStatus = "PENDING";
+      delete user.farmDetails.rejectionReason;
+    } else {
+      user.businessDetails.millLocation        = millLocation || user.businessDetails.millLocation;
+      user.businessDetails.businessDocument    = newDocFilename;
+      user.businessDetails.verificationStatus  = "PENDING";
+      delete user.businessDetails.rejectionReason;
+    }
+
+    user.isVerified = false; // admin must re-approve
+    await user.save({ validateBeforeSave: false });
+
+    const updated = await User.findById(user._id).select("-password");
+    return res.status(200).json({
+      message: "Application resubmitted successfully. Awaiting admin review.",
+      user: updated,
+    });
+  } catch (error) {
+    console.error("RESUBMIT ERROR:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -451,5 +607,9 @@ module.exports = {
   updateProfile,
   uploadAvatar,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  setRole,
+  getOwnProfile,
+  updateBasicInfo,
+  resubmit,
 };

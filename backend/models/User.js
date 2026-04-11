@@ -16,17 +16,23 @@ const userSchema = new mongoose.Schema(
 
   phone: {
     type: String,
-    required: true
+    default: null
   },
 
   nic: {
     type: String,
-    required: true
+    default: null
+  },
+
+  // ── Google OAuth – optional, only set for Google-authenticated accounts ──
+  googleId: {
+    type: String,
+    default: null
   },
 
   password: {
     type: String,
-    required: true,
+    required: false, // Not required for Google OAuth users
     select: false
   },
 

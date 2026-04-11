@@ -6,17 +6,45 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "../lib/schemas";
+import { API } from "../../api/api";
+import { resolveUserDestination } from "../lib/resolveUserDestination";
 
 export default function AccountInfoPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRejected, setIsRejected] = useState(false);
 
-  // Prevent skipping role selection
+  // ── Guard: prevent landing here at the wrong onboarding step ──────────────
+  // OAuth users: DB-driven check using resolveUserDestination.
+  //   /register/account is correct when role is set but phone/NIC are missing.
+  // Normal users: localStorage role must be present.
   useEffect(() => {
-    const role = localStorage.getItem("role");
-    if (!role) navigate("/register/role");
-  }, [navigate]);
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      // OAuth context — validate against DB
+      fetch(API.profile, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.ok ? r.json() : Promise.reject(new Error("profile fetch failed")))
+        .then(({ user }) => {
+          const currentPath = window.location.pathname;
+          const destination = resolveUserDestination(user, currentPath);
+          if (destination !== currentPath) {
+            navigate(destination, { replace: true });
+          } else {
+            const isFarmer = user.role === "FARMER";
+            const details = isFarmer ? user.farmDetails : user.businessDetails;
+            if (details?.verificationStatus === "REJECTED") {
+              setIsRejected(true);
+            }
+          }
+        })
+        .catch(() => navigate("/login", { replace: true }));
+    }
+    // Normal registration skips fetch when no token present
+  }, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     register,
@@ -39,16 +67,51 @@ export default function AccountInfoPage() {
   };
   const strength = getPasswordStrength(passwordVal);
 
-  const onSubmit = (data) => {
-    const accountInfo = {
+  const onSubmit = async (data) => {
+    const token = localStorage.getItem("token");
+
+    // We ALWAYS stage the data to pass forward for final submission
+    localStorage.setItem("accountInfo", JSON.stringify({
       fullName: data.fullName,
-      nic: data.nic,
-      email: data.email,
-      phone: data.phone,
+      nic:      data.nic,
+      email:    data.email,
+      phone:    data.phone,
       password: data.password,
-    };
-    localStorage.setItem("accountInfo", JSON.stringify(accountInfo));
-    navigate("/register/business");
+    }));
+
+    if (token && !isRejected) {
+      // ── OAuth user FIRST TIME: persist phone + NIC to DB immediately ──
+      try {
+        const res = await fetch(API.updateBasicInfo, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            fullName: data.fullName,
+            phone:    data.phone,
+            nic:      data.nic,
+            password: data.password,
+          }),
+        });
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message || "Failed to save info");
+
+        if (result.user) localStorage.setItem("user", JSON.stringify(result.user));
+
+        navigate("/register/business");
+      } catch (err) {
+        console.error("ACCOUNT INFO SAVE ERROR:", err);
+        toast.error(err.message || "Could not save your info. Please try again.", {
+          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" },
+        });
+      }
+    } else {
+      // Rejected users OR normal unauthenticated users just proceed to final step
+      navigate("/register/business");
+    }
   };
 
   // Auth-page dark input styles
@@ -115,7 +178,20 @@ export default function AccountInfoPage() {
 
             {/* Card */}
             <div className="bg-white/[0.03] border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden w-full">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
+              <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent ${isRejected ? "via-red-500/50" : "via-green-500/50"} to-transparent`} />
+
+              {/* Rejection UI banner */}
+              {isRejected && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 flex gap-3 items-start">
+                  <span className="text-red-400 text-lg leading-none mt-0.5">⚠️</span>
+                  <div>
+                    <p className="text-sm font-semibold text-red-500 mb-0.5">Your previous submission was rejected</p>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      Please correct your personal details if required and continue to the next step.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <h1 className="text-3xl font-bold mb-2 tracking-tight text-white">Account Information</h1>
               <p className="text-white/50 mb-8 font-medium">Enter your personal details to secure your profile.</p>
