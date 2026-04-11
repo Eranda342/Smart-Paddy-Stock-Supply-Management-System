@@ -77,6 +77,16 @@ const negotiationSchema = new mongoose.Schema(
       type: String,
     },
 
+    unreadCountFarmer: {
+      type: Number,
+      default: 0,
+    },
+
+    unreadCountMillOwner: {
+      type: Number,
+      default: 0,
+    },
+
     status: {
       type: String,
       enum: ["OPEN", "AGREED", "ACCEPTED", "REJECTED", "CANCELLED"],
@@ -87,5 +97,7 @@ const negotiationSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+negotiationSchema.index({ listing: 1, farmer: 1, millOwner: 1 }, { unique: true });
 
 module.exports = mongoose.model("Negotiation", negotiationSchema);

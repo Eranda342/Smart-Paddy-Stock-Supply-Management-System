@@ -74,7 +74,7 @@ export default function BrowseListings() {
       if (res.ok || res.status === 200) {
         const negId = data.negotiation?._id;
         toast.success(
-          data.message === "Existing negotiation"
+          data.message === "Message appended to existing negotiation"
             ? "Reopening existing negotiation..."
             : "Negotiation started! Redirecting to chat..."
         );

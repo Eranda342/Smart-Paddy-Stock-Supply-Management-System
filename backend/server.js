@@ -143,6 +143,10 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("typing", ({ negotiationId, userId, isTyping }) => {
+    socket.to(negotiationId).emit("userTyping", { userId, isTyping });
+  });
+
   socket.on("sendNotification", ({ userId, notification }) => {
     const socketId = onlineUsers[userId];
     if (socketId) {

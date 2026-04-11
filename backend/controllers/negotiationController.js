@@ -45,11 +45,46 @@ const createNegotiation = async (req, res) => {
     });
 
     if (existing) {
-  return res.status(200).json({
-    message: "Existing negotiation",
-    negotiation: existing
-  });
-}
+      const newMessage = {
+        sender: req.user.id,
+        message: message || "Offer update",
+        offeredPrice,
+        quantityKg,
+        type: offeredPrice ? "COUNTER" : "MESSAGE"
+      };
+
+      existing.messages.push(newMessage);
+      existing.lastMessage = newMessage.message;
+
+      // Ensure negotiation is OPEN if a new offer is made
+      if (existing.status !== "OPEN") {
+        existing.status = "OPEN";
+      }
+
+      // Increment unread count
+      if (req.user.id === existing.farmer.toString()) {
+        existing.unreadCountMillOwner = (existing.unreadCountMillOwner || 0) + 1;
+      } else {
+        existing.unreadCountFarmer = (existing.unreadCountFarmer || 0) + 1;
+      }
+
+      await existing.save();
+
+      if (global.io) {
+        global.io.emit("dashboard_update");
+      }
+
+      await Notification.create({
+        user: farmerId === req.user.id ? millOwnerId : farmerId,
+        title: "New Message",
+        message: "You have received a new message/offer on your listing"
+      });
+
+      return res.status(200).json({
+        message: "Message appended to existing negotiation",
+        negotiation: existing
+      });
+    }
 
     const negotiation = new Negotiation({
       listing: listingId,
@@ -65,7 +100,9 @@ const createNegotiation = async (req, res) => {
           type: "OFFER"
         }
       ],
-      lastMessage: message
+      lastMessage: message,
+      unreadCountFarmer: 1,
+      unreadCountMillOwner: 0
     });
 
     await negotiation.save();
@@ -192,6 +229,12 @@ const addMessage = async (req, res) => {
       quantityKg,
       type: offeredPrice ? "COUNTER" : "MESSAGE"
     };
+
+    if (req.user.id === negotiation.farmer.toString()) {
+      negotiation.unreadCountMillOwner = (negotiation.unreadCountMillOwner || 0) + 1;
+    } else {
+      negotiation.unreadCountFarmer = (negotiation.unreadCountFarmer || 0) + 1;
+    }
 
     negotiation.messages.push(newMessage);
     negotiation.lastMessage = newMessage.message;
@@ -434,6 +477,14 @@ const markMessagesRead = async (req, res) => {
         updated = true;
       }
     });
+
+    if (req.user.id === negotiation.farmer.toString() && negotiation.unreadCountFarmer > 0) {
+      negotiation.unreadCountFarmer = 0;
+      updated = true;
+    } else if (req.user.id === negotiation.millOwner.toString() && negotiation.unreadCountMillOwner > 0) {
+      negotiation.unreadCountMillOwner = 0;
+      updated = true;
+    }
 
     if (updated) {
       await negotiation.save();

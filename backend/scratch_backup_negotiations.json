@@ -1,0 +1,2492 @@
+[
+  {
+    "_id": "69bd899ae013fd0a48cb4b4e",
+    "listing": "69b469190932e4f7a616ddf0",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b4683e0932e4f7a616dded",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 114,
+        "quantityKg": 2040,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69bd899ae013fd0a48cb4b4f",
+        "createdAt": "2026-03-20T17:53:30.765Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 123,
+        "quantityKg": 1233,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3c6bc3ad9a5a9ebdb8a0b",
+        "createdAt": "2026-03-25T11:27:56.946Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 2040,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3cc63df215ce8f8b1c48e",
+        "createdAt": "2026-03-25T11:52:03.936Z"
+      },
+      {
+        "sender": "69b4683e0932e4f7a616dded",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 2040,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c79f519543d7e2c607eacd",
+        "createdAt": "2026-03-28T09:28:49.515Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c79f9e9543d7e2c607eba4",
+        "createdAt": "2026-03-28T09:30:06.353Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-20T17:53:30.768Z",
+    "updatedAt": "2026-04-02T08:42:21.109Z",
+    "__v": 4
+  },
+  {
+    "_id": "69bd899fe013fd0a48cb4b61",
+    "listing": "69b466450932e4f7a616dd05",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 7000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69bd899fe013fd0a48cb4b62",
+        "createdAt": "2026-03-20T17:53:35.963Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation rejected",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69bdbdec2ee91dbfd4700a1c",
+        "createdAt": "2026-03-20T21:36:44.495Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "REJECTED",
+    "createdAt": "2026-03-20T17:53:35.964Z",
+    "updatedAt": "2026-03-27T21:26:35.099Z",
+    "__v": 1
+  },
+  {
+    "_id": "69bd8a85e013fd0a48cb4c52",
+    "listing": "69b465dc0932e4f7a616dcfd",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 3000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69bd8a85e013fd0a48cb4c53",
+        "createdAt": "2026-03-20T17:57:25.026Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation rejected",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c2f5240ab1244d9f3aeb6e",
+        "createdAt": "2026-03-24T20:33:40.850Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "REJECTED",
+    "createdAt": "2026-03-20T17:57:25.027Z",
+    "updatedAt": "2026-03-27T21:26:33.395Z",
+    "__v": 1
+  },
+  {
+    "_id": "69bd93a4e013fd0a48cb4d16",
+    "listing": "69b465640932e4f7a616dcf8",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 2000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69bd93a4e013fd0a48cb4d17",
+        "createdAt": "2026-03-20T18:36:20.763Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 125,
+        "quantityKg": 1200,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3c6ae3ad9a5a9ebdb89f9",
+        "createdAt": "2026-03-25T11:27:42.061Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": true,
+        "isEdited": false,
+        "_id": "69c452d43c0b39d72c53d42b",
+        "createdAt": "2026-03-25T21:25:40.805Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c453293c0b39d72c53d44f",
+        "createdAt": "2026-03-25T21:27:05.652Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-20T18:36:20.764Z",
+    "updatedAt": "2026-03-25T21:27:05.665Z",
+    "__v": 3
+  },
+  {
+    "_id": "69bda95b9f58e341e5a05c55",
+    "listing": "69b4658b0932e4f7a616dcfa",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 2300,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69bda95b9f58e341e5a05c56",
+        "createdAt": "2026-03-20T20:08:59.895Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69bdbde12ee91dbfd47009c2",
+        "createdAt": "2026-03-20T21:36:33.400Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 123,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3a697920a7299ef4305d0",
+        "createdAt": "2026-03-25T09:10:47.359Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 124,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": true,
+        "isEdited": false,
+        "_id": "69c3a6fe920a7299ef4305dd",
+        "createdAt": "2026-03-25T09:12:30.236Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "asd",
+        "type": "MESSAGE",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3a810920a7299ef43068a",
+        "createdAt": "2026-03-25T09:17:04.886Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 126,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3b7666ce8c548b3482307",
+        "createdAt": "2026-03-25T10:22:30.663Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 126,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3c5a03ad9a5a9ebdb89a6",
+        "createdAt": "2026-03-25T11:23:12.554Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 125,
+        "quantityKg": 500,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3c5f43ad9a5a9ebdb89cd",
+        "createdAt": "2026-03-25T11:24:36.786Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c3c8927839afb3b74d8cd3",
+        "createdAt": "2026-03-25T11:35:46.736Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-20T20:08:59.898Z",
+    "updatedAt": "2026-03-25T11:35:46.752Z",
+    "__v": 8
+  },
+  {
+    "_id": "69c4e94049be9992584d19a8",
+    "listing": "69c4e8dc49be9992584d198a",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 30000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4e94049be9992584d19a9",
+        "createdAt": "2026-03-26T08:07:28.575Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "can we increase price per kg?",
+        "type": "MESSAGE",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4e96a49be9992584d19b7",
+        "createdAt": "2026-03-26T08:08:10.281Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 1500,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4eab449be9992584d19c7",
+        "createdAt": "2026-03-26T08:13:40.054Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4ec2449be9992584d1a33",
+        "createdAt": "2026-03-26T08:19:48.235Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T08:07:28.576Z",
+    "updatedAt": "2026-03-26T08:19:48.243Z",
+    "__v": 3
+  },
+  {
+    "_id": "69c4f1e349be9992584d1aed",
+    "listing": "69c4f1dc49be9992584d1ae6",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 113,
+        "quantityKg": 30000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4f1e349be9992584d1aee",
+        "createdAt": "2026-03-26T08:44:19.521Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4f1f349be9992584d1afc",
+        "createdAt": "2026-03-26T08:44:35.074Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4f1f849be9992584d1b0d",
+        "createdAt": "2026-03-26T08:44:40.191Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T08:44:19.522Z",
+    "updatedAt": "2026-03-26T08:44:40.197Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c4f43149be9992584d1cb3",
+    "listing": "69c4f42b49be9992584d1cab",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 110,
+        "quantityKg": 40000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4f43149be9992584d1cb4",
+        "createdAt": "2026-03-26T08:54:09.218Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 115,
+        "quantityKg": 4000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4f44349be9992584d1cc2",
+        "createdAt": "2026-03-26T08:54:27.319Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c4f44849be9992584d1cd3",
+        "createdAt": "2026-03-26T08:54:32.247Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T08:54:09.219Z",
+    "updatedAt": "2026-03-26T08:54:32.252Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c5070b1c7b6483c120b9fe",
+    "listing": "69c507051c7b6483c120b9f7",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 121,
+        "quantityKg": 11223,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c5070b1c7b6483c120b9ff",
+        "createdAt": "2026-03-26T10:14:35.076Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 4000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c5071b1c7b6483c120ba0d",
+        "createdAt": "2026-03-26T10:14:51.119Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c507201c7b6483c120ba1e",
+        "createdAt": "2026-03-26T10:14:56.815Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T10:14:35.078Z",
+    "updatedAt": "2026-03-26T10:14:56.825Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c507a11c7b6483c120bac9",
+    "listing": "69c5079d1c7b6483c120bac2",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 40000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c507a11c7b6483c120baca",
+        "createdAt": "2026-03-26T10:17:05.639Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 10000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c507b01c7b6483c120bad8",
+        "createdAt": "2026-03-26T10:17:20.986Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c507b81c7b6483c120bae9",
+        "createdAt": "2026-03-26T10:17:28.645Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T10:17:05.640Z",
+    "updatedAt": "2026-03-26T10:17:28.652Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c5356e4941aa75b59db3d2",
+    "listing": "69c535664941aa75b59db3cb",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 20000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c5356e4941aa75b59db3d3",
+        "createdAt": "2026-03-26T13:32:30.806Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c5357f4941aa75b59db3e1",
+        "createdAt": "2026-03-26T13:32:47.838Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c535844941aa75b59db3f3",
+        "createdAt": "2026-03-26T13:32:52.821Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T13:32:30.807Z",
+    "updatedAt": "2026-03-27T21:26:46.596Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c54069c6d495ab178ced39",
+    "listing": "69c54037c6d495ab178ceccf",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 110,
+        "quantityKg": 70000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c54069c6d495ab178ced3a",
+        "createdAt": "2026-03-26T14:19:21.761Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c5407bc6d495ab178ced48",
+        "createdAt": "2026-03-26T14:19:39.274Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c5407fc6d495ab178ced5a",
+        "createdAt": "2026-03-26T14:19:43.786Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T14:19:21.762Z",
+    "updatedAt": "2026-03-27T21:26:45.845Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c56ae8c6d495ab178cee3d",
+    "listing": "69c56ad7c6d495ab178cee36",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 110,
+        "quantityKg": 80000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56ae8c6d495ab178cee3e",
+        "createdAt": "2026-03-26T17:20:40.022Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 115,
+        "quantityKg": 3000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56afdc6d495ab178cee4c",
+        "createdAt": "2026-03-26T17:21:01.441Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56b0ac6d495ab178cee5e",
+        "createdAt": "2026-03-26T17:21:14.825Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T17:20:40.023Z",
+    "updatedAt": "2026-03-27T21:26:45.499Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c56c19c6d495ab178cef56",
+    "listing": "69c56c12c6d495ab178cef4f",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 123,
+        "quantityKg": 88888,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56c19c6d495ab178cef57",
+        "createdAt": "2026-03-26T17:25:45.666Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56c1fc6d495ab178cef66",
+        "createdAt": "2026-03-26T17:25:51.714Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T17:25:45.667Z",
+    "updatedAt": "2026-03-27T21:26:45.129Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c56dd38a7b4c06576d370f",
+    "listing": "69c56dc78a7b4c06576d3705",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 123,
+        "quantityKg": 34444,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56dd38a7b4c06576d3710",
+        "createdAt": "2026-03-26T17:33:07.674Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56dd68a7b4c06576d371f",
+        "createdAt": "2026-03-26T17:33:10.614Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T17:33:07.676Z",
+    "updatedAt": "2026-03-27T21:26:44.080Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c56e3f8a7b4c06576d37f7",
+    "listing": "69c56e358a7b4c06576d37e3",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 110,
+        "quantityKg": 10000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56e3f8a7b4c06576d37f8",
+        "createdAt": "2026-03-26T17:34:55.109Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c56e408a7b4c06576d3807",
+        "createdAt": "2026-03-26T17:34:56.948Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T17:34:55.110Z",
+    "updatedAt": "2026-03-27T21:26:43.542Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c570d388137f6040231f43",
+    "listing": "69c570cc88137f6040231f05",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 12000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c570d388137f6040231f44",
+        "createdAt": "2026-03-26T17:45:55.058Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c570d588137f6040231f53",
+        "createdAt": "2026-03-26T17:45:57.357Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T17:45:55.059Z",
+    "updatedAt": "2026-03-27T21:26:43.116Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c57a7dcf1f18e116c41d6c",
+    "listing": "69c57a61cf1f18e116c41d63",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 112,
+        "quantityKg": 60000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57a7dcf1f18e116c41d6d",
+        "createdAt": "2026-03-26T18:27:09.014Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57a8acf1f18e116c41d7b",
+        "createdAt": "2026-03-26T18:27:22.543Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57a8fcf1f18e116c41d8d",
+        "createdAt": "2026-03-26T18:27:27.759Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T18:27:09.015Z",
+    "updatedAt": "2026-03-27T21:26:41.880Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c57d6acf1f18e116c41e87",
+    "listing": "69c57d66cf1f18e116c41e80",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 113,
+        "quantityKg": 13333,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57d6acf1f18e116c41e88",
+        "createdAt": "2026-03-26T18:39:38.061Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57d6bcf1f18e116c41e97",
+        "createdAt": "2026-03-26T18:39:39.466Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T18:39:38.061Z",
+    "updatedAt": "2026-03-27T21:26:41.377Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c57eddcf1f18e116c41f7f",
+    "listing": "69c57ed2cf1f18e116c41f34",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 100,
+        "quantityKg": 1000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57eddcf1f18e116c41f80",
+        "createdAt": "2026-03-26T18:45:49.498Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57edfcf1f18e116c41f8f",
+        "createdAt": "2026-03-26T18:45:51.577Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T18:45:49.499Z",
+    "updatedAt": "2026-03-27T21:26:40.959Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c57f99cf1f18e116c420a3",
+    "listing": "69c57f89cf1f18e116c42058",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 13000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57f99cf1f18e116c420a4",
+        "createdAt": "2026-03-26T18:48:57.619Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c57f9bcf1f18e116c420b3",
+        "createdAt": "2026-03-26T18:48:59.742Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T18:48:57.619Z",
+    "updatedAt": "2026-03-27T21:26:40.244Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c581599796cee969578973",
+    "listing": "69c581549796cee96957896c",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 10000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c581599796cee969578974",
+        "createdAt": "2026-03-26T18:56:25.747Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c581669796cee969578982",
+        "createdAt": "2026-03-26T18:56:38.101Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c5816a9796cee969578994",
+        "createdAt": "2026-03-26T18:56:42.115Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-26T18:56:25.748Z",
+    "updatedAt": "2026-03-27T21:26:39.818Z",
+    "__v": 2
+  },
+  {
+    "_id": "69c6c102cd73527d8fd184a9",
+    "listing": "69c6c0fecd73527d8fd1849d",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 111,
+        "quantityKg": 11111,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6c102cd73527d8fd184aa",
+        "createdAt": "2026-03-27T17:40:18.872Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6c105cd73527d8fd184b9",
+        "createdAt": "2026-03-27T17:40:21.502Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-27T17:40:18.873Z",
+    "updatedAt": "2026-03-27T21:26:12.666Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c6c169cd73527d8fd18600",
+    "listing": "69c6c160cd73527d8fd185ea",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 112,
+        "quantityKg": 22222,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6c169cd73527d8fd18601",
+        "createdAt": "2026-03-27T17:42:01.242Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6c16acd73527d8fd18610",
+        "createdAt": "2026-03-27T17:42:02.604Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-27T17:42:01.243Z",
+    "updatedAt": "2026-03-27T21:26:11.839Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c6c73d59504d4da4406f80",
+    "listing": "69c6c73659504d4da4406f6e",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 112,
+        "quantityKg": 12334,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6c73d59504d4da4406f81",
+        "createdAt": "2026-03-27T18:06:53.816Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6c74559504d4da4406f9d",
+        "createdAt": "2026-03-27T18:07:01.857Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-27T18:06:53.817Z",
+    "updatedAt": "2026-03-27T21:26:37.753Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c6f75b7ec0a13c4af8c71e",
+    "listing": "69b8eeb6dace4b5c68e8047c",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Hi, I am interested in your paddy listing.",
+        "offeredPrice": 122,
+        "quantityKg": 122,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6f75b7ec0a13c4af8c71f",
+        "createdAt": "2026-03-27T21:32:11.116Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "can you reduce the price?",
+        "type": "MESSAGE",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6f7987ec0a13c4af8c793",
+        "createdAt": "2026-03-27T21:33:12.947Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 115,
+        "quantityKg": 122,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6f7b57ec0a13c4af8c7f2",
+        "createdAt": "2026-03-27T21:33:41.166Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 122,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6f7cc7ec0a13c4af8c850",
+        "createdAt": "2026-03-27T21:34:04.780Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6f7ea7ec0a13c4af8c8c6",
+        "createdAt": "2026-03-27T21:34:34.337Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-27T21:32:11.117Z",
+    "updatedAt": "2026-03-27T21:34:34.343Z",
+    "__v": 4
+  },
+  {
+    "_id": "69c6fb147ec0a13c4af8cd7c",
+    "listing": "69b464ae0932e4f7a616dcf4",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Hi, I am interested in your paddy listing.",
+        "offeredPrice": 120,
+        "quantityKg": 1000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6fb147ec0a13c4af8cd7d",
+        "createdAt": "2026-03-27T21:48:04.735Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 110,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6fb497ec0a13c4af8cdf2",
+        "createdAt": "2026-03-27T21:48:57.391Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 115,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6fba47ec0a13c4af8cf7d",
+        "createdAt": "2026-03-27T21:50:28.259Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c6fbad7ec0a13c4af8cfdd",
+        "createdAt": "2026-03-27T21:50:37.728Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-27T21:48:04.735Z",
+    "updatedAt": "2026-04-02T19:07:07.997Z",
+    "__v": 3
+  },
+  {
+    "_id": "69c7a1879543d7e2c607ee85",
+    "listing": "69c7a1779543d7e2c607ee78",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b4683e0932e4f7a616dded",
+    "messages": [
+      {
+        "sender": "69b4683e0932e4f7a616dded",
+        "message": "Hi, I am interested in your paddy listing.",
+        "offeredPrice": 120,
+        "quantityKg": 2000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c7a1879543d7e2c607ee86",
+        "createdAt": "2026-03-28T09:38:15.208Z"
+      },
+      {
+        "sender": "69b4683e0932e4f7a616dded",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c7a1a79543d7e2c607ef2b",
+        "createdAt": "2026-03-28T09:38:47.849Z"
+      }
+    ],
+    "lastMessage": "Hi, I am interested in your paddy listing.",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-28T09:38:15.209Z",
+    "updatedAt": "2026-04-02T08:42:20.290Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c7a1919543d7e2c607eeb7",
+    "listing": "69b460e10932e4f7a616dcd6",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b4683e0932e4f7a616dded",
+    "messages": [
+      {
+        "sender": "69b4683e0932e4f7a616dded",
+        "message": "Hi, I am interested in your paddy listing.",
+        "offeredPrice": 124,
+        "quantityKg": 500,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c7a1919543d7e2c607eeb8",
+        "createdAt": "2026-03-28T09:38:25.476Z"
+      },
+      {
+        "sender": "69b4683e0932e4f7a616dded",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c7a1a59543d7e2c607ef01",
+        "createdAt": "2026-03-28T09:38:45.170Z"
+      }
+    ],
+    "lastMessage": "Hi, I am interested in your paddy listing.",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-28T09:38:25.477Z",
+    "updatedAt": "2026-04-02T08:42:20.706Z",
+    "__v": 1
+  },
+  {
+    "_id": "69c8486ae1d7376610838b28",
+    "listing": "69c7a15d9543d7e2c607ee6a",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Hi, I am interested in your paddy listing.",
+        "offeredPrice": 140,
+        "quantityKg": 2000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c8486ae1d7376610838b29",
+        "createdAt": "2026-03-28T21:30:18.686Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69c8488de1d7376610838c36",
+        "createdAt": "2026-03-28T21:30:53.946Z"
+      }
+    ],
+    "lastMessage": "Hi, I am interested in your paddy listing.",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-28T21:30:18.686Z",
+    "updatedAt": "2026-04-02T19:07:08.401Z",
+    "__v": 1
+  },
+  {
+    "_id": "69ca14ab29623ee7d895d59e",
+    "listing": "69ca149e29623ee7d895d588",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 111,
+        "quantityKg": 11111,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca14ab29623ee7d895d59f",
+        "createdAt": "2026-03-30T06:14:03.531Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 115,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca14e429623ee7d895d5f6",
+        "createdAt": "2026-03-30T06:15:00.642Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca152629623ee7d895d696",
+        "createdAt": "2026-03-30T06:16:06.048Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-30T06:14:03.536Z",
+    "updatedAt": "2026-04-02T08:42:19.550Z",
+    "__v": 2
+  },
+  {
+    "_id": "69ca92de29623ee7d895db5b",
+    "listing": "69b4610b0932e4f7a616dcd9",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Hi, I am interested in your paddy listing.",
+        "offeredPrice": 115,
+        "quantityKg": 1000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca92de29623ee7d895db5c",
+        "createdAt": "2026-03-30T15:12:30.142Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "can you lower your price?",
+        "type": "MESSAGE",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cd3a264aaf0eee757b73e0",
+        "createdAt": "2026-04-01T15:30:46.612Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "no",
+        "type": "MESSAGE",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cd3a394aaf0eee757b7473",
+        "createdAt": "2026-04-01T15:31:05.906Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cd3a474aaf0eee757b7497",
+        "createdAt": "2026-04-01T15:31:19.763Z"
+      }
+    ],
+    "lastMessage": "no",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-30T15:12:30.144Z",
+    "updatedAt": "2026-04-02T08:42:28.297Z",
+    "__v": 3
+  },
+  {
+    "_id": "69ca9b728c86a4efb0cea6fa",
+    "listing": "69ca9b008c86a4efb0cea6a4",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 110,
+        "quantityKg": 10000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca9b728c86a4efb0cea6fb",
+        "createdAt": "2026-03-30T15:49:06.182Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "aa",
+        "type": "MESSAGE",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca9beb8c86a4efb0cea760",
+        "createdAt": "2026-03-30T15:51:07.191Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca9c0c8c86a4efb0cea785",
+        "createdAt": "2026-03-30T15:51:40.581Z"
+      }
+    ],
+    "lastMessage": "aa",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-30T15:49:06.183Z",
+    "updatedAt": "2026-03-30T15:51:40.590Z",
+    "__v": 2
+  },
+  {
+    "_id": "69ca9c918c86a4efb0cea878",
+    "listing": "69ca9c308c86a4efb0cea818",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 15000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca9c918c86a4efb0cea879",
+        "createdAt": "2026-03-30T15:53:53.699Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca9cc48c86a4efb0cea8ae",
+        "createdAt": "2026-03-30T15:54:44.678Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ca9d2b8c86a4efb0cea977",
+        "createdAt": "2026-03-30T15:56:27.603Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-03-30T15:53:53.700Z",
+    "updatedAt": "2026-04-01T15:27:27.051Z",
+    "__v": 2
+  },
+  {
+    "_id": "69ceb6c7cd4dc1d37cc8f467",
+    "listing": "69c84864e1d7376610838b18",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 110,
+        "quantityKg": 10000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceb6c7cd4dc1d37cc8f468",
+        "createdAt": "2026-04-02T18:34:47.132Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceb6d4cd4dc1d37cc8f4a5",
+        "createdAt": "2026-04-02T18:35:00.700Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 115,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceb8b8cd4dc1d37cc8f7d4",
+        "createdAt": "2026-04-02T18:43:04.258Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 118,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceb9daecbab7d58ee9fb97",
+        "createdAt": "2026-04-02T18:47:54.931Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 116,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceb9ececbab7d58ee9fc2b",
+        "createdAt": "2026-04-02T18:48:12.204Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 117,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceb9faecbab7d58ee9fc4d",
+        "createdAt": "2026-04-02T18:48:26.370Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cebe51c330c4a78ea92fb7",
+        "createdAt": "2026-04-02T19:06:57.553Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-02T18:34:47.134Z",
+    "updatedAt": "2026-04-02T19:07:34.073Z",
+    "__v": 6
+  },
+  {
+    "_id": "69cec3c72055e1bfa6350f80",
+    "listing": "69c7a1069543d7e2c607ee21",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 110,
+        "quantityKg": 13000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec3c72055e1bfa6350f81",
+        "createdAt": "2026-04-02T19:30:15.358Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec480c0fda58c4a638a8e",
+        "createdAt": "2026-04-02T19:33:20.827Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 114,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec499c0fda58c4a638af1",
+        "createdAt": "2026-04-02T19:33:45.039Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 118,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec5ad856fdf89417a097d",
+        "createdAt": "2026-04-02T19:38:21.115Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 115,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec5c3856fdf89417a0a26",
+        "createdAt": "2026-04-02T19:38:43.630Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 116,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec7dfdd887b4db6882c8d",
+        "createdAt": "2026-04-02T19:47:43.052Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 117,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec7efdd887b4db6882cc0",
+        "createdAt": "2026-04-02T19:47:59.155Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "ok",
+        "type": "MESSAGE",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec7f9dd887b4db6882cec",
+        "createdAt": "2026-04-02T19:48:09.209Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec801dd887b4db6882d16",
+        "createdAt": "2026-04-02T19:48:17.001Z"
+      }
+    ],
+    "lastMessage": "ok",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-02T19:30:15.363Z",
+    "updatedAt": "2026-04-02T20:16:49.864Z",
+    "__v": 8
+  },
+  {
+    "_id": "69cec9137e8fe4a277f42bc2",
+    "listing": "69c7a0ec9543d7e2c607ee0f",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 40000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec9137e8fe4a277f42bc3",
+        "createdAt": "2026-04-02T19:52:51.962Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec9307e8fe4a277f42c7d",
+        "createdAt": "2026-04-02T19:53:20.444Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69cec9387e8fe4a277f42c9d",
+        "createdAt": "2026-04-02T19:53:28.769Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-02T19:52:51.966Z",
+    "updatedAt": "2026-04-02T23:01:58.239Z",
+    "__v": 2
+  },
+  {
+    "_id": "69ceed0490efd8b84b71caac",
+    "listing": "69cee9df90efd8b84b71c5f7",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 118,
+        "quantityKg": 3000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceed0490efd8b84b71caad",
+        "createdAt": "2026-04-02T22:26:12.447Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 3000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceed1890efd8b84b71caef",
+        "createdAt": "2026-04-02T22:26:32.846Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 125,
+        "quantityKg": 3000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceed2a90efd8b84b71cc14",
+        "createdAt": "2026-04-02T22:26:50.941Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69ceed2e90efd8b84b71cd2e",
+        "createdAt": "2026-04-02T22:26:54.926Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-02T22:26:12.449Z",
+    "updatedAt": "2026-04-02T23:02:26.342Z",
+    "__v": 3
+  },
+  {
+    "_id": "69d13c2d3f3a659371ad2058",
+    "listing": "69cee92190efd8b84b71c52c",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 123,
+        "quantityKg": 5000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d13c2d3f3a659371ad2059",
+        "createdAt": "2026-04-04T16:28:29.299Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d13c443f3a659371ad2082",
+        "createdAt": "2026-04-04T16:28:52.591Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 125,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d13c6e3f3a659371ad21ae",
+        "createdAt": "2026-04-04T16:29:34.202Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d13c763f3a659371ad22bf",
+        "createdAt": "2026-04-04T16:29:42.222Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-04T16:28:29.303Z",
+    "updatedAt": "2026-04-11T13:00:05.408Z",
+    "__v": 3
+  },
+  {
+    "_id": "69d1ad1ec5e0bba8c23faf24",
+    "listing": "69cee89f90efd8b84b71c3f7",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b4683e0932e4f7a616dded",
+    "messages": [
+      {
+        "sender": "69b4683e0932e4f7a616dded",
+        "message": "Hi, I am interested in your paddy listing.",
+        "offeredPrice": 115,
+        "quantityKg": 1000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d1ad1ec5e0bba8c23faf25",
+        "createdAt": "2026-04-05T00:30:22.842Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d1ad26c5e0bba8c23fafdd",
+        "createdAt": "2026-04-05T00:30:30.126Z"
+      }
+    ],
+    "lastMessage": "Hi, I am interested in your paddy listing.",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-05T00:30:22.843Z",
+    "updatedAt": "2026-04-05T18:29:37.898Z",
+    "__v": 1
+  },
+  {
+    "_id": "69d1af61e18d2d5cd4a893c3",
+    "listing": "69c7a0bc9543d7e2c607ede6",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b4683e0932e4f7a616dded",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 118,
+        "quantityKg": 20000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d1af61e18d2d5cd4a893c4",
+        "createdAt": "2026-04-05T00:40:01.414Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d1af7ae18d2d5cd4a89413",
+        "createdAt": "2026-04-05T00:40:26.599Z"
+      },
+      {
+        "sender": "69b4683e0932e4f7a616dded",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d1af80e18d2d5cd4a894c7",
+        "createdAt": "2026-04-05T00:40:32.135Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-05T00:40:01.415Z",
+    "updatedAt": "2026-04-05T18:29:37.110Z",
+    "__v": 2
+  },
+  {
+    "_id": "69d1b15a6acb03e01c3e94b4",
+    "listing": "69c79f069543d7e2c607ea2a",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b4683e0932e4f7a616dded",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 112,
+        "quantityKg": 1000,
+        "type": "OFFER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d1b15a6acb03e01c3e94b5",
+        "createdAt": "2026-04-05T00:48:26.075Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d1b1606acb03e01c3e94de",
+        "createdAt": "2026-04-05T00:48:32.347Z"
+      }
+    ],
+    "lastMessage": "I'm interested in your listing",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-05T00:48:26.078Z",
+    "updatedAt": "2026-04-05T00:48:32.355Z",
+    "__v": 1
+  },
+  {
+    "_id": "69d2be4267fc73be43bf53b7",
+    "listing": "69cee8fc90efd8b84b71c4f3",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 10000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2be4267fc73be43bf53b8",
+        "createdAt": "2026-04-05T19:55:46.590Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 2000,
+        "quantityKg": 125,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2be9567fc73be43bf548d",
+        "createdAt": "2026-04-05T19:57:09.845Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 2000,
+        "quantityKg": 123,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2bea667fc73be43bf55b1",
+        "createdAt": "2026-04-05T19:57:26.136Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "ok",
+        "type": "MESSAGE",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2beaf67fc73be43bf56d0",
+        "createdAt": "2026-04-05T19:57:35.029Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2bec467fc73be43bf5802",
+        "createdAt": "2026-04-05T19:57:56.537Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 10000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da45612be3b6068c51e265",
+        "createdAt": "2026-04-11T12:58:09.301Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 7000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da457e2be3b6068c51e3e2",
+        "createdAt": "2026-04-11T12:58:38.759Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 125,
+        "quantityKg": 7000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da45932be3b6068c51e69a",
+        "createdAt": "2026-04-11T12:58:59.882Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da45992be3b6068c51e7f2",
+        "createdAt": "2026-04-11T12:59:05.908Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-05T19:55:46.594Z",
+    "updatedAt": "2026-04-11T13:14:07.882Z",
+    "__v": 8
+  },
+  {
+    "_id": "69d2bf7567fc73be43bf5d08",
+    "listing": "69c7a0db9543d7e2c607ee01",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 20000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2bf7567fc73be43bf5d09",
+        "createdAt": "2026-04-05T20:00:53.008Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2c38c67fc73be43bf61d3",
+        "createdAt": "2026-04-05T20:18:20.971Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 20000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da46152be3b6068c51f3c2",
+        "createdAt": "2026-04-11T13:01:09.751Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 115,
+        "quantityKg": 20000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da49192be3b6068c51f785",
+        "createdAt": "2026-04-11T13:14:01.694Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "vxzv",
+        "type": "MESSAGE",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da4c9f84c66df4e8b15f5e",
+        "createdAt": "2026-04-11T13:29:03.224Z"
+      }
+    ],
+    "lastMessage": "vxzv",
+    "status": "OPEN",
+    "createdAt": "2026-04-05T20:00:53.009Z",
+    "updatedAt": "2026-04-11T13:33:44.502Z",
+    "__v": 4,
+    "unreadCountFarmer": 0,
+    "unreadCountMillOwner": 0
+  },
+  {
+    "_id": "69d2c3b567fc73be43bf6323",
+    "listing": "69d2c3ad67fc73be43bf630f",
+    "farmer": "69b456830cef3b8461ac6dcc",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2c3b567fc73be43bf6324",
+        "createdAt": "2026-04-05T20:19:01.260Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 130,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2c3cc67fc73be43bf6352",
+        "createdAt": "2026-04-05T20:19:24.552Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 122,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2c53e67fc73be43bf66de",
+        "createdAt": "2026-04-05T20:25:34.900Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 128,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2c91167fc73be43bf7062",
+        "createdAt": "2026-04-05T20:41:53.977Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 123,
+        "quantityKg": 1000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2c93567fc73be43bf71aa",
+        "createdAt": "2026-04-05T20:42:29.668Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2c94467fc73be43bf72e4",
+        "createdAt": "2026-04-05T20:42:44.263Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da40f62be3b6068c51d5d5",
+        "createdAt": "2026-04-11T12:39:18.533Z"
+      },
+      {
+        "sender": "69b456830cef3b8461ac6dcc",
+        "message": "Counter Offer",
+        "offeredPrice": 120,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da410c2be3b6068c51d7ca",
+        "createdAt": "2026-04-11T12:39:40.275Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69da411e2be3b6068c51d91b",
+        "createdAt": "2026-04-11T12:39:58.868Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-05T20:19:01.260Z",
+    "updatedAt": "2026-04-11T12:59:13.945Z",
+    "__v": 8
+  },
+  {
+    "_id": "69d2ca3d67fc73be43bf762f",
+    "listing": "69d2c3ad67fc73be43bf630f",
+    "farmer": "69c84971e1d7376610838e86",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69c84971e1d7376610838e86",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 5000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2ca3d67fc73be43bf7630",
+        "createdAt": "2026-04-05T20:46:53.778Z"
+      },
+      {
+        "sender": "69c84971e1d7376610838e86",
+        "message": "Counter Offer",
+        "offeredPrice": 125,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2ca6a67fc73be43bf771b",
+        "createdAt": "2026-04-05T20:47:38.959Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 2000,
+        "quantityKg": 123,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": true,
+        "isEdited": false,
+        "_id": "69d2ca8867fc73be43bf7884",
+        "createdAt": "2026-04-05T20:48:08.028Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 123,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2cab567fc73be43bf79fd",
+        "createdAt": "2026-04-05T20:48:53.845Z"
+      },
+      {
+        "sender": "69c84971e1d7376610838e86",
+        "message": "Counter Offer",
+        "offeredPrice": 124,
+        "quantityKg": 2000,
+        "type": "COUNTER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2cabb67fc73be43bf7aaa",
+        "createdAt": "2026-04-05T20:48:59.930Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Negotiation accepted",
+        "type": "SYSTEM",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2cac067fc73be43bf7b59",
+        "createdAt": "2026-04-05T20:49:04.897Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "ACCEPTED",
+    "createdAt": "2026-04-05T20:46:53.779Z",
+    "updatedAt": "2026-04-07T06:37:44.501Z",
+    "__v": 5
+  },
+  {
+    "_id": "69d2cc1467fc73be43bf8365",
+    "listing": "69cee8fc90efd8b84b71c4f3",
+    "farmer": "69c84971e1d7376610838e86",
+    "millOwner": "69b45a850cef3b8461ac6dcf",
+    "messages": [
+      {
+        "sender": "69c84971e1d7376610838e86",
+        "message": "I'm interested in your listing",
+        "offeredPrice": 120,
+        "quantityKg": 10000,
+        "type": "OFFER",
+        "status": "READ",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d2cc1467fc73be43bf8366",
+        "createdAt": "2026-04-05T20:54:44.802Z"
+      },
+      {
+        "sender": "69b45a850cef3b8461ac6dcf",
+        "message": "Counter Offer",
+        "offeredPrice": 125,
+        "quantityKg": 100,
+        "type": "COUNTER",
+        "status": "SENT",
+        "isDeleted": false,
+        "isEdited": false,
+        "_id": "69d4a625ff65786441448632",
+        "createdAt": "2026-04-07T06:37:25.868Z"
+      }
+    ],
+    "lastMessage": "Counter Offer",
+    "status": "OPEN",
+    "createdAt": "2026-04-05T20:54:44.803Z",
+    "updatedAt": "2026-04-11T12:59:18.363Z",
+    "__v": 1
+  }
+]
