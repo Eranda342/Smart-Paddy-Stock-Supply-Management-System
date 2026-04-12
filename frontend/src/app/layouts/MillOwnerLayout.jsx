@@ -1,8 +1,8 @@
 import { List } from "lucide-react";
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sprout, LayoutDashboard, Search as SearchIcon, MessageSquare, Receipt, Truck, TruckIcon, User, LogOut, Search, Bell, HelpCircle } from 'lucide-react';
+import { Sprout, LayoutDashboard, Search as SearchIcon, MessageSquare, Receipt, Truck, TruckIcon, User, LogOut, Search, Bell, HelpCircle, ChevronDown, Settings, ShieldCheck, ShieldAlert, Clock, PlusCircle } from 'lucide-react';
 import { io } from "socket.io-client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 import NotificationDropdown from "../components/NotificationDropdown";
 import GlobalSearchBar from "../components/GlobalSearchBar";
@@ -13,6 +13,18 @@ export default function MillOwnerLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,6 +46,9 @@ export default function MillOwnerLayout() {
       }
     };
     fetchUser();
+
+    window.addEventListener("userUpdated", fetchUser);
+    return () => window.removeEventListener("userUpdated", fetchUser);
   }, []);
 
   useEffect(() => {
@@ -146,14 +161,65 @@ export default function MillOwnerLayout() {
           <div className="flex items-center gap-4">
             <NotificationDropdown />
 
-            <div className="flex items-center gap-3 pl-4 border-l border-border">
-              <div className="w-10 h-10 bg-[#22C55E] rounded-full flex items-center justify-center font-medium text-[#0F1115]">
-                {user ? getInitials(user.fullName) : "??"}
-              </div>
-              <div>
-                <div className="text-sm font-medium">{user ? user.fullName : "Loading..."}</div>
-                <div className="text-xs text-muted-foreground">{user ? formatRole(user.role) : "Loading..."}</div>
-              </div>
+            <div className="flex items-center gap-3 pl-4 border-l border-border relative" ref={dropdownRef}>
+              <button 
+                onClick={() => setDropdownOpen(!dropdownOpen)} 
+                className="flex items-center gap-3 hover:bg-muted/50 p-1.5 pr-2 rounded-xl transition-colors"
+              >
+                <div className="relative">
+                  <div className="w-10 h-10 bg-[#22C55E] rounded-full flex items-center justify-center font-medium text-[#0F1115] overflow-hidden">
+                    {user?.profileImage ? (
+                       <img src={`http://localhost:5000/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Profile" />
+                    ) : (
+                       user ? getInitials(user.businessDetails?.businessName || user.fullName) : "??"
+                    )}
+                  </div>
+                  {/* Status dot */}
+                  <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card ${user?.businessDetails?.verificationStatus === 'APPROVED' ? 'bg-green-500' : user?.businessDetails?.verificationStatus === 'REJECTED' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                </div>
+
+                <div className="text-left hidden md:block">
+                  <div className="text-sm font-bold">{user ? (user.businessDetails?.businessName || user.fullName) : "Loading..."}</div>
+                  <div className="text-xs text-muted-foreground">{user ? `Owner: ${user.fullName}` : "Loading..."}</div>
+                </div>
+                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground hidden md:block" />
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-card border border-border rounded-xl shadow-2xl py-2 z-50 transform origin-top-right transition-all animate-in fade-in slide-in-from-top-2">
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-sm font-bold truncate">{user?.businessDetails?.businessName || user?.fullName}</p>
+                    <p className="text-xs text-muted-foreground truncate">Owner: {user?.fullName}</p>
+                    
+                    <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border bg-muted/30">
+                      {user?.businessDetails?.verificationStatus === 'APPROVED' && <><ShieldCheck className="w-3.5 h-3.5 text-green-500" /><span className="text-green-500">Verified</span></>}
+                      {user?.businessDetails?.verificationStatus === 'REJECTED' && <><ShieldAlert className="w-3.5 h-3.5 text-red-500" /><span className="text-red-500">Action Required</span></>}
+                      {(!user?.businessDetails?.verificationStatus || user?.businessDetails?.verificationStatus === 'PENDING') && <><Clock className="w-3.5 h-3.5 text-yellow-500" /><span className="text-yellow-500">Pending</span></>}
+                    </div>
+                  </div>
+
+                  <div className="py-2">
+                    <button onClick={() => { setDropdownOpen(false); navigate('/mill-owner/listings'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors text-purple-400">
+                      <PlusCircle className="w-4 h-4 mr-3" /> Create Purchase Request
+                    </button>
+                    <button onClick={() => { setDropdownOpen(false); navigate('/mill-owner/profile'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors">
+                      <User className="w-4 h-4 mr-3" /> Profile
+                    </button>
+                    <button onClick={() => { setDropdownOpen(false); navigate('/mill-owner'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors">
+                      <LayoutDashboard className="w-4 h-4 mr-3" /> Dashboard
+                    </button>
+                    <button onClick={() => { setDropdownOpen(false); navigate('/mill-owner/settings'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors">
+                      <Settings className="w-4 h-4 mr-3" /> Settings
+                    </button>
+                  </div>
+
+                  <div className="border-t border-border py-2">
+                    <button onClick={handleLogout} className="w-full flex items-center px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
+                      <LogOut className="w-4 h-4 mr-3" /> Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -677,6 +677,21 @@ const resendVerification = async (req, res) => {
 };
 
 
+// ================= DELETE ACCOUNT =================
+const deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    await User.findByIdAndDelete(req.user.id);
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("DELETE ACCOUNT ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -691,4 +706,5 @@ module.exports = {
   resubmit,
   verifyEmail,
   resendVerification,
+  deleteAccount,
 };

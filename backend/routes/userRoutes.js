@@ -15,6 +15,7 @@ const {
   resubmit,
   verifyEmail,
   resendVerification,
+  deleteAccount,
 } = require("../controllers/userController");
 
 const { protect, checkApproved } = require("../middleware/authMiddleware");
@@ -62,6 +63,9 @@ router.put("/resubmit", protect, upload.single("document"), resubmit);
 
 // ================= UPDATE PROFILE =================
 router.put("/me", protect, checkApproved, updateProfile);
+
+// ================= DELETE ACCOUNT =================
+router.delete("/me", protect, deleteAccount);
 
 
 // ================= UPLOAD AVATAR =================
