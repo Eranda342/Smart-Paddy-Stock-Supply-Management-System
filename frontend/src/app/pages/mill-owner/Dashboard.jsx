@@ -1,4 +1,4 @@
-﻿import { TrendingUp, TrendingDown, ShoppingCart, MessageSquare, Package, DollarSign, MapPin, Leaf, FileText, Zap, BarChart2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShoppingCart, MessageSquare, Package, DollarSign, MapPin, Leaf, FileText, Zap, BarChart2 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import { useState, useEffect } from 'react';
@@ -18,6 +18,7 @@ export default function MillOwnerDashboard() {
   const [step, setStep] = useState(0);
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
     document.title = "Dashboard | AgroBridge";
@@ -342,6 +343,17 @@ export default function MillOwnerDashboard() {
       </div>
 
       {/* Header */}
+      {!user.emailVerified && (
+        <div className="mb-6 p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-yellow-300 flex items-center justify-between">
+          <span>⚠️ Your email is not verified. Please verify to unlock full access.</span>
+          <button
+            onClick={() => navigate("/verify-email-notice")}
+            className="ml-4 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 rounded-lg text-sm"
+          >
+            Verify Now
+          </button>
+        </div>
+      )}
       <div className="mb-8 flex flex-wrap sm:flex-row sm:items-start justify-between gap-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-3"

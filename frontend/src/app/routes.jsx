@@ -17,6 +17,8 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import OAuthSuccessPage from "./pages/OAuthSuccessPage";
 import RejectedPage from "./pages/RejectedPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import VerifyEmailNoticePage from "./pages/VerifyEmailNoticePage";
 
 // ================= LAYOUTS =================
 import MainLayout from "./layouts/MainLayout";
@@ -239,6 +241,16 @@ export const router = createBrowserRouter([
   {
     path: "/rejected",
     element: <RejectedPage />,
+  },
+
+  // ================= EMAIL VERIFICATION (bare – no layout, no auth guard for VerifyEmailPage) =================
+  {
+    path: "/verify-email/:token",
+    element: <VerifyEmailPage />,
+  },
+  {
+    path: "/verify-email-notice",
+    element: <VerifyEmailNoticePage />,
   },
 
 ]);

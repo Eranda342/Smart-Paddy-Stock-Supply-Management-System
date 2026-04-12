@@ -13,6 +13,8 @@ const {
   getOwnProfile,
   updateBasicInfo,
   resubmit,
+  verifyEmail,
+  resendVerification,
 } = require("../controllers/userController");
 
 const { protect, checkApproved } = require("../middleware/authMiddleware");
@@ -25,6 +27,11 @@ router.post("/register", upload.single("document"), registerUser);
 
 // ================= LOGIN =================
 router.post("/login", loginUser);
+
+
+// ================= EMAIL VERIFICATION =================
+router.get("/verify-email/:token", verifyEmail);
+router.post("/resend-verification", protect, resendVerification);
 
 
 // ================= PASSWORD RESET FLOW =================

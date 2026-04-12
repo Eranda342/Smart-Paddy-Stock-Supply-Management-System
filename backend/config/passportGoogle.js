@@ -1,6 +1,7 @@
 const passport = require("passport");
 const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 const User = require("../models/User");
+const { generateEmailToken, sendVerificationEmail } = require("../utils/authUtils");
 
 // ================= GOOGLE OAUTH STRATEGY =================
 passport.use(
@@ -35,18 +36,26 @@ passport.use(
           //
           // Each step persists its data to the DB before the next guard fires,
           // ensuring the flow cannot be bypassed by direct URL access.
+          const { token, hashedToken, expire } = generateEmailToken();
+
           const newUser = new User({
             fullName: profile.displayName || "Google User",
             email,
             googleId: profile.id,
             isVerified: false,
+            emailVerified: false,
+            emailVerificationToken: hashedToken,
+            emailVerificationExpire: expire,
           });
 
-          // validateBeforeSave: false bypasses the required:true on role
-          // so we can store a minimal record and let the user set their role
-          // through the onboarding flow.
           await newUser.save({ validateBeforeSave: false });
           user = newUser;
+
+          try {
+            await sendVerificationEmail(newUser, token);
+          } catch (err) {
+            console.error("Failed to send verification email for Google User:", err);
+          }
 
         } else if (!user.googleId) {
           // ── Existing email/password user — link their Google account ──

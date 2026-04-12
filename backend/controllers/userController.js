@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
-
+const { generateEmailToken, sendVerificationEmail } = require("../utils/authUtils");
 
 // ================= REGISTER USER =================
 const registerUser = async (req, res) => {
@@ -49,8 +49,13 @@ const registerUser = async (req, res) => {
       nic,
       password: hashedPassword,
       role: normalizedRole,
-      isVerified: false
+      isVerified: false,
+      emailVerified: false
     };
+
+    const { token, hashedToken, expire } = generateEmailToken();
+    userData.emailVerificationToken = hashedToken;
+    userData.emailVerificationExpire = expire;
 
     // ================= FARMER =================
     if (normalizedRole === "FARMER") {
@@ -89,8 +94,14 @@ const registerUser = async (req, res) => {
     const newUser = new User(userData);
     await newUser.save();
 
+    try {
+      await sendVerificationEmail(newUser, token);
+    } catch (err) {
+      console.error("Failed to send verification email:", err);
+    }
+
     res.status(201).json({
-      message: "User registered successfully",
+      message: "User registered successfully. Please check your email to verify your account.",
       user: newUser
     });
 
@@ -146,6 +157,7 @@ const loginUser = async (req, res) => {
         nic: user.nic,
         role: user.role,
         isVerified: user.isVerified,
+        emailVerified: user.emailVerified,
         farmDetails: user.farmDetails || null,
         businessDetails: user.businessDetails || null
       }
@@ -600,6 +612,71 @@ const resubmit = async (req, res) => {
 };
 
 
+
+
+// ================= VERIFY EMAIL =================
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired verification token" });
+    }
+
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpire = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    console.error("VERIFY EMAIL ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// ================= RESEND VERIFICATION EMAIL =================
+const resendVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({ message: "Email is already verified" });
+    }
+
+    const { token, hashedToken, expire } = generateEmailToken();
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpire = expire;
+
+    await user.save({ validateBeforeSave: false });
+
+    try {
+      await sendVerificationEmail(user, token);
+      res.status(200).json({ message: "Verification email sent successfully" });
+    } catch (err) {
+      console.error("Failed to resend verification email:", err);
+      res.status(500).json({ message: "Failed to send verification email" });
+    }
+
+  } catch (error) {
+    console.error("RESEND VERIFICATION ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -612,4 +689,6 @@ module.exports = {
   getOwnProfile,
   updateBasicInfo,
   resubmit,
+  verifyEmail,
+  resendVerification,
 };

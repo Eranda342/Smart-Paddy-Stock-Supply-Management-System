@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const Listing = require("../models/Listing");
+const { getApprovalEmailTemplate, getRejectionEmailTemplate } = require("../utils/authUtils");
+const sendEmail = require("../utils/sendEmail");
 const Negotiation = require("../models/Negotiation");
 const Transaction = require("../models/Transaction");
 const Dispute = require("../models/Dispute");
@@ -669,6 +671,20 @@ const approveVerification = async (req, res) => {
     user.isVerified = true;
     await user.save();
 
+    // Send approval email
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const loginUrl = `${frontendUrl}/login`; 
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "AgroBridge - Account Approved",
+        html: getApprovalEmailTemplate(loginUrl)
+      });
+    } catch (emailError) {
+      console.error("Failed to send approval email:", emailError);
+    }
+
     res.status(200).json({ message: "User approved successfully", user });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -696,6 +712,20 @@ const rejectVerification = async (req, res) => {
 
     user.isVerified = false;
     await user.save();
+
+    // Send rejection email
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const resubmitUrl = `${frontendUrl}/login`; 
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "AgroBridge - Action Required on Your Application",
+        html: getRejectionEmailTemplate(reason, resubmitUrl)
+      });
+    } catch (emailError) {
+      console.error("Failed to send rejection email:", emailError);
+    }
 
     res.status(200).json({ message: "User rejected", user });
   } catch (error) {

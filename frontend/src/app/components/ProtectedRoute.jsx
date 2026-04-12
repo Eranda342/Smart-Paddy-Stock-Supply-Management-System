@@ -29,8 +29,8 @@ export default function ProtectedRoute({ children, role }) {
     }
   })();
 
-  // 1. No cached user → send to login
-  if (!user) return <Navigate to="/login" replace />;
+  // 1. No cached user → loading guard
+  if (!user) return null;
 
   // 2. ADMIN bypasses verification — just check role match
   if (user.role === "ADMIN") {
@@ -45,7 +45,27 @@ export default function ProtectedRoute({ children, role }) {
     return <Navigate to="/login" replace />;
   }
 
-  // 4. Run the full resolver — resolveUserDestination uses DB-sourced fields
+  const isEmailVerified =
+    user.emailVerified ?? user.isEmailVerified ?? false;
+
+  const isAdminApproved =
+    user.isVerified ?? false;
+
+  const isDashboardRoute =
+    location.pathname.startsWith("/farmer") ||
+    location.pathname.startsWith("/mill-owner");
+
+  // Email verification
+  if (isDashboardRoute && !isEmailVerified) {
+    return <Navigate to="/verify-email-notice" replace />;
+  }
+
+  // Admin approval
+  if (isDashboardRoute && isEmailVerified && !isAdminApproved) {
+    return <Navigate to="/register/success" replace />;
+  }
+
+  // 5. Run the full resolver — resolveUserDestination uses DB-sourced fields
   const destination = resolveUserDestination(user);
 
   // The dashboard root for this user's role
