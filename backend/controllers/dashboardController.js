@@ -7,6 +7,8 @@ const getFarmerDashboard = async (req, res) => {
     const listings = await Listing.find({ farmer: farmerId });
 
     const range = req.query.range || "all";
+    const { startDate, endDate } = req.query;
+    const isCustomRange = startDate && endDate;
 
     const allTransactions = await Transaction.find({
       farmer: farmerId
@@ -16,17 +18,30 @@ const getFarmerDashboard = async (req, res) => {
     let currentStart = 0;
     let previousStart = 0;
 
-    if (range === "7d") {
-      currentStart = now - 7 * 24 * 60 * 60 * 1000;
-      previousStart = now - 14 * 24 * 60 * 60 * 1000;
-    } else if (range === "30d") {
-      currentStart = now - 30 * 24 * 60 * 60 * 1000;
-      previousStart = now - 60 * 24 * 60 * 60 * 1000;
+    if (!isCustomRange) {
+      if (range === "7d") {
+        currentStart = now - 7 * 24 * 60 * 60 * 1000;
+        previousStart = now - 14 * 24 * 60 * 60 * 1000;
+      } else if (range === "30d") {
+        currentStart = now - 30 * 24 * 60 * 60 * 1000;
+        previousStart = now - 60 * 24 * 60 * 60 * 1000;
+      }
     }
 
-    const transactions = range === "all" 
-      ? allTransactions 
-      : allTransactions.filter(t => new Date(t.createdAt).getTime() >= currentStart);
+    let transactions;
+    if (isCustomRange) {
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      transactions = allTransactions.filter(t => {
+        const ts = new Date(t.createdAt).getTime();
+        return ts >= start && ts <= end.getTime();
+      });
+    } else {
+      transactions = range === "all"
+        ? allTransactions
+        : allTransactions.filter(t => new Date(t.createdAt).getTime() >= currentStart);
+    }
 
     //-------------------------------------
     // STATS
@@ -47,9 +62,9 @@ const getFarmerDashboard = async (req, res) => {
       0
     );
 
-    // Calculate Growth
+    // Calculate Growth (only for predefined ranges, not custom)
     let growth = 0;
-    if (range !== "all") {
+    if (!isCustomRange && range !== "all") {
       const current = allTransactions.filter(
         t => t.status === "COMPLETED" && new Date(t.createdAt).getTime() >= currentStart
       );
@@ -152,21 +167,36 @@ const getMillOwnerDashboard = async (req, res) => {
     });
 
     const range = req.query.range || "all";
+    const { startDate, endDate } = req.query;
+    const isCustomRange = startDate && endDate;
     const now = Date.now();
     let currentStart = 0;
     let previousStart = 0;
 
-    if (range === "7d") {
-      currentStart = now - 7 * 24 * 60 * 60 * 1000;
-      previousStart = now - 14 * 24 * 60 * 60 * 1000;
-    } else if (range === "30d") {
-      currentStart = now - 30 * 24 * 60 * 60 * 1000;
-      previousStart = now - 60 * 24 * 60 * 60 * 1000;
+    if (!isCustomRange) {
+      if (range === "7d") {
+        currentStart = now - 7 * 24 * 60 * 60 * 1000;
+        previousStart = now - 14 * 24 * 60 * 60 * 1000;
+      } else if (range === "30d") {
+        currentStart = now - 30 * 24 * 60 * 60 * 1000;
+        previousStart = now - 60 * 24 * 60 * 60 * 1000;
+      }
     }
 
-    const transactions = range === "all" 
-      ? allTransactions 
-      : allTransactions.filter(t => new Date(t.createdAt).getTime() >= currentStart);
+    let transactions;
+    if (isCustomRange) {
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      transactions = allTransactions.filter(t => {
+        const ts = new Date(t.createdAt).getTime();
+        return ts >= start && ts <= end.getTime();
+      });
+    } else {
+      transactions = range === "all"
+        ? allTransactions
+        : allTransactions.filter(t => new Date(t.createdAt).getTime() >= currentStart);
+    }
 
     const activePurchases = transactions.filter(t => t.status !== "COMPLETED" && t.status !== "CANCELLED").length;
     const ongoingNegotiations = negotiations.length;
@@ -186,7 +216,7 @@ const getMillOwnerDashboard = async (req, res) => {
     );
 
     let growth = 0;
-    if (range !== "all") {
+    if (!isCustomRange && range !== "all") {
       const current = allTransactions.filter(
         t => (t.status === "COMPLETED" || t.status === "DELIVERED") && new Date(t.createdAt).getTime() >= currentStart
       );

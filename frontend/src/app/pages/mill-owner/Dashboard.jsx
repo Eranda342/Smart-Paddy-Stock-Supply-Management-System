@@ -1,13 +1,15 @@
-import { TrendingUp, TrendingDown, ShoppingCart, MessageSquare, Package, DollarSign, MapPin, Leaf, FileText, Zap, BarChart2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShoppingCart, MessageSquare, Package, DollarSign, MapPin, Leaf, FileText, FileSpreadsheet, Zap, BarChart2, Calendar, X } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from "socket.io-client";
 import { useTheme } from "../../contexts/ThemeContext";
 import CountUp from "react-countup";
 import autoTable from "jspdf-autotable";
 import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import * as XLSX from "xlsx";
 
 export default function MillOwnerDashboard() {
   const [data, setData] = useState(null);
@@ -16,9 +18,29 @@ export default function MillOwnerDashboard() {
   const [range, setRange] = useState("all");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [step, setStep] = useState(0);
+  // Custom date range state
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [appliedCustomRange, setAppliedCustomRange] = useState(null);
+  const [dateError, setDateError] = useState("");
+  const datePickerRef = useRef(null);
+  const salesChartRef = useRef(null);
+  const distChartRef = useRef(null);
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // Close date picker on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target)) {
+        setShowDatePicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     document.title = "Dashboard | AgroBridge";
@@ -43,7 +65,11 @@ export default function MillOwnerDashboard() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/dashboard/millOwner?range=${range}`, {
+        let url = `http://localhost:5000/api/dashboard/millOwner?range=${range}`;
+        if (appliedCustomRange) {
+          url = `http://localhost:5000/api/dashboard/millOwner?range=${range}&startDate=${appliedCustomRange.startDate}&endDate=${appliedCustomRange.endDate}`;
+        }
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -61,9 +87,98 @@ export default function MillOwnerDashboard() {
       }
     };
     fetchDashboard();
-  }, [range, refreshTrigger]);
+  }, [range, refreshTrigger, appliedCustomRange]);
 
-  const exportPDF = () => {
+  // Custom range helpers
+  const today = new Date().toISOString().split("T")[0];
+
+  const handleApplyCustomRange = () => {
+    setDateError("");
+    if (!customStart || !customEnd) {
+      setDateError("Please select both start and end dates.");
+      return;
+    }
+    if (new Date(customEnd) < new Date(customStart)) {
+      setDateError("End date cannot be before start date.");
+      return;
+    }
+    setAppliedCustomRange({ startDate: customStart, endDate: customEnd });
+    setRange("all");
+    setShowDatePicker(false);
+  };
+
+  const handleClearCustomRange = () => {
+    setAppliedCustomRange(null);
+    setCustomStart("");
+    setCustomEnd("");
+    setDateError("");
+  };
+
+  const formatDisplayDate = (iso) => {
+    return new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" });
+  };
+
+  
+  const exportExcel = () => {
+    const hasAnyData = Object.keys(data?.distribution || {}).length > 0 || Object.keys(data?.monthly || {}).length > 0 || (data?.recent?.length || 0) > 0;
+    const now = new Date();
+    
+    if (!hasAnyData) {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet([["No data available for selected period"]]);
+      XLSX.utils.book_append_sheet(wb, ws, "Summary");
+      XLSX.writeFile(wb, `AgroBridge_No_Data_Report_${now.toISOString().slice(0, 10)}.xlsx`);
+      return;
+    }
+    
+    const fmtPdfDate = (iso) => new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" });
+    let periodLabel = appliedCustomRange 
+      ? `${fmtPdfDate(appliedCustomRange.startDate)} → ${fmtPdfDate(appliedCustomRange.endDate)}` 
+      : range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time";
+    let rangeSlug = appliedCustomRange ? `${appliedCustomRange.startDate}_to_${appliedCustomRange.endDate}` : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "All-Time");
+    
+    // Sheet 1: Summary
+    const fmt = (n) => new Intl.NumberFormat("en-LK").format(n || 0);
+    const summaryData = [
+      ["AgroBridge Analytics Report"],
+      [],
+      ["Generated On:", now.toLocaleDateString("en-LK", { year: "numeric", month: "long", day: "numeric" })],
+      ["Period:", periodLabel],
+      [],
+      ["SUMMARY"],
+      [],
+      ["Total Spend:", `Rs ${fmt(data?.stats?.totalSpend)}`],
+      ["Monthly Procurement (kg):", fmt(data?.stats?.monthlyProcurementKg)],
+      ["Best Selling Paddy:", data?.bestSelling || "N/A"],
+      ["Highest Sourcing Area:", Object.entries(data?.locations || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A"]
+    ];
+    
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+    if (!wsSummary["!cols"]) wsSummary["!cols"] = [];
+    wsSummary["!cols"] = [{ wch: 25 }, { wch: 30 }];
+    
+    // Sheet 2: Transactions
+    const headers = [["Date", "Paddy Type", "Quantity (kg)", "Price (Rs)", "District", "Buyer/Seller"]];
+    const rows = (data.recent || []).map(t => [
+      new Date(t.createdAt).toLocaleDateString("en-LK"),
+      t.listing?.paddyType || "N/A",
+      t.quantityKg || 0,
+      t.totalAmount || t.totalPrice || t.price || 0,
+      t.listing?.location?.district || "N/A",
+      t.farmer?.fullName || t.seller?.fullName || "N/A"
+    ]);
+    
+    const wsTransactions = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    wsTransactions["!cols"] = [{ wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 25 }];
+    wsTransactions["!freeze"] = { xSplit: 0, ySplit: 1 };
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+    XLSX.utils.book_append_sheet(wb, wsTransactions, "Transactions");
+    XLSX.writeFile(wb, `AgroBridge_Report_${rangeSlug}.xlsx`);
+  };
+
+  const exportPDF = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
     const H = doc.internal.pageSize.getHeight();
@@ -76,36 +191,67 @@ export default function MillOwnerDashboard() {
     const fmt = (n) => new Intl.NumberFormat("en-LK").format(n || 0);
     const fmtCur = (n) => `Rs. ${fmt(n)}`;
 
-    // â”€â”€ Header Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // -- Header Banner (Enhanced with Period) --
     doc.setFillColor(...DARK);
-    doc.rect(0, 0, W, 38, "F");
+    doc.rect(0, 0, W, 48, "F");
     doc.setFillColor(...GREEN);
-    doc.rect(0, 35, W, 3, "F");
+    doc.rect(0, 45, W, 3, "F");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(255, 255, 255);
-    doc.text("AgroBridge", 14, 16);
+    doc.text("AgroBridge", 14, 14);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(150, 220, 150);
-    doc.text("Mill Owner Procurement Report", 14, 24);
+    doc.text("Mill Owner Procurement Report", 14, 22);
 
     doc.setFontSize(8);
     doc.setTextColor(100, 180, 100);
-    doc.text(`Generated: ${now.toLocaleDateString("en-LK", { weekday:"long", year:"numeric", month:"long", day:"numeric" })}  Â·  ${now.toLocaleTimeString("en-LK")}`, 14, 31);
+    doc.text(`Generated on: ${now.toLocaleDateString("en-LK", { weekday:"long", year:"numeric", month:"long", day:"numeric" })}  |  ${now.toLocaleTimeString("en-LK")}`, 14, 30);
 
-    // Range badge
-    const rangeLabel = range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time";
-    doc.setFillColor(...GREEN);
-    doc.roundedRect(W - 46, 10, 32, 10, 3, 3, "F");
-    doc.setFont("helvetica", "bold");
+    // Period label
+    const fmtPdfDate = (iso) => new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" });
+    let periodLabel;
+    if (appliedCustomRange) {
+      periodLabel = `Period: ${fmtPdfDate(appliedCustomRange.startDate)}  →  ${fmtPdfDate(appliedCustomRange.endDate)}`;
+    } else {
+      periodLabel = `Period: ${range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time"}`;
+    }
     doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    doc.text(rangeLabel, W - 30, 16.5, { align: "center" });
+    doc.setTextColor(180, 230, 180);
+    doc.text(periodLabel, 14, 38);
 
-    let y = 48;
+    // Range badge (top-right pill)
+    const badgeLabel = appliedCustomRange
+      ? `${fmtPdfDate(appliedCustomRange.startDate)} -> ${fmtPdfDate(appliedCustomRange.endDate)}`
+      : (range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time");
+    doc.setFontSize(7);
+    const badgeW = Math.max(32, doc.getTextWidth(badgeLabel) + 8);
+    doc.setFillColor(...GREEN);
+    doc.roundedRect(W - badgeW - 8, 10, badgeW, 10, 3, 3, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(0, 0, 0);
+    doc.text(badgeLabel, W - badgeW / 2 - 8, 16.5, { align: "center" });
+
+    let y = 58;
+
+    // No-data guard
+    const hasAnyData =
+      Object.keys(data?.distribution || {}).length > 0 ||
+      Object.keys(data?.monthly || {}).length > 0 ||
+      (data?.recent?.length || 0) > 0;
+    if (!hasAnyData) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(11);
+      doc.setTextColor(...GRAY);
+      doc.text("No data available for the selected period.", W / 2, y + 20, { align: "center" });
+      doc.save(`AgroBridge_No_Data_Report_${now.toISOString().slice(0, 10)}.pdf`);
+      return;
+    }
+
 
     // â”€â”€ Section: Executive Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     doc.setFont("helvetica", "bold");
@@ -152,6 +298,70 @@ export default function MillOwnerDashboard() {
       doc.text(String(kpi.value), x + 4, ky + 13.5);
     });
     y += Math.ceil(kpis.length / 3) * rowH + 6;
+
+    // ── Charts Capture ──────────────────────────────────────────
+    if (salesChartRef.current || distChartRef.current) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    if (salesChartRef.current && salesData && salesData.length > 0 && salesData[0].month !== "No Data") {
+      try {
+        const canvas = await html2canvas(salesChartRef.current, { scale: 2 });
+        const imgData = canvas.toDataURL("image/png");
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(...DARK);
+        doc.text("Procurement Trend", 14, y);
+        y += 2;
+        doc.setDrawColor(...GREEN);
+        doc.setLineWidth(0.5);
+        doc.line(14, y, W - 14, y);
+        y += 4;
+        
+        const imgProps = doc.getImageProperties(imgData);
+        let imgWidth = W - 28;
+        let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+        
+        if (y + imgHeight > H - 20) { doc.addPage(); y = 20; }
+        
+        doc.addImage(imgData, "PNG", 14, y, imgWidth, imgHeight);
+        y += imgHeight + 10;
+      } catch (err) {
+        console.error("Could not generate sales chart", err);
+      }
+    }
+
+    if (distChartRef.current && procurementData && procurementData.length > 0 && procurementData[0].type !== "No Data") {
+      try {
+        const canvas = await html2canvas(distChartRef.current, { scale: 2 });
+        const imgData = canvas.toDataURL("image/png");
+        
+        if (y + 10 > H - 20) { doc.addPage(); y = 20; }
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(...DARK);
+        doc.text("Procurement Distribution", 14, y);
+        y += 2;
+        doc.setDrawColor(...GREEN);
+        doc.setLineWidth(0.5);
+        doc.line(14, y, W - 14, y);
+        y += 4;
+        
+        const imgProps = doc.getImageProperties(imgData);
+        let imgWidth = W - 28;
+        let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+        
+        if (y + imgHeight > H - 20) { doc.addPage(); y = 20; }
+        
+        doc.addImage(imgData, "PNG", 14, y, imgWidth, imgHeight);
+        y += imgHeight + 10;
+      } catch (err) {
+        console.error("Could not generate dist chart", err);
+      }
+    }
+
 
     // â”€â”€ Section: Monthly Procurement Trend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     doc.setFont("helvetica", "bold");
@@ -266,7 +476,10 @@ export default function MillOwnerDashboard() {
       doc.text(`Page ${p} of ${pageCount}`, W - 14, H - 4.5, { align: "right" });
     }
 
-    const filename = `AgroBridge_Report_${now.toISOString().slice(0, 10)}.pdf`;
+    const rangeSlug = appliedCustomRange
+      ? `${appliedCustomRange.startDate}_to_${appliedCustomRange.endDate}`
+      : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "All-Time");
+    const filename = `AgroBridge_MillOwner_Report_${rangeSlug}_${now.toISOString().slice(0, 10)}.pdf`;
     doc.save(filename);
   };
 
@@ -377,22 +590,95 @@ export default function MillOwnerDashboard() {
           {/* Range pills */}
           <div className="flex items-center p-1 rounded-xl gap-1" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
             {[['7d','7 Days'],['30d','30 Days'],['all','All Time']].map(([val, label]) => (
-              <button key={val} onClick={() => setRange(val)}
+              <button key={val} onClick={() => { setRange(val); handleClearCustomRange(); }}
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200"
-                style={range === val ? { background: '#22C55E', color: '#000', boxShadow: '0 0 12px rgba(34,197,94,0.3)' } : { color: 'rgba(148,163,184,0.7)' }}>
+                style={range === val && !appliedCustomRange ? { background: '#22C55E', color: '#000', boxShadow: '0 0 12px rgba(34,197,94,0.3)' } : { color: 'rgba(148,163,184,0.7)' }}>
                 {label}
               </button>
             ))}
+            {/* Custom Range button */}
+            <div className="relative" ref={datePickerRef}>
+              <button
+                onClick={() => setShowDatePicker(prev => !prev)}
+                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200"
+                style={appliedCustomRange ? {
+                  background: '#22C55E', color: '#000', boxShadow: '0 0 12px rgba(34,197,94,0.3)'
+                } : {
+                  color: 'rgba(148,163,184,0.7)'
+                }}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                {appliedCustomRange ? `${formatDisplayDate(appliedCustomRange.startDate)} → ${formatDisplayDate(appliedCustomRange.endDate)}` : 'Custom Range'}
+              </button>
+              {showDatePicker && (
+                <div className="absolute top-[calc(100%+8px)] right-0 z-50 p-4 rounded-2xl shadow-2xl min-w-[280px]"
+                  style={{ background: 'rgba(15,23,42,0.98)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(20px)' }}>
+                  <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(148,163,184,0.7)' }}>SELECT DATE RANGE</p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Start Date</label>
+                      <input
+                        type="date"
+                        value={customStart}
+                        max={today}
+                        onChange={e => { setCustomStart(e.target.value); setDateError(""); }}
+                        className="w-full px-3 py-2 rounded-lg text-sm bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#22C55E]/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">End Date</label>
+                      <input
+                        type="date"
+                        value={customEnd}
+                        min={customStart || undefined}
+                        max={today}
+                        onChange={e => { setCustomEnd(e.target.value); setDateError(""); }}
+                        className="w-full px-3 py-2 rounded-lg text-sm bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#22C55E]/50"
+                      />
+                    </div>
+                    {dateError && <p className="text-xs text-red-400">{dateError}</p>}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={handleApplyCustomRange}
+                        className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+                        style={{ background: '#22C55E', color: '#000' }}
+                      >
+                        Apply
+                      </button>
+                      {appliedCustomRange && (
+                        <button
+                          onClick={() => { handleClearCustomRange(); setShowDatePicker(false); }}
+                          className="px-3 py-2 rounded-lg text-xs font-semibold transition-all"
+                          style={{ background: 'rgba(239,68,68,0.15)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          {/* Export */}
-          <button onClick={exportPDF}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #22C55E, #16a34a)', color: '#000', boxShadow: '0 0 20px rgba(34,197,94,0.25)' }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45)'}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(34,197,94,0.25)'}>
-            <FileText className="w-4 h-4" />
-            Export Report
-          </button>
+          {/* Export Buttons */}
+          <div className="flex items-center gap-2">
+            <button onClick={exportExcel}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #10B981, #059669)', color: '#000', boxShadow: '0 0 20px rgba(16,185,129,0.25)' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 30px rgba(16,185,129,0.45)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(16,185,129,0.25)'}>
+              <FileSpreadsheet className="w-4 h-4" />
+              Export Excel
+            </button>
+            <button onClick={exportPDF}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #22C55E, #16a34a)', color: '#000', boxShadow: '0 0 20px rgba(34,197,94,0.25)' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(34,197,94,0.25)'}>
+              <FileText className="w-4 h-4" />
+              Export PDF
+            </button>
+          </div>
         </div>
       </div>
 
@@ -486,7 +772,7 @@ export default function MillOwnerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
         {/* Procurement Trend - Area chart */}
-        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(34,197,94,0.08)]"
+        <div ref={salesChartRef} className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(34,197,94,0.08)]"
           style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between mb-5">
             <div>
@@ -535,7 +821,7 @@ export default function MillOwnerDashboard() {
         </div>
 
         {/* Procurement by Paddy Type - Bar chart */}
-        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(59,130,246,0.06)]"
+        <div ref={distChartRef} className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(59,130,246,0.06)]"
           style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between mb-5">
             <div>
