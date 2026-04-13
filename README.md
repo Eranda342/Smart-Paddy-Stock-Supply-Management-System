@@ -1,183 +1,167 @@
-🌾 AgroBridge
+<div align="center">
+  <img src="./frontend/public/screenshots/navbar.svg" alt="AgroBridge Logo" width="120" />
 
-Smart Paddy Stock Supply Management System
+  # AgroBridge
+  **"Connecting Farmers & Mill Owners Seamlessly"**
 
-AgroBridge is a full-stack digital platform designed to connect farmers and mill owners in Sri Lanka’s paddy supply chain. It enables seamless trading, negotiation, and transport coordination — all in one place.
+  [![Version](https://img.shields.io/badge/version-v1.0-blue.svg)](#)
+  [![Status](https://img.shields.io/badge/status-stable-success.svg)](#)
+  [![License](https://img.shields.io/badge/license-academic-orange.svg)](#)
+</div>
 
-⸻
+---
 
-🚀 Features
+## 1. Overview
+AgroBridge is a full-stack digital platform designed to connect farmers and mill owners in Sri Lanka’s paddy supply chain. It enables seamless trading, negotiation, and transport coordination — all in one unified, high-fidelity platform featuring state-of-the-art, glassmorphism design.
 
-👨‍🌾 Farmer Features
-	•	Create and manage paddy listings
-	•	View and respond to buy requests
-	•	Negotiate prices in real-time
-	•	Track transactions and history
+---
 
-🏭 Mill Owner Features
-	•	Post buy requests
-	•	Browse available farmer listings
-	•	Negotiate directly with farmers
-	•	Manage purchases and logistics
+## 2. Features
 
-🚚 Transport Module
-	•	Assign drivers for pickups
-	•	Track transport status
-	•	(Mock) SMS notifications for delivery updates
+### 👨‍🌾 Farmer
+- **Listings:** Create and manage customized paddy listings
+- **Requests:** View and respond directly to buy requests
+- **Negotiations:** Engage in real-time, interactive price negotiations
+- **History:** Track ongoing transactions and historical sales data
 
-📊 Analytics & Reports
-	•	Export reports (PDF / Excel)
-	•	Custom date range filtering
-	•	Dashboard insights
+### 🏭 Mill Owner
+- **Requests:** Post and manage targeted buy requests
+- **Marketplace:** Browse a comprehensive marketplace of available farmer listings
+- **Negotiations:** Negotiate terms directly with farmers
+- **Logistics:** Manage purchases, stock, and overarching logistics
 
-🔐 Authentication & Verification
-	•	Email verification system
-	•	Role-based access (Farmer / Mill Owner / Admin)
-	•	Business verification workflow
+### 🚚 Transport
+- **Coordination:** Assign drivers for order pickups
+- **Tracking:** Track end-to-end transport status
+- **Notifications:** Mock SMS notifications for delivery milestone updates
 
-⸻
+### 📊 Analytics
+- **Reports:** Generate and export detailed reports in PDF and Excel formats
+- **Filtering:** Custom date range filtering and data sorting
+- **Insights:** Visual dashboard insights with dynamic charts
 
-🛠️ Tech Stack
+### 🔐 Authentication
+- **Verification:** Secure email verification system blocking unverified accounts
+- **Access Control:** Route-protected, role-based access (Farmer, Mill Owner, Admin)
+- **Business Vetting:** Profile verification workflows for legitimate business operations
 
-Frontend
-	•	React.js
-	•	Tailwind CSS
-	•	Vite
+---
 
-Backend
-	•	Node.js
-	•	Express.js
+## 3. Tech Stack
 
-Database
-	•	MongoDB
+| Category | Technologies Used |
+| :--- | :--- |
+| **Frontend** | React.js, Tailwind CSS, Vite, Framer Motion |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB |
+| **Utilities** | jsPDF (PDF export), Excel export tools, Nodemailer (Email) |
+| **Design** | Modern dark-themed SaaS UI, Glassmorphism |
 
-Other Tools
-	•	jsPDF (PDF generation)
-	•	Excel export utilities
-	•	Nodemailer (Email system)
+---
 
-⸻
+## 4. Screenshots
 
-🎨 UI Highlights
-	•	Modern dark-themed SaaS UI
-	•	Glassmorphism effects
-	•	Responsive design
-	•	Interactive dashboards
+### 🌐 Landing Page
+<img src="./frontend/public/screenshots/landing.png" width="800"/>
 
-⸻
+<br/><br/>
 
-📂 Project Structure
+### 👨‍🌾 Farmer Dashboard
+<img src="./frontend/public/screenshots/farmer-dashboard.png" width="800"/>
 
+<br/><br/>
+
+### 🏭 Mill Owner Dashboard
+<img src="./frontend/public/screenshots/mill-owner-dashboard.png" width="800"/>
+
+<br/><br/>
+
+### 🛠 Admin Dashboard
+<img src="./frontend/public/screenshots/admin-dashboard.png" width="800"/>
+
+<br/><br/>
+
+### 🌾 Paddy Types
+<img src="./frontend/public/screenshots/paddy-types.png" width="800"/>
+
+<br/><br/>
+
+### 💬 Negotiations
+<img src="./frontend/public/screenshots/negotiations.png" width="800"/>
+
+---
+
+## 5. Project Structure
+
+```text
 frontend/
   src/
     assets/
     components/
     pages/
-
+    
 backend/
   controllers/
   routes/
   models/
+```
 
+---
 
-⸻
+## 6. Installation
 
-⚙️ Installation & Setup
-
-1️⃣ Clone the repository
-
+1️⃣ **Clone the repository**
+```bash
 git clone https://github.com/your-username/agrobridge.git
 cd agrobridge
+```
 
-2️⃣ Install dependencies
-
-Frontend:
-
+2️⃣ **Install dependencies and run (Frontend)**
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
-Backend:
-
+3️⃣ **Install dependencies and run (Backend)**
+```bash
 cd backend
 npm install
 npm run server
+```
 
+---
 
-⸻
+## 7. Environment Variables
 
-🌐 Environment Variables
+Create a `.env` file in the `backend` directory with the following keys:
 
-Create a .env file in backend:
-
+```env
 PORT=5000
 MONGO_URI=your_mongodb_connection
 JWT_SECRET=your_secret
 EMAIL_USER=your_email
 EMAIL_PASS=your_password
-
-
-⸻
-
-📸 Screenshots
-	•	Landing Page
-	•	Dashboard
-	•	Paddy Listings
-	•	Negotiation System
-
-## 📸 Screenshots
-
-### 🏠 Landing Page
-![Landing Page](./frontend/public/screenshots/landing.png)
+```
 
 ---
 
-### 👨‍🌾 Farmer Dashboard
-![Farmer Dashboard](./frontend/public/screenshots/farmer-dashboard.png)
+## 8. Future Improvements
+- 📱 Mobile app version for accessibility in remote areas
+- 🤖 AI-based price recommendations based on market trends
+- 💳 Secure payment gateway integration
+- 📡 Real SMS verification and status integration (e.g., Twilio)
 
 ---
 
-### 🏭 Mill Owner Dashboard
-![Mill Owner Dashboard](./frontend/public/screenshots/mill-owner-dashboard.png)
+## 9. Author
 
----
-
-### 🛠️ Admin Dashboard
-![Admin Dashboard](./frontend/public/screenshots/admin-dashboard.png)
-
----
-
-### 🌾 Paddy Types
-![Paddy Types](./frontend/public/screenshots/paddy-types.png)
-
----
-
-### 💬 Negotiations
-![Negotiations](./frontend/public/screenshots/negotiations.png)
-
-⸻
-
-📈 Future Improvements
-	•	Real SMS integration (Twilio)
-	•	Payment gateway integration
-	•	AI-based price recommendations
-	•	Mobile app version
-
-⸻
-
-👨‍💻 Author
-
-Eranda Buddhika
+**Eranda Buddhika**  
 Undergraduate Computer Science Student
 
-⸻
+---
 
-📜 License
+## 10. License
 
-This project is developed for academic purposes and demonstration.
-
-⸻
-
-⭐ Acknowledgements
-
-Inspired by real-world agricultural supply chain challenges in Sri Lanka.
+This project is developed for **academic purposes and demonstration**.  
+⭐ *Inspired by real-world agricultural supply chain challenges in Sri Lanka.*
