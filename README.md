@@ -1,181 +1,183 @@
-🌾 AgroBridge – Smart Paddy Trading & Supply Management System
+🌾 AgroBridge
 
-AgroBridge is a full-stack, real-time platform that connects farmers and mill owners to streamline paddy trading, negotiations, transport logistics, and dispute resolution with a centralized admin control system.
+Smart Paddy Stock Supply Management System
 
-⸻
-
-🚀 Key Features
-
-👨‍🌾 Farmer & Mill Owner Portals
-	•	User registration & authentication (JWT-based)
-	•	Create and manage listings
-	•	Browse marketplace listings
-	•	Real-time negotiation system
-	•	Transaction tracking
-	•	Transport tracking (delivery lifecycle)
-	•	Notification system (real-time updates)
+AgroBridge is a full-stack digital platform designed to connect farmers and mill owners in Sri Lanka’s paddy supply chain. It enables seamless trading, negotiation, and transport coordination — all in one place.
 
 ⸻
 
-🛠️ Admin Dashboard
-	•	User management & verification (KYC approval system)
-	•	Listings moderation
-	•	Transactions & negotiations monitoring
-	•	Transport management overview
-	•	Dispute resolution system (multi-stage workflow)
-	•	Notifications center (broadcast system)
-	•	Reports & analytics dashboard
-	•	System settings (dynamic platform control)
+🚀 Features
 
-⸻
+👨‍🌾 Farmer Features
+	•	Create and manage paddy listings
+	•	View and respond to buy requests
+	•	Negotiate prices in real-time
+	•	Track transactions and history
 
-📎 Dispute & Complaint System
-	•	Raise disputes with detailed description
-	•	Upload proof (images/documents)
-	•	Admin review panel with evidence viewer
-	•	Internal case tracking workflow:
-	•	OPEN → REVIEW → INVESTIGATION → RESOLVED
+🏭 Mill Owner Features
+	•	Post buy requests
+	•	Browse available farmer listings
+	•	Negotiate directly with farmers
+	•	Manage purchases and logistics
 
-⸻
+🚚 Transport Module
+	•	Assign drivers for pickups
+	•	Track transport status
+	•	(Mock) SMS notifications for delivery updates
 
-🔔 Real-Time Notification System
-	•	Socket.IO powered live updates
-	•	Admin announcements (targeted: Farmers / Mill Owners / All)
-	•	Per-user notification delivery (socket rooms)
-	•	Notification dropdown with read/unread tracking
-
-⸻
-
-⚙️ Dynamic System Settings
-	•	Platform fee configuration
-	•	Auto dispute trigger (cron-based)
-	•	Max listings per user
-	•	Maintenance mode (global system lock)
-	•	All settings stored in MongoDB and applied system-wide
-
-⸻
-
-📊 Reports & Analytics
-	•	Platform revenue tracking
-	•	User growth analytics
-	•	Paddy distribution insights
-	•	Transaction and negotiation statistics
+📊 Analytics & Reports
 	•	Export reports (PDF / Excel)
+	•	Custom date range filtering
+	•	Dashboard insights
+
+🔐 Authentication & Verification
+	•	Email verification system
+	•	Role-based access (Farmer / Mill Owner / Admin)
+	•	Business verification workflow
 
 ⸻
 
-🏗️ Tech Stack
+🛠️ Tech Stack
 
 Frontend
-	•	React (Vite)
+	•	React.js
 	•	Tailwind CSS
-	•	Context API
-	•	Socket.IO Client
-
-  ⸻
+	•	Vite
 
 Backend
 	•	Node.js
 	•	Express.js
-	•	MongoDB (Mongoose)
-	•	Socket.IO
-	•	Multer (file uploads)
-	•	Node-cron (automation)
+
+Database
+	•	MongoDB
+
+Other Tools
+	•	jsPDF (PDF generation)
+	•	Excel export utilities
+	•	Nodemailer (Email system)
 
 ⸻
 
-🔄 System Architecture
-	•	REST API driven backend
-	•	Real-time communication via WebSockets
-	•	MongoDB for persistent storage
-	•	Modular MVC structure
-	•	Global configuration via System Settings
+🎨 UI Highlights
+	•	Modern dark-themed SaaS UI
+	•	Glassmorphism effects
+	•	Responsive design
+	•	Interactive dashboards
 
 ⸻
 
-📁 Project Structure
-backend/
- ├── models/
- ├── controllers/
- ├── routes/
- ├── middleware/
- ├── config/
- └── server.js
+📂 Project Structure
 
 frontend/
- ├── src/
- │   ├── pages/
- │   ├── layouts/
- │   ├── components/
- │   ├── contexts/
- │   └── api/
+  src/
+    assets/
+    components/
+    pages/
+
+backend/
+  controllers/
+  routes/
+  models/
+
 
 ⸻
 
-⚡ Installation & Setup
+⚙️ Installation & Setup
 
-1. Clone the repository
+1️⃣ Clone the repository
 
 git clone https://github.com/your-username/agrobridge.git
 cd agrobridge
 
-⸻
+2️⃣ Install dependencies
 
-2. Backend Setup
-cd backend
-npm install
-npm run dev
+Frontend:
 
-⸻
-
-3. Frontend Setup
 cd frontend
 npm install
 npm run dev
 
+Backend:
+
+cd backend
+npm install
+npm run server
+
+
 ⸻
 
-4. Environment Variables
+🌐 Environment Variables
 
-Create .env file in backend:
+Create a .env file in backend:
+
 PORT=5000
 MONGO_URI=your_mongodb_connection
-JWT_SECRET=your_secret_key
+JWT_SECRET=your_secret
+EMAIL_USER=your_email
+EMAIL_PASS=your_password
+
 
 ⸻
 
-🔐 Security Features
-	•	JWT Authentication
-	•	Role-based access (Admin / Farmer / Mill Owner)
-	•	Protected API routes
-	•	Maintenance mode middleware
-	•	File upload handling with Multer
+📸 Screenshots
+	•	Landing Page
+	•	Dashboard
+	•	Paddy Listings
+	•	Negotiation System
+
+## 📸 Screenshots
+
+### 🏠 Landing Page
+![Landing Page](./frontend/public/screenshots/landing.png)
+
+---
+
+### 👨‍🌾 Farmer Dashboard
+![Farmer Dashboard](./frontend/public/screenshots/farmer-dashboard.png)
+
+---
+
+### 🏭 Mill Owner Dashboard
+![Mill Owner Dashboard](./frontend/public/screenshots/mill-owner-dashboard.png)
+
+---
+
+### 🛠️ Admin Dashboard
+![Admin Dashboard](./frontend/public/screenshots/admin-dashboard.png)
+
+---
+
+### 🌾 Paddy Types
+![Paddy Types](./frontend/public/screenshots/paddy-types.png)
+
+---
+
+### 💬 Negotiations
+![Negotiations](./frontend/public/screenshots/negotiations.png)
 
 ⸻
 
-🚀 Real-Time Features
-	•	Live notifications
-	•	Instant dispute updates
-	•	Admin broadcast system
-	•	Socket-based user communication
-
-⸻
-
-📌 Future Improvements
+📈 Future Improvements
+	•	Real SMS integration (Twilio)
 	•	Payment gateway integration
-	•	Advanced analytics dashboard
+	•	AI-based price recommendations
 	•	Mobile app version
-	•	AI-based price prediction
-	•	Notification preferences
 
 ⸻
 
 👨‍💻 Author
 
 Eranda Buddhika
+Undergraduate Computer Science Student
 
 ⸻
 
 📜 License
 
-This project is developed for academic and demonstration purposes.
+This project is developed for academic purposes and demonstration.
+
+⸻
+
+⭐ Acknowledgements
+
+Inspired by real-world agricultural supply chain challenges in Sri Lanka.
