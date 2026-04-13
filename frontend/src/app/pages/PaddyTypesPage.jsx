@@ -7,6 +7,29 @@ import {
 } from "lucide-react";
 import { PADDY_TYPES_GROUPED } from "../../constants/paddyTypes";
 
+import sambaImg from "../../assets/paddy/samba.jpg";
+import naduImg from "../../assets/paddy/nadu.jpg";
+import keeriSambaImg from "../../assets/paddy/keeri-samba.jpg";
+import suwandelImg from "../../assets/paddy/suwandel.jpg";
+import pachchaperumalImg from "../../assets/paddy/pachchaperumal.jpg";
+import madathawaluImg from "../../assets/paddy/madathawalu.jpg";
+
+import kuruluthudaImg from "../../assets/paddy/Kuruluthuda.png";
+import kakuluImg from "../../assets/paddy/kekulu.jpg";
+import bg352Img from "../../assets/paddy/bg 352.jpg";
+import bg360Img from "../../assets/paddy/bg 360.jpg";
+import bg358Img from "../../assets/paddy/Bg 358.jpg";
+import bg366Img from "../../assets/paddy/Bg 366.jpg";
+import bg941Img from "../../assets/paddy/Bg 94-1.jpg";
+import bg3792Img from "../../assets/paddy/Bg 379-2.jpg";
+import at362Img from "../../assets/paddy/At 362.jpg";
+import at306Img from "../../assets/paddy/At 306.jpg";
+import at405Img from "../../assets/paddy/At 405.jpg";
+import ldImg from "../../assets/paddy/ld.jpg";
+import bwImg from "../../assets/paddy/bw.jpg";
+import h4Img from "../../assets/paddy/H4.jpg";
+import redRiceImg from "../../assets/paddy/Red Rice.jpg";
+import whiteRiceImg from "../../assets/paddy/kekulu.jpg";
 /* ─────────────────────────────────────────────
    DATA
 ───────────────────────────────────────────── */
@@ -64,7 +87,7 @@ const VARIETY_CARDS = [
   {
     name: "Samba",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=600&q=80",
+    image: sambaImg,
     tagline: "Sri Lanka's iconic fragrant grain",
     description: "The soul of Sri Lankan cuisine. Small, plump grains with a distinctive nutty aroma.",
     duration: "4 - 4.5 months",
@@ -80,7 +103,7 @@ const VARIETY_CARDS = [
   {
     name: "Nadu",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=600&q=80",
+    image: naduImg,
     tagline: "The everyday workhorse variety",
     description: "Long-grain rice widely grown across all districts. Versatile, affordable, and perfectly suited for both home and commercial use.",
     duration: "4 - 4.5 months",
@@ -96,7 +119,7 @@ const VARIETY_CARDS = [
   {
     name: "Keeri Samba",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1559181567-c3190ca9be3a?auto=format&fit=crop&w=600&q=80",
+    image: keeriSambaImg,
     tagline: "Small grain, maximum aroma",
     description: "A refined sub-variety of Samba with smaller, rounder grains. Highly aromatic and commands the highest price per kilogram.",
     duration: "4 - 4.5 months",
@@ -112,7 +135,7 @@ const VARIETY_CARDS = [
   {
     name: "Suwandel",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80",
+    image: suwandelImg,
     tagline: "Heritage aromatic heirloom",
     description: "One of Sri Lanka's most revered heritage varieties. Known for its rich fragrance and sweet taste. It requires a steady, reliable water supply.",
     duration: "5 - 6 months",
@@ -128,7 +151,7 @@ const VARIETY_CARDS = [
   {
     name: "Pachchaperumal",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1532095971485-de42a22cc37a?auto=format&fit=crop&w=600&q=80", 
+    image: pachchaperumalImg, 
     tagline: "Resilient Red Grain",
     description: "Highly resilient and can survive in less fertile soils with erratic rainfall. Avoids modern Nitrogen to prevent weakening or lodging.",
     duration: "3.5 - 4 months",
@@ -140,7 +163,7 @@ const VARIETY_CARDS = [
   {
     name: "Madathawalu",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1582295529817-21013cb402b6?auto=format&fit=crop&w=600&q=80",
+    image: madathawaluImg,
     tagline: "Adaptable Red Grain",
     description: "A widely adaptable traditional red rice, prized for its nutritional value. Performs best in the Wet and Intermediate zones.",
     duration: "4 - 4.5 months",
@@ -152,7 +175,7 @@ const VARIETY_CARDS = [
   {
     name: "Kuruluthuda",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1694419613027-cd6e6ee4d97a?auto=format&fit=crop&w=600&q=80",
+    image: kuruluthudaImg,
     tagline: "Salinity-Tolerant Red Grain",
     description: "Has a natural tolerance to mild soil salinity, making it popular in low-lying coastal fields.",
     duration: "3.5 - 4 months",
@@ -164,7 +187,7 @@ const VARIETY_CARDS = [
   {
     name: "Kakulu",
     category: "Traditional Varieties",
-    image: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80",
+    image: kakuluImg,
     tagline: "Bold grain with cultural roots",
     description: "A thick, bold-grained variety with deep cultural significance. Commonly used in traditional Sri Lankan rice and curry meals.",
     duration: "3.5 - 4.5 months",
@@ -180,7 +203,7 @@ const VARIETY_CARDS = [
   {
     name: "Bg 352",
     category: "Improved Varieties (BG Series)",
-    image: "https://images.unsplash.com/photo-1516684669134-de6f7a1d3dc9?auto=format&fit=crop&w=600&q=80",
+    image: bg352Img,
     tagline: "White Nadu - The Commercial King",
     description: "The undisputed king of Sri Lankan commercial rice. Highly fertilizer-responsive and yields massive harvests.",
     duration: "3.5 months (105 days)",
@@ -196,7 +219,7 @@ const VARIETY_CARDS = [
   {
     name: "Bg 360",
     category: "Improved Varieties (BG Series)",
-    image: "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=600&q=80",
+    image: bg360Img,
     tagline: "Keeri Samba - Quality meets yield",
     description: "Requires very precise fertilizer management. If a farmer applies too much Nitrogen, this specific plant is highly susceptible to fungal diseases.",
     duration: "3.5 months",
@@ -211,7 +234,7 @@ const VARIETY_CARDS = [
   {
     name: "Bg 358",
     category: "Improved Varieties (BG Series)",
-    image: "https://images.unsplash.com/photo-1563245464-9721adccb5ff?auto=format&fit=crop&w=600&q=80",
+    image: bg358Img,
     tagline: "White Samba Standard",
     description: "The standard, highly reliable Samba. Requires standard NPK applications for premium yields and consistent grain quality.",
     duration: "3.5 months",
@@ -223,7 +246,7 @@ const VARIETY_CARDS = [
   {
     name: "Bg 366",
     category: "Improved Varieties (BG Series)",
-    image: "https://images.unsplash.com/photo-1535400508544-245bd140c9ae?auto=format&fit=crop&w=600&q=80",
+    image: bg366Img,
     tagline: "Pest-resistant White Nadu",
     description: "A slightly newer alternative to 352, offering strong pest resistance alongside standard NPK nutrient uptake.",
     duration: "3.5 months",
@@ -235,7 +258,7 @@ const VARIETY_CARDS = [
   {
     name: "Bg 94-1",
     category: "Improved Varieties (BG Series)",
-    image: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=600&q=80",
+    image: bg941Img,
     tagline: "Resilient White Samba",
     description: "An older but incredibly resilient strain. It survives and produces decent yields even if farmers cannot afford optimal Phosphorus (TSP).",
     duration: "3.5 months",
@@ -247,7 +270,7 @@ const VARIETY_CARDS = [
   {
     name: "Bg 379-2",
     category: "Improved Varieties (BG Series)",
-    image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=600&q=80",
+    image: bg3792Img,
     tagline: "Long-age White Nadu",
     description: "An older, highly stable crop that requires a longer sustained fertilizer schedule due to its extended 4-month lifespan.",
     duration: "4 - 4.5 months (Long-age)",
@@ -259,7 +282,7 @@ const VARIETY_CARDS = [
   {
     name: "At 362",
     category: "Improved Varieties (AT Series)",
-    image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80",
+    image: at362Img,
     tagline: "Red Nadu - Coastal Powerhouse",
     description: "A massive commercial success engineered for the Southern coastal belts. High yields with standard chemical fertilizers while resisting soil salinity.",
     duration: "3.5 months",
@@ -274,7 +297,7 @@ const VARIETY_CARDS = [
   {
     name: "At 306",
     category: "Improved Varieties (AT Series)",
-    image: "https://images.unsplash.com/photo-1581457174665-22d713c0ef22?auto=format&fit=crop&w=600&q=80",
+    image: at306Img,
     tagline: "White Long Grain - Emergency Crop",
     description: "Because it lives for only 90 days, farmers must apply fertilizers rapidly. Often planted as an emergency crop when monsoon rains are delayed.",
     duration: "3 months (Very short-age)",
@@ -286,7 +309,7 @@ const VARIETY_CARDS = [
   {
     name: "At 405",
     category: "Improved Varieties (AT Series)",
-    image: "https://images.unsplash.com/photo-1595185566373-19bd691655b3?auto=format&fit=crop&w=600&q=80",
+    image: at405Img,
     tagline: "White Nadu - Deep South Cultivar",
     description: "A longer-duration crop designed for the deep south regions, requiring a standard, stretched-out NPK schedule.",
     duration: "4 - 4.5 months",
@@ -296,9 +319,9 @@ const VARIETY_CARDS = [
     accent: "#A855F7",
   },
   {
-    name: "Ld 365 & Ld 368",
+    name: "Ld 365",
     category: "Other Improved Varieties",
-    image: "https://images.unsplash.com/photo-1579895089304-4cc958b97d2e?auto=format&fit=crop&w=600&q=80",
+    image: ldImg,
     tagline: "Wet Zone Specialists (Red Nadu/Samba)",
     description: "Bred in Labuduwa specifically to survive the highly acidic, iron-toxic 'iron-rust' soils and flash floods of Galle and Matara.",
     duration: "3.5 months",
@@ -308,9 +331,33 @@ const VARIETY_CARDS = [
     accent: "#10B981",
   },
   {
-    name: "Bw 367 & Bw 363",
+    name: "Ld 368",
     category: "Other Improved Varieties",
-    image: "https://images.unsplash.com/photo-1422495689104-e0c904bc5cd8?auto=format&fit=crop&w=600&q=80",
+    image: ldImg,
+    tagline: "Wet Zone Specialists (Red Nadu/Samba)",
+    description: "Bred in Labuduwa specifically to survive the highly acidic, iron-toxic 'iron-rust' soils and flash floods of Galle and Matara.",
+    duration: "3.5 months",
+    region: "Wet Zone (Galle, Matara)",
+    fertilizer: "NPK + Zinc + Burnt paddy husk",
+    tags: [{ label: "Wet Zone", color: "#10B981" }, { label: "Iron-toxicity Tolerant", color: "#F59E0B" }],
+    accent: "#10B981",
+  },
+  {
+    name: "Bw 367",
+    category: "Other Improved Varieties",
+    image: bwImg,
+    tagline: "Deep Bog Specialists",
+    description: "Engineered in Bombuwela to survive in deep, muddy, flood-prone bogs in the Kalutara district where standard plants would simply drown.",
+    duration: "3.5 months",
+    region: "Wet Zone (Kalutara)",
+    fertilizer: "NPK + Acidity neutralizers",
+    tags: [{ label: "Bog Tolerant", color: "#3B82F6" }, { label: "Flood Resistant", color: "#0EA5E9" }],
+    accent: "#0EA5E9",
+  },
+  {
+    name: "Bw 363",
+    category: "Other Improved Varieties",
+    image: bwImg,
     tagline: "Deep Bog Specialists",
     description: "Engineered in Bombuwela to survive in deep, muddy, flood-prone bogs in the Kalutara district where standard plants would simply drown.",
     duration: "3.5 months",
@@ -322,7 +369,7 @@ const VARIETY_CARDS = [
   {
     name: "H4",
     category: "Other Improved Varieties",
-    image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80",
+    image: h4Img,
     tagline: "The Vintage Hybrid",
     description: "One of the first 'green revolution' varieties released in Sri Lanka. Taller and more rugged than modern Bg types, it yields well even with very low fertilizer inputs.",
     duration: "4 - 4.5 months",
@@ -334,7 +381,7 @@ const VARIETY_CARDS = [
   {
     name: "Red Rice",
     category: "Specialty Rice",
-    image: "https://images.unsplash.com/photo-1694419613027-cd6e6ee4d97a?auto=format&fit=crop&w=600&q=80",
+    image: redRiceImg,
     tagline: "Nutritional powerhouse, premium price",
     description: "Rich in antioxidants and dietary fibre, red rice commands a strong premium in health food markets and export channels.",
     duration: "3.5 - 4.5 months",
@@ -346,6 +393,22 @@ const VARIETY_CARDS = [
       { label: "Health Foods",      color: "#F97316" },
     ],
     accent: "#EC4899",
+  },
+  {
+    name: "White Rice",
+    category: "Specialty Rice",
+    image: whiteRiceImg,
+    tagline: "Everyday versatile grade",
+    description: "A common unpolished or semi-polished white rice ideal for large-scale milling and daily consumption.",
+    duration: "3.5 - 4 months",
+    region: "Widespread",
+    fertilizer: "Organic / Low Chemical",
+    tags: [
+      { label: "High Demand",       color: "#3B82F6" },
+      { label: "Daily Consumption", color: "#22C55E" },
+      { label: "Versatile",         color: "#F97316" },
+    ],
+    accent: "#3B82F6",
   },
 ];
 
@@ -509,10 +572,13 @@ const TABLE_DATA = [
   { name: "At 362",         category: "AT Series",    yield: "Very High", price: "Medium",  season: "Yala",         zone: "Dry / Coast", use: "Drought / Saline",  milling: "Good",      accent: "#A855F7" },
   { name: "At 306",         category: "AT Series",    yield: "Medium",    price: "Medium",  season: "Late Yala",    zone: "Dry / Coast", use: "Emergency Short",   milling: "Average",   accent: "#A855F7" },
   { name: "At 405",         category: "AT Series",    yield: "High",      price: "Low",     season: "Maha",         zone: "Deep South",  use: "Long-age Comml",    milling: "Good",      accent: "#A855F7" },
-  { name: "Ld 365 & Ld 368",category: "Other Improved",yield: "Medium",   price: "Medium",  season: "Yala",         zone: "Wet Zone",    use: "Iron-toxic Areas",  milling: "Good",      accent: "#10B981" },
-  { name: "Bw 367 & Bw 363",category: "Other Improved",yield: "Medium",   price: "Medium",  season: "Maha",         zone: "Wet Zone",    use: "Flood/Bog Areas",   milling: "Average",   accent: "#0EA5E9" },
+  { name: "Ld 365",         category: "Other Improved",yield: "Medium",   price: "Medium",  season: "Yala",         zone: "Wet Zone",    use: "Iron-toxic Areas",  milling: "Good",      accent: "#10B981" },
+  { name: "Ld 368",         category: "Other Improved",yield: "Medium",   price: "Medium",  season: "Yala",         zone: "Wet Zone",    use: "Iron-toxic Areas",  milling: "Good",      accent: "#10B981" },
+  { name: "Bw 367",         category: "Other Improved",yield: "Medium",   price: "Medium",  season: "Maha",         zone: "Wet Zone",    use: "Flood/Bog Areas",   milling: "Average",   accent: "#0EA5E9" },
+  { name: "Bw 363",         category: "Other Improved",yield: "Medium",   price: "Medium",  season: "Maha",         zone: "Wet Zone",    use: "Flood/Bog Areas",   milling: "Average",   accent: "#0EA5E9" },
   { name: "H4",             category: "Other Improved",yield: "High",     price: "Low",     season: "Maha & Yala",  zone: "Dry / Int",   use: "Low Chemical Req",  milling: "Good",      accent: "#F97316" },
   { name: "Red Rice",       category: "Specialty",    yield: "Medium",    price: "Highest", season: "Maha",         zone: "Wet Zone",    use: "Health / Export",   milling: "Premium",   accent: "#EC4899" },
+  { name: "White Rice",     category: "Specialty",    yield: "Medium",    price: "Medium",  season: "Maha & Yala",  zone: "All Zones",   use: "Local Market",      milling: "Very Good", accent: "#3B82F6" },
 ];
 
 const MILLING_STAR = { "Excellent": 5, "Premium": 5, "Very Good": 4, "Good": 3, "Average": 2 };
