@@ -10,9 +10,11 @@ export default function Navbar() {
   const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close mobile menu on route change
@@ -31,163 +33,68 @@ export default function Navbar() {
   return (
     <>
       {/* ── DESKTOP NAVBAR ── */}
-      <motion.header
-        className="sticky top-0 z-50"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        style={{
-          transition: "padding 0.3s ease, background 0.3s ease, box-shadow 0.3s ease",
-          padding: scrolled ? "8px 0" : "16px 0",
-          background: scrolled
-            ? "rgba(2, 6, 23, 0.85)"
-            : "transparent",
-          backdropFilter: scrolled ? "blur(20px)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(20px)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
-          boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.4)" : "none",
-        }}
+      <nav 
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+          scrolled 
+            ? "bg-black/60 backdrop-blur-lg border-b border-white/10 shadow-lg py-3" 
+            : "bg-transparent py-5"
+        }`}
       >
-        <div
-          style={{
-            maxWidth: 1320,
-            margin: "0 auto",
-            padding: "0 5%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <div className="max-w-[1320px] mx-auto px-[5%] flex items-center justify-between">
+          
           {/* LEFT: Logo */}
-          <Link to="/" style={{ textDecoration: "none", flexShrink: 0 }}>
+          <Link to="/" className="shrink-0">
             <Logo size="md" />
           </Link>
 
           {/* CENTER: Nav pill */}
-          <nav
-            aria-label="Main navigation"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              padding: "5px 10px",
-              borderRadius: 9999,
-              border: "1px solid rgba(255,255,255,0.10)",
-              background: "rgba(255,255,255,0.05)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-            }}
-            className="hidden-mobile"
-          >
+          <div className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
             {navLinks.map((link) => (
               <NavLink
                 key={link.href}
                 to={link.href}
-                className={({ isActive }) => (isActive ? "active-nav-link" : "inactive-nav-link")}
-                style={({ isActive }) => ({
-                  position: "relative",
-                  padding: "6px 14px",
-                  fontSize: "0.80rem",
-                  fontWeight: 500,
-                  borderRadius: 9999,
-                  textDecoration: "none",
-                  color: isActive ? "#fff" : "rgba(255,255,255,0.58)",
-                  background: isActive ? "rgba(255,255,255,0.10)" : "transparent",
-                  border: isActive ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
-                  transition: "color 0.18s, background 0.18s",
-                })}
+                className={({ isActive }) => 
+                  `relative px-3.5 py-1.5 text-[13px] font-medium rounded-full transition-colors duration-200 ${
+                    isActive 
+                      ? "text-white bg-white/10 border border-white/10" 
+                      : "text-white/60 border border-transparent hover:text-green-400 hover:bg-white/5"
+                  }`
+                }
               >
                 {link.label}
               </NavLink>
             ))}
-          </nav>
+          </div>
 
           {/* RIGHT: Auth buttons */}
-          <div
-            style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
-            className="hidden-mobile"
-          >
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             <Link
               to="/login"
-              style={{
-                padding: "7px 16px",
-                fontSize: "0.80rem",
-                fontWeight: 500,
-                color: "rgba(255,255,255,0.65)",
-                textDecoration: "none",
-                borderRadius: 9999,
-                border: "1px solid transparent",
-                transition: "color 0.2s, border-color 0.2s, background 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#fff";
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
-                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "rgba(255,255,255,0.65)";
-                e.currentTarget.style.borderColor = "transparent";
-                e.currentTarget.style.background = "transparent";
-              }}
+              className="px-4 py-1.5 text-[13px] font-medium text-white/65 hover:text-green-400 transition-colors duration-200 border border-transparent hover:border-white/10 rounded-full hover:bg-white/5"
             >
               Login
             </Link>
 
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-              <Link
-                to="/register/role"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "7px 18px",
-                  fontSize: "0.80rem",
-                  fontWeight: 600,
-                  color: "#fff",
-                  textDecoration: "none",
-                  borderRadius: 9999,
-                  background: "#22C55E",
-                  boxShadow: "0 0 18px rgba(34,197,94,0.45)",
-                  transition: "background 0.25s, box-shadow 0.25s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#16A34A";
-                  e.currentTarget.style.boxShadow = "0 0 28px rgba(34,197,94,0.65)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#22C55E";
-                  e.currentTarget.style.boxShadow = "0 0 18px rgba(34,197,94,0.45)";
-                }}
-              >
-                Get Started
-                <ArrowRight style={{ width: 13, height: 13 }} />
-              </Link>
-            </motion.div>
+            <Link
+              to="/register/role"
+              className="inline-flex items-center gap-1.5 px-4.5 py-1.5 text-[13px] font-semibold text-white bg-[#22C55E] rounded-full shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:bg-[#16A34A] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] hover:scale-105 transition-all duration-200"
+              style={{ paddingLeft: '18px', paddingRight: '18px', paddingTop: '7px', paddingBottom: '7px' }}
+            >
+              Get Started
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
           {/* MOBILE: Hamburger */}
           <button
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
-            className="show-mobile"
-            style={{
-              width: 36,
-              height: 36,
-              display: "none", // Reset via CSS media query below
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.06)",
-              color: "rgba(255,255,255,0.75)",
-              cursor: "pointer",
-            }}
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-white/10 bg-white/5 text-white/75 hover:bg-white/10 hover:text-white transition-colors"
           >
-            {mobileOpen ? <X style={{ width: 18, height: 18 }} /> : <Menu style={{ width: 18, height: 18 }} />}
+            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
-      </motion.header>
+      </nav>
 
       {/* ── MOBILE DRAWER ── */}
       <AnimatePresence>
@@ -198,92 +105,41 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            style={{
-              position: "fixed",
-              top: 68,
-              left: 12,
-              right: 12,
-              zIndex: 49,
-              borderRadius: 18,
-              border: "1px solid rgba(255,255,255,0.10)",
-              background: "rgba(2, 6, 23, 0.97)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.65)",
-              overflow: "hidden",
-              padding: 16,
-            }}
+            className="fixed top-[72px] left-3 right-3 z-40 rounded-[18px] border border-white/10 bg-[#020617]/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.65)] overflow-hidden p-4"
           >
             {navLinks.map((link) => (
               <NavLink
                 key={link.href}
                 to={link.href}
-                style={({ isActive }) => ({
-                  display: "block",
-                  padding: "11px 16px",
-                  borderRadius: 12,
-                  marginBottom: 2,
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  textDecoration: "none",
-                  color: isActive ? "#fff" : "rgba(255,255,255,0.6)",
-                  background: isActive ? "rgba(255,255,255,0.09)" : "transparent",
-                  border: isActive ? "1px solid rgba(255,255,255,0.10)" : "1px solid transparent",
-                  transition: "color 0.15s, background 0.15s",
-                })}
+                className={({ isActive }) => 
+                  `block px-4 py-2.5 rounded-xl mb-0.5 text-[14px] font-medium transition-colors duration-150 ${
+                    isActive 
+                      ? "text-white bg-white/10 border border-white/10" 
+                      : "text-white/60 border border-transparent hover:text-green-400 hover:bg-white/5"
+                  }`
+                }
               >
                 {link.label}
               </NavLink>
             ))}
 
-            <div style={{ height: 1, background: "rgba(255,255,255,0.08)", margin: "10px 0" }} />
+            <div className="h-px bg-white/10 my-2.5" />
 
             <Link
               to="/login"
-              style={{
-                display: "block",
-                padding: "11px 16px",
-                borderRadius: 12,
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                textDecoration: "none",
-                color: "rgba(255,255,255,0.6)",
-                marginBottom: 6,
-              }}
+              className="block px-4 py-2.5 rounded-xl text-[14px] font-medium text-white/60 hover:text-green-400 hover:bg-white/5 transition-colors mb-1.5"
             >
               Login
             </Link>
             <Link
               to="/register/role"
-              style={{
-                display: "block",
-                padding: "11px 16px",
-                borderRadius: 12,
-                fontSize: "0.875rem",
-                fontWeight: 600,
-                textDecoration: "none",
-                textAlign: "center",
-                color: "#fff",
-                background: "#22C55E",
-                boxShadow: "0 0 18px rgba(34,197,94,0.35)",
-              }}
+              className="block px-4 py-2.5 rounded-xl text-[14px] font-semibold text-center text-white bg-[#22C55E] shadow-[0_0_15px_rgba(34,197,94,0.35)] hover:bg-[#16A34A] transition-colors"
             >
               Get Started →
             </Link>
           </motion.div>
         )}
       </AnimatePresence>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .hidden-mobile { display: none !important; }
-          .show-mobile   { display: flex !important; }
-        }
-        .inactive-nav-link:hover {
-          color: #fff !important;
-          background: rgba(255,255,255,0.07) !important;
-        }
-      `}</style>
     </>
   );
 }

@@ -6,6 +6,13 @@ import PaddyTypesPage from "./pages/PaddyTypesPage";
 import FertilizersPage from "./pages/FertilizersPage";
 import TransportPage from "./pages/TransportPage";
 import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
+import HelpPage from "./pages/HelpPage";
+import GuidePage from "./pages/GuidePage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import FarmerFeaturesPage from "./pages/FarmerFeaturesPage";
+import MillOwnerFeaturesPage from "./pages/MillOwnerFeaturesPage";
 
 // ================= AUTH =================
 import LoginPage from "./pages/LoginPage";
@@ -93,6 +100,34 @@ export const router = createBrowserRouter([
       {
         path: "/about",
         element: <AboutPage />,
+      },
+      {
+        path: "/contact",
+        element: <ContactPage />,
+      },
+      {
+        path: "/help",
+        element: <HelpPage />,
+      },
+      {
+        path: "/guide",
+        element: <GuidePage />,
+      },
+      {
+        path: "/terms",
+        element: <TermsPage />,
+      },
+      {
+        path: "/privacy",
+        element: <PrivacyPage />,
+      },
+      {
+        path: "/features/farmer",
+        element: <FarmerFeaturesPage />,
+      },
+      {
+        path: "/features/mill-owner",
+        element: <MillOwnerFeaturesPage />,
       },
     ],
   },

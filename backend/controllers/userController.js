@@ -222,6 +222,15 @@ const updateProfile = async (req, res) => {
         req.body.farmDetails?.paddyTypesCultivated ||
         user.farmDetails.paddyTypesCultivated;
 
+      // Fix: persist estimatedMonthlyStock when provided
+      if (req.body.farmDetails?.estimatedMonthlyStock !== undefined) {
+        user.farmDetails.estimatedMonthlyStock =
+          Number(req.body.farmDetails.estimatedMonthlyStock);
+      }
+
+      // Required: tell Mongoose the nested object changed
+      user.markModified("farmDetails");
+
     }
 
     // ===== MILL OWNER =====
@@ -240,6 +249,9 @@ const updateProfile = async (req, res) => {
 
       if (req.body.businessDetails?.businessPhone !== undefined)
         user.businessDetails.businessPhone = req.body.businessDetails.businessPhone;
+
+      // Required: tell Mongoose the nested object changed
+      user.markModified("businessDetails");
 
     }
 

@@ -378,53 +378,7 @@ const updateNegotiationStatus = async (req, res) => {
       // Create transport request
       
 
-      // Notifications
-      await Notification.create({
-        user: negotiation.farmer,
-        title: "Deal Confirmed",
-        message: "Your negotiation has been accepted"
-      });
-
-      await Notification.create({
-        user: negotiation.millOwner,
-        title: "Deal Accepted",
-        message: "The farmer accepted your offer"
-      });
-
-      // --- SEND EMAILS NON-BLOCKING ---
-      try {
-        const farmerUser = await User.findById(negotiation.farmer);
-        const millOwnerUser = await User.findById(negotiation.millOwner);
-        
-        const emailData = {
-          farmerName: farmerUser.fullName,
-          millOwnerName: millOwnerUser.fullName,
-          paddyType: listing.paddyType,
-          quantity: quantity,
-          pricePerKg: finalPrice
-        };
-
-        // Send to Farmer
-        if (farmerUser && farmerUser.email) {
-          await sendEmail({
-            to: farmerUser.email,
-            subject: "Negotiation Accepted - AgroBridge",
-            html: negotiationAcceptedTemplate({ ...emailData, role: 'FARMER' })
-          });
-        }
-
-        // Send to Mill Owner
-        if (millOwnerUser && millOwnerUser.email) {
-          await sendEmail({
-            to: millOwnerUser.email,
-            subject: "Negotiation Accepted - AgroBridge",
-            html: negotiationAcceptedTemplate({ ...emailData, role: 'MILL_OWNER' })
-          });
-        }
-      } catch (emailErr) {
-        console.error("Email failed:", emailErr.message);
-      }
-      // --------------------------------
+      // side effects will run after the response is sent (see setImmediate below)
 
     }
 
@@ -445,6 +399,64 @@ const updateNegotiationStatus = async (req, res) => {
         systemMessage: negotiation.messages[negotiation.messages.length - 1]
       });
     }
+
+    // ── Pre-fetch user data for notifications + emails (before response) ───
+    let _farmerUser    = null;
+    let _millOwnerUser = null;
+
+    if (status === "ACCEPTED") {
+      const _farmerId    = negotiation.farmer?._id || negotiation.farmer;
+      const _millOwnerId = negotiation.millOwner?._id || negotiation.millOwner;
+      const _listing     = negotiation.listing;
+      const _finalPrice  = negotiation.messages
+        .filter(m => m.offeredPrice).slice(-1)[0]?.offeredPrice
+        || _listing?.pricePerKg;
+      const _quantity    = negotiation.messages
+        .slice().reverse().find(m => m.quantityKg)?.quantityKg
+        || _listing?.availableQuantityKg;
+
+      // Fetch users & create notifications synchronously — instant UI update
+      try {
+        [_farmerUser, _millOwnerUser] = await Promise.all([
+          User.findById(_farmerId).lean(),
+          User.findById(_millOwnerId).lean()
+        ]);
+      } catch (err) {
+        console.error("User fetch failed:", err.message);
+      }
+
+      try {
+        await Promise.all([
+          Notification.create({ user: _farmerId,    title: "Deal Confirmed", message: "Your negotiation has been accepted" }),
+          Notification.create({ user: _millOwnerId, title: "Deal Accepted",   message: "The farmer accepted your offer" })
+        ]);
+      } catch (err) {
+        console.error("Notification failed:", err.message);
+      }
+
+      // ── Fire emails non-blocking — ONLY after response is sent ────────────
+      const emailData = {
+        farmerName:    _farmerUser?.fullName,
+        millOwnerName: _millOwnerUser?.fullName,
+        paddyType:     _listing?.paddyType,
+        quantity:      _quantity,
+        pricePerKg:    _finalPrice
+      };
+      const _farmerEmail    = _farmerUser?.email;
+      const _millOwnerEmail = _millOwnerUser?.email;
+
+      setImmediate(async () => {
+        try {
+          await Promise.all([
+            _farmerEmail    && sendEmail({ to: _farmerEmail,    subject: "Negotiation Accepted - AgroBridge", html: negotiationAcceptedTemplate({ ...emailData, role: "FARMER" }) }),
+            _millOwnerEmail && sendEmail({ to: _millOwnerEmail, subject: "Negotiation Accepted - AgroBridge", html: negotiationAcceptedTemplate({ ...emailData, role: "MILL_OWNER" }) })
+          ].filter(Boolean));
+        } catch (err) {
+          console.error("Email background task failed:", err.message);
+        }
+      });
+    }
+    // ── End non-blocking ───────────────────────────────────────────────────
 
     res.status(200).json({
       message: "Negotiation status updated",
