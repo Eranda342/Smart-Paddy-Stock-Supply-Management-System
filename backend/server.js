@@ -26,6 +26,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 const disputeRoutes = require("./routes/disputeRoutes");
 const maintenanceMode = require("./middleware/maintenanceMode");
 
@@ -74,6 +75,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/reports", reportRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/disputes", disputeRoutes);
 

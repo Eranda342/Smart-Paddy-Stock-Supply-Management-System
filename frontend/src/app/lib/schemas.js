@@ -70,12 +70,26 @@ export const resetPasswordSchema = z
 
 export const listingSchema = z.object({
   paddyType: z.string().min(1, "Please select a paddy type"),
-  quantityKg: z
-    .union([z.string(), z.number()])
-    .refine((v) => Number(v) > 0, "Quantity must be greater than 0"),
-  pricePerKg: z
-    .union([z.string(), z.number()])
-    .refine((v) => Number(v) > 0, "Price must be greater than 0"),
+  quantityKg: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || Number.isNaN(val)) return undefined;
+      return val;
+    },
+    z.number({
+      required_error: "Quantity is required",
+      invalid_type_error: "Quantity must be a number",
+    }).positive("Quantity must be greater than 0")
+  ),
+  pricePerKg: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || Number.isNaN(val)) return undefined;
+      return val;
+    },
+    z.number({
+      required_error: "Price is required",
+      invalid_type_error: "Price must be a number",
+    }).positive("Price must be greater than 0")
+  ),
   district: z.string().min(1, "Please select a district"),
   address: z.string().optional(),
   description: z.string().optional(),
@@ -85,12 +99,26 @@ export const listingSchema = z.object({
 
 export const buyRequestSchema = z.object({
   paddyType: z.string().min(1, "Please select a paddy type"),
-  quantityKg: z
-    .union([z.string(), z.number()])
-    .refine((v) => Number(v) > 0, "Quantity must be greater than 0"),
-  pricePerKg: z
-    .union([z.string(), z.number()])
-    .refine((v) => Number(v) > 0, "Price must be greater than 0"),
+  quantityKg: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || Number.isNaN(val)) return undefined;
+      return val;
+    },
+    z.number({
+      required_error: "Quantity is required",
+      invalid_type_error: "Quantity must be a number",
+    }).positive("Quantity must be greater than 0")
+  ),
+  pricePerKg: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || Number.isNaN(val)) return undefined;
+      return val;
+    },
+    z.number({
+      required_error: "Price is required",
+      invalid_type_error: "Price must be a number",
+    }).positive("Price must be greater than 0")
+  ),
   district: z.string().min(1, "Please select a district"),
 });
 

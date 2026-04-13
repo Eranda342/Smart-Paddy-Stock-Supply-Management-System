@@ -1,6 +1,8 @@
 const Transaction = require("../models/Transaction");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
+const sendEmail = require("../utils/sendEmail");
+const { transactionSuccessTemplate, transportAssignedTemplate } = require("../utils/emailTemplates");
 
 
 // ================= GET USER TRANSACTIONS =================
@@ -110,6 +112,41 @@ const markAsPaid = async (req, res) => {
     if (global.io) {
       global.io.emit("dashboard_update");
     }
+
+    // --- SEND TRANSACTION EMAILS ---
+    try {
+      const farmerUser = await User.findById(transaction.farmer);
+      const millOwnerUser = await User.findById(transaction.millOwner);
+      const tempTransaction = await Transaction.findById(transaction._id).populate("listing", "paddyType");
+      
+      const emailData = {
+        farmerName: farmerUser?.fullName || "Farmer",
+        millOwnerName: millOwnerUser?.fullName || "Mill Owner",
+        paddyType: tempTransaction?.listing?.paddyType || "Paddy",
+        quantity: transaction.quantityKg,
+        pricePerKg: transaction.finalPricePerKg,
+        totalAmount: transaction.totalAmount
+      };
+
+      if (farmerUser && farmerUser.email) {
+        await sendEmail({
+          to: farmerUser.email,
+          subject: "Transaction Successful - AgroBridge",
+          html: transactionSuccessTemplate({ ...emailData, role: 'FARMER' })
+        });
+      }
+
+      if (millOwnerUser && millOwnerUser.email) {
+        await sendEmail({
+          to: millOwnerUser.email,
+          subject: "Transaction Successful - AgroBridge",
+          html: transactionSuccessTemplate({ ...emailData, role: 'MILL_OWNER' })
+        });
+      }
+    } catch (emailErr) {
+      console.error("Email failed:", emailErr.message);
+    }
+    // -------------------------------
 
     res.status(200).json({
       message: "Payment successful",
@@ -415,6 +452,30 @@ const assignTransport = async (req, res) => {
       console.error("Failed to create transport record:", transportErr);
     }
     // ---------------------------------------------
+
+    // --- SEND TRANSPORT EMAIL ---
+    try {
+      const farmerUser = await User.findById(transaction.farmer);
+      const tempTransaction = await Transaction.findById(transaction._id).populate("listing", "paddyType");
+      
+      if (farmerUser && farmerUser.email) {
+         await sendEmail({
+           to: farmerUser.email,
+           subject: "Transport Assigned - AgroBridge",
+           html: transportAssignedTemplate({
+             farmerName: farmerUser.fullName,
+             vehicleNumber: resolvedVehicleNumber,
+             driverName: resolvedDriverName,
+             driverPhone: resolvedDriverPhone,
+             paddyType: tempTransaction?.listing?.paddyType || "Paddy",
+             quantity: transaction.quantityKg
+           })
+         });
+      }
+    } catch (emailErr) {
+      console.error("Email failed:", emailErr.message);
+    }
+    // ----------------------------
 
     if (global.io) {
       global.io.emit("dashboard_update");

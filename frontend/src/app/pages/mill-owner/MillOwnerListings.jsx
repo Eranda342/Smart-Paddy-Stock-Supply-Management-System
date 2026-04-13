@@ -32,8 +32,8 @@ export default function MillOwnerListings() {
     mode: "onChange",
     defaultValues: {
       paddyType: PADDY_TYPES[0],
-      quantityKg: "",
-      pricePerKg: "",
+      quantityKg: undefined,
+      pricePerKg: undefined,
       district: DISTRICTS[0],
     },
   });
@@ -72,7 +72,7 @@ export default function MillOwnerListings() {
 
   const openCreate = () => {
     setEditListing(null);
-    reset({ paddyType: PADDY_TYPES[0], quantityKg: "", pricePerKg: "", district: DISTRICTS[0] });
+    reset({ paddyType: PADDY_TYPES[0], quantityKg: undefined, pricePerKg: undefined, district: DISTRICTS[0] });
     setShowModal(true);
   };
 
@@ -80,8 +80,8 @@ export default function MillOwnerListings() {
     setEditListing(listing);
     reset({
       paddyType: listing.paddyType,
-      quantityKg: String(listing.quantityKg),
-      pricePerKg: String(listing.pricePerKg),
+      quantityKg: Number(listing.quantityKg),
+      pricePerKg: Number(listing.pricePerKg),
       district: listing.location?.district || DISTRICTS[0],
     });
     setShowModal(true);
@@ -318,17 +318,19 @@ export default function MillOwnerListings() {
                 <FormInput
                   label="Quantity (kg)"
                   type="number"
+                  min="1"
                   placeholder="e.g. 5000"
                   error={errors.quantityKg?.message}
-                  {...register("quantityKg")}
+                  {...register("quantityKg", { valueAsNumber: true })}
                 />
 
                 <FormInput
                   label="Price per kg (Rs)"
                   type="number"
+                  min="1"
                   placeholder="e.g. 120"
                   error={errors.pricePerKg?.message}
-                  {...register("pricePerKg")}
+                  {...register("pricePerKg", { valueAsNumber: true })}
                 />
 
                 <Controller

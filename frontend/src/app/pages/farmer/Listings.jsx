@@ -34,8 +34,8 @@ export default function FarmerListings() {
     mode: "onChange",
     defaultValues: {
       paddyType: PADDY_TYPES[0],
-      quantityKg: "",
-      pricePerKg: "",
+      quantityKg: undefined,
+      pricePerKg: undefined,
       district: DISTRICTS[0],
       address: "",
       description: "",
@@ -80,8 +80,8 @@ export default function FarmerListings() {
     setEditListingId(null);
     reset({
       paddyType: PADDY_TYPES[0],
-      quantityKg: "",
-      pricePerKg: "",
+      quantityKg: undefined,
+      pricePerKg: undefined,
       district: DISTRICTS[0],
       address: "",
       description: "",
@@ -93,8 +93,8 @@ export default function FarmerListings() {
     setEditListingId(listing._id);
     reset({
       paddyType: listing.paddyType,
-      quantityKg: String(listing.quantityKg),
-      pricePerKg: String(listing.pricePerKg),
+      quantityKg: Number(listing.quantityKg),
+      pricePerKg: Number(listing.pricePerKg),
       district: listing.location?.district || DISTRICTS[0],
       address: listing.location?.address || "",
       description: listing.description || "",
@@ -312,16 +312,18 @@ export default function FarmerListings() {
                   <FormInput
                     label="Quantity (kg)"
                     type="number"
+                    min="1"
                     placeholder="e.g. 500"
                     error={errors.quantityKg?.message}
-                    {...register("quantityKg")}
+                    {...register("quantityKg", { valueAsNumber: true })}
                   />
                   <FormInput
                     label="Price (Rs/kg)"
                     type="number"
+                    min="1"
                     placeholder="e.g. 120"
                     error={errors.pricePerKg?.message}
-                    {...register("pricePerKg")}
+                    {...register("pricePerKg", { valueAsNumber: true })}
                   />
                   <Controller
                     control={control}

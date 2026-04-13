@@ -66,7 +66,7 @@ function FieldError({ error }) {
  * @param {string}  props.className   — extra classes on the outer wrapper
  * All other props forwarded to <input>
  */
-function FormInput({
+const FormInput = React.forwardRef(function FormInput({
   label,
   required,
   error,
@@ -76,7 +76,7 @@ function FormInput({
   wrapperClassName,
   type = "text",
   ...props
-}) {
+}, ref) {
   const inputId = id || props.name;
   return (
     <div className={cn("w-full", wrapperClassName)}>
@@ -97,13 +97,14 @@ function FormInput({
             error && fieldError,
             className,
           )}
+          ref={ref}
           {...props}
         />
       </div>
       <FieldError error={error} />
     </div>
   );
-}
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FormSelect  —  Headless UI Listbox (escapes parent overflow-hidden)
@@ -289,7 +290,7 @@ const FormSelect = React.forwardRef(function FormSelect(
  * @param {number}  props.rows     — textarea rows (default 3)
  * All other props forwarded to <textarea>
  */
-function FormTextarea({
+const FormTextarea = React.forwardRef(function FormTextarea({
   label,
   required,
   error,
@@ -298,7 +299,7 @@ function FormTextarea({
   className,
   wrapperClassName,
   ...props
-}) {
+}, ref) {
   const inputId = id || props.name;
   return (
     <div className={cn("w-full", wrapperClassName)}>
@@ -313,11 +314,12 @@ function FormTextarea({
           error && fieldError,
           className,
         )}
+        ref={ref}
         {...props}
       />
       <FieldError error={error} />
     </div>
   );
-}
+});
 
 export { FormInput, FormSelect, FormTextarea, fieldBase, fieldError };

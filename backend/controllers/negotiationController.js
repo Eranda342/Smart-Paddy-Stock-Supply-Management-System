@@ -4,6 +4,9 @@ const Transaction = require("../models/Transaction");
 const Transport = require("../models/Transport");
 const Notification = require("../models/Notification");
 const SystemSetting = require("../models/SystemSetting");
+const User = require("../models/User");
+const sendEmail = require("../utils/sendEmail");
+const { negotiationAcceptedTemplate } = require("../utils/emailTemplates");
 
 
 // =============================
@@ -387,6 +390,41 @@ const updateNegotiationStatus = async (req, res) => {
         title: "Deal Accepted",
         message: "The farmer accepted your offer"
       });
+
+      // --- SEND EMAILS NON-BLOCKING ---
+      try {
+        const farmerUser = await User.findById(negotiation.farmer);
+        const millOwnerUser = await User.findById(negotiation.millOwner);
+        
+        const emailData = {
+          farmerName: farmerUser.fullName,
+          millOwnerName: millOwnerUser.fullName,
+          paddyType: listing.paddyType,
+          quantity: quantity,
+          pricePerKg: finalPrice
+        };
+
+        // Send to Farmer
+        if (farmerUser && farmerUser.email) {
+          await sendEmail({
+            to: farmerUser.email,
+            subject: "Negotiation Accepted - AgroBridge",
+            html: negotiationAcceptedTemplate({ ...emailData, role: 'FARMER' })
+          });
+        }
+
+        // Send to Mill Owner
+        if (millOwnerUser && millOwnerUser.email) {
+          await sendEmail({
+            to: millOwnerUser.email,
+            subject: "Negotiation Accepted - AgroBridge",
+            html: negotiationAcceptedTemplate({ ...emailData, role: 'MILL_OWNER' })
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email failed:", emailErr.message);
+      }
+      // --------------------------------
 
     }
 

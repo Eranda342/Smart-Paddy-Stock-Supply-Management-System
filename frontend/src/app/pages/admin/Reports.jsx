@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { generateReportPDF } from '../../../utils/pdfGenerator';
+
 
 const API_BASE = 'http://localhost:5000/api/admin/analytics';
 const API_TXN = 'http://localhost:5000/api/admin/transactions';
@@ -174,197 +176,46 @@ export default function AdminReports() {
   const exportPDF = () => {
     if (transactionsRaw.length === 0) return toast.error('No transaction data available to export');
 
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    const GREEN  = [34, 197, 94];
-    const DARK   = [15, 23, 42];
-    const GRAY   = [100, 116, 139];
-    const WHITE  = [255, 255, 255];
-    const LIGHT  = [241, 245, 249];
-
-    const addHeader = (title, subtitle) => {
-      // Green header bar
-      doc.setFillColor(GREEN[0], GREEN[1], GREEN[2]);
-      doc.rect(0, 0, pageW, 22, 'F');
-      // Logo text
-      doc.setTextColor(WHITE[0], WHITE[1], WHITE[2]);
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('AgroBridge', 10, 14);
-      // Page title (right)
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.text(title, pageW - 10, 14, { align: 'right' });
-      // Subtitle strip
-      doc.setFillColor(DARK[0], DARK[1], DARK[2]);
-      doc.rect(0, 22, pageW, 8, 'F');
-      doc.setFontSize(8);
-      doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-      doc.text(subtitle || `Generated: ${generatedAt}`, 10, 27.5);
-      doc.text('ADMIN PORTAL  |  CONFIDENTIAL', pageW - 10, 27.5, { align: 'right' });
-      doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-    };
-
-    const addFooter = (pageNum, total) => {
-      doc.setFillColor(LIGHT[0], LIGHT[1], LIGHT[2]);
-      doc.rect(0, pageH - 10, pageW, 10, 'F');
-      doc.setFontSize(7);
-      doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-      doc.text(`AgroBridge Analytics Report  •  ${generatedAt}`, 10, pageH - 3.5);
-      doc.text(`Page ${pageNum} of ${total}`, pageW - 10, pageH - 3.5, { align: 'right' });
-    };
-
     try {
-      // ───────────────────────────────────────────────────────────────────────
-      // PAGE 1 — Executive Summary
-      // ───────────────────────────────────────────────────────────────────────
-      addHeader('Analytics Report', `Platform snapshot as of ${generatedAt}`);
-
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-      doc.text('Executive Summary', 10, 40);
-
-      // KPI grid (2 rows × 4 cols) — use rect() not roundedRect() for jsPDF v2
-      const kpis = [
-        { label: 'Total Revenue',        value: `Rs ${overview.totalRevenue.toLocaleString()}`, color: GREEN },
-        { label: 'Total Transactions',   value: overview.totalTransactions.toLocaleString(),     color: [59,130,246] },
-        { label: 'Total Users',          value: overview.totalUsers.toLocaleString(),            color: [139,92,246] },
-        { label: 'Total Listings',       value: overview.totalListings.toLocaleString(),         color: [245,158,11] },
-        { label: 'Conversion Rate',      value: `${conversion.rate}%`,                          color: [99,102,241] },
-        { label: 'Completed Deliveries', value: overview.completedDeliveries.toLocaleString(),  color: [20,184,166] },
-        { label: 'Avg Transaction',      value: `Rs ${avgTxnValueCalc.toLocaleString()}`,       color: [236,72,153] },
-        { label: 'Delivery Success',     value: `${deliveryRateCalc}%`,                         color: [239,68,68] },
-      ];
-
-      const colW   = (pageW - 20) / 4;
-      const rowH   = 22;
-      const startY = 45;
-
-      kpis.forEach((kpi, i) => {
-        const col = i % 4;
-        const row = Math.floor(i / 4);
-        const x = 10 + col * colW;
-        const y = startY + row * (rowH + 4);
-
-        // Card background
-        doc.setFillColor(LIGHT[0], LIGHT[1], LIGHT[2]);
-        doc.rect(x, y, colW - 2, rowH, 'F');
-        // Color accent bar (left edge)
-        doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2]);
-        doc.rect(x, y, 3, rowH, 'F');
-        // Label
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-        doc.text(kpi.label, x + 7, y + 7);
-        // Value
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-        doc.text(kpi.value, x + 7, y + 16);
+      generateReportPDF({
+        data: { overview, conversion, revenueData, usersData, paddyData, districtData, transactionsRaw },
+        forEmail: false
       });
-
-      // Key Insights table
-      const insightY = startY + 2 * (rowH + 4) + 8;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-      doc.text('Key Insights', 10, insightY);
-
-      const insightsTable = autoTable(doc, {
-        startY: insightY + 4,
-        head: [['Metric', 'Value']],
-        body: [
-          ['Top Paddy Variety',     topPaddyCalc],
-          ['Top District',          topDistrictCalc],
-          ['Accepted Negotiations', String(conversion.acceptedNegotiations || 0)],
-          ['Avg Transaction Value', `Rs ${avgTxnValueCalc.toLocaleString()}`],
-          ['Delivery Success Rate', `${deliveryRateCalc}%`],
-        ],
-        theme: 'grid',
-        styles: { fontSize: 9, cellPadding: 3 },
-        headStyles: { fillColor: GREEN, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
-        alternateRowStyles: { fillColor: LIGHT },
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 70 }, 1: { cellWidth: 80 } },
-        margin: { left: 10, right: 10 },
-      });
-
-      // Revenue Trend mini-table
-      if (revenueData.length > 0) {
-        const ry = (insightsTable?.finalY ?? doc.lastAutoTable?.finalY ?? insightY + 40) + 10;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-        doc.text('Revenue Trend (Last 6 Months)', 10, ry);
-        autoTable(doc, {
-          startY: ry + 4,
-          head: [revenueData.map(r => r.month)],
-          body:  [revenueData.map(r => `Rs ${r.revenue.toLocaleString()}`)],
-          theme: 'grid',
-          styles: { fontSize: 8, cellPadding: 3, halign: 'center' },
-          headStyles: { fillColor: DARK, textColor: WHITE, fontSize: 8 },
-          margin: { left: 10, right: 10 },
-        });
-      }
-
-      addFooter(1, 2);
-
-      // ─── PAGE 2 — Transaction Register ──────────────────────────────────────
-      doc.addPage();
-      addHeader('Transaction Register');
-
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-      doc.text(`All Transactions  (${transactionsRaw.length} records)`, 10, 40);
-
-      const txRows = transactionsRaw.map((t, i) => [
-        i + 1,
-        t.orderNumber || '—',
-        new Date(t.createdAt).toLocaleDateString(),
-        t.listing?.paddyType || '—',
-        t.millOwner?.fullName || '—',
-        t.farmer?.fullName || '—',
-        `${t.quantityKg || 0} kg`,
-        `Rs ${(t.finalPricePerKg || 0).toLocaleString()}`,
-        `Rs ${(t.totalAmount || 0).toLocaleString()}`,
-        t.paymentStatus || '—',
-        (t.status || '—').replace(/_/g, ' '),
-      ]);
-
-      autoTable(doc, {
-        startY: 44,
-        head: [['#', 'Order No.', 'Date', 'Paddy', 'Buyer (Mill)', 'Seller (Farmer)', 'Qty', 'Price/kg', 'Total', 'Payment', 'Status']],
-        body: txRows,
-        theme: 'striped',
-        styles: { fontSize: 7, cellPadding: 2.5 },
-        headStyles: { fillColor: GREEN, textColor: WHITE, fontStyle: 'bold', fontSize: 7 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        columnStyles: {
-          0:  { cellWidth: 8,  halign: 'center' },
-          1:  { cellWidth: 22 },
-          2:  { cellWidth: 20 },
-          3:  { cellWidth: 18 },
-          4:  { cellWidth: 32 },
-          5:  { cellWidth: 32 },
-          6:  { cellWidth: 14, halign: 'right' },
-          7:  { cellWidth: 20, halign: 'right' },
-          8:  { cellWidth: 22, halign: 'right' },
-          9:  { cellWidth: 16, halign: 'center' },
-          10: { cellWidth: 22, halign: 'center' },
-        },
-        margin: { left: 10, right: 10 },
-      });
-
-      addFooter(2, 2);
-
-      doc.save(`AgroBridge_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
       toast.success('PDF report downloaded!');
     } catch (err) {
       console.error('PDF export error:', err);
       toast.error(`PDF export failed: ${err.message}`);
+    }
+  };
+
+  const exportAndEmail = async () => {
+    if (transactionsRaw.length === 0) return toast.error('No transaction data available to export');
+
+    const loadingToast = toast.loading('Generating and sending email...');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/reports/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          startDate: '', // Not used in admin dashboard currently
+          endDate: '',
+          range: 'all'
+        })
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        toast.success(result.message || 'Report exported and emailed successfully!', { id: loadingToast });
+      } else {
+        throw new Error(result.message || 'Failed to send email');
+      }
+    } catch (err) {
+      console.error('Email export error:', err);
+      toast.error(err.message || 'Failed to send email', { id: loadingToast });
     }
   };
 
@@ -381,6 +232,9 @@ export default function AdminReports() {
           <p className="text-muted-foreground">Platform insights, growth metrics, and export tools</p>
         </div>
         <div className="flex gap-3">
+          <button onClick={exportAndEmail} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 rounded-lg transition-colors text-sm font-medium">
+            <FileText className="w-4 h-4" /> Export & Email
+          </button>
           <button onClick={exportPDF} className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-colors text-sm font-medium">
             <FileText className="w-4 h-4" /> Export PDF
           </button>
