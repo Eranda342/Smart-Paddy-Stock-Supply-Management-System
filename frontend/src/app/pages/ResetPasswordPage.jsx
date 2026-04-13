@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { API } from "../../api/api";
 import { resetPasswordSchema } from "../lib/schemas";
-import Logo from "../components/ui/Logo";
+
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
 
             <div className="flex justify-center mb-8">
               <Link to="/" className="hover:opacity-80 transition-opacity outline-none">
-                <Logo size="lg" showText={false} />
+                <img src="/logo.png" alt="AgroBridge" className="h-12 w-auto mx-auto" />
               </Link>
             </div>
 

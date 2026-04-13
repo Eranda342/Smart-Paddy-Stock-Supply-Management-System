@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowRight } from "lucide-react";
-import Logo from "../app/components/ui/Logo";
+import { Logo } from "../app/components/ui/Logo";
+
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -43,8 +44,8 @@ export default function Navbar() {
         <div className="max-w-[1320px] mx-auto px-[5%] flex items-center justify-between">
           
           {/* LEFT: Logo */}
-          <Link to="/" className="shrink-0">
-            <Logo size="md" />
+          <Link to="/">
+            <Logo layout="navbar" />
           </Link>
 
           {/* CENTER: Nav pill */}

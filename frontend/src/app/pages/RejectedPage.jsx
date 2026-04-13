@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { XCircle, CheckCircle2, ArrowRight, Loader2, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
-import Logo from "../components/ui/Logo";
+
 import { API } from "../../api/api";
 
 /**
@@ -117,7 +117,7 @@ export default function RejectedPage() {
             {/* Logo */}
             <div className="flex justify-center mb-10">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <Logo size="md" />
+                <img src="/logo.png" alt="AgroBridge" className="h-10 w-auto" />
               </Link>
             </div>
 

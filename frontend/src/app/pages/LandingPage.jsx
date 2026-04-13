@@ -17,7 +17,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import Logo from "../components/ui/Logo";
+
 
 
 
@@ -550,7 +550,7 @@ export default function LandingPage() {
             {/* Col 1 — Brand + tagline */}
             <div className="col-span-2 md:col-span-1 flex flex-col gap-5">
               <div className="opacity-90 hover:opacity-100 transition-opacity">
-                <Logo size="sm" subtitle="SaaS" />
+                <img src="/logo.png" alt="AgroBridge" className="max-h-12 w-auto" />
               </div>
               <p className="text-sm text-white/40 leading-relaxed max-w-[200px]">
                 Sri Lanka's premium digital grain market, connecting farmers and mill owners.

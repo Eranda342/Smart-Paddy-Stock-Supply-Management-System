@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { API } from "../../api/api";
 import { loginSchema } from "../lib/schemas";
-import Logo from "../components/ui/Logo";
+
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -128,7 +128,7 @@ export default function LoginPage() {
               {/* Logo */}
               <div className="flex justify-center mb-6">
                 <Link to="/" className="hover:opacity-80 transition-opacity">
-                  <Logo size="md" />
+                  <img src="/logo.png" alt="AgroBridge" className="h-10 w-auto" />
                 </Link>
               </div>
 

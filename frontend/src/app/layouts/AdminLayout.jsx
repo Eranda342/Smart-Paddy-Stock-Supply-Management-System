@@ -8,7 +8,8 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import GlobalSearchBar from '../components/GlobalSearchBar';
 import { Button } from '../components/ui/button';
-import Logo from '../components/ui/Logo';
+import { Logo } from "../components/ui/Logo";
+
 
 // ─────────────────────────────────────────────────────────────────
 // Sidebar helpers
@@ -250,9 +251,9 @@ export default function AdminLayout() {
         {/* ═══ SIDEBAR ═══ */}
         <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
           {/* Logo */}
-          <div className="p-5 border-b border-sidebar-border">
-            <Link to="/admin">
-              <Logo size="md" subtitle="ADMIN PORTAL" />
+          <div className="border-b border-sidebar-border">
+            <Link to="/admin" className="block px-4 py-4">
+              <Logo layout="sidebar" />
             </Link>
           </div>
 

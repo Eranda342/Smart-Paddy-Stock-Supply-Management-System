@@ -24,7 +24,8 @@ import toast from "react-hot-toast";
 import NotificationDropdown from "../components/NotificationDropdown";
 import GlobalSearchBar from "../components/GlobalSearchBar";
 import { Button } from "../components/ui/button";
-import Logo from "../components/ui/Logo";
+import { Logo } from "../components/ui/Logo";
+
 
 export default function FarmerLayout() {
 
@@ -140,9 +141,9 @@ export default function FarmerLayout() {
 
       <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
 
-        <div className="p-6 border-b border-sidebar-border">
-          <Link to="/farmer" className="block">
-            <Logo size="md" subtitle="Farmer Portal" />
+        <div className="border-b border-sidebar-border">
+          <Link to="/farmer" className="block px-4 py-4">
+            <Logo layout="sidebar" />
           </Link>
         </div>
 
