@@ -147,8 +147,8 @@ const getNegotiations = async (req, res) => {
         { millOwner: req.user.id }
       ]
     })
-      .populate("farmer", "fullName")
-      .populate("millOwner", "fullName businessDetails")
+      .populate("farmer", "fullName profileImage")
+      .populate("millOwner", "fullName profileImage businessDetails")
       .populate("listing", "paddyType quantityKg availableQuantityKg pricePerKg location status")
       .sort({ updatedAt: -1 });
 
@@ -171,9 +171,9 @@ const getNegotiationById = async (req, res) => {
   try {
 
     const negotiation = await Negotiation.findById(req.params.id)
-      .populate("farmer", "fullName")
-      .populate("millOwner", "fullName businessDetails")
-      .populate("messages.sender", "fullName")
+      .populate("farmer", "fullName profileImage")
+      .populate("millOwner", "fullName profileImage businessDetails")
+      .populate("messages.sender", "fullName profileImage")
       .populate("listing");
 
     if (!negotiation) {
@@ -247,9 +247,9 @@ const addMessage = async (req, res) => {
       global.io.emit("dashboard_update");
     }
     
-    await negotiation.populate("farmer", "fullName");
-    await negotiation.populate("millOwner", "fullName businessDetails");
-    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("farmer", "fullName profileImage");
+    await negotiation.populate("millOwner", "fullName profileImage businessDetails");
+    await negotiation.populate("messages.sender", "fullName profileImage");
     await negotiation.populate("listing");
 
     res.status(200).json({
@@ -433,9 +433,9 @@ const updateNegotiationStatus = async (req, res) => {
       global.io.emit("dashboard_update");
     }
 
-    await negotiation.populate("farmer", "fullName");
-    await negotiation.populate("millOwner", "fullName businessDetails");
-    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("farmer", "fullName profileImage");
+    await negotiation.populate("millOwner", "fullName profileImage businessDetails");
+    await negotiation.populate("messages.sender", "fullName profileImage");
     await negotiation.populate("listing");
     
     if (global.io) {
@@ -485,9 +485,9 @@ const deleteMessage = async (req, res) => {
       global.io.emit("dashboard_update");
     }
 
-    await negotiation.populate("farmer", "fullName");
-    await negotiation.populate("millOwner", "fullName businessDetails");
-    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("farmer", "fullName profileImage");
+    await negotiation.populate("millOwner", "fullName profileImage businessDetails");
+    await negotiation.populate("messages.sender", "fullName profileImage");
     await negotiation.populate("listing");
 
     res.status(200).json({ message: "Message deleted successfully", negotiation });
@@ -531,9 +531,9 @@ const markMessagesRead = async (req, res) => {
     }
     }
 
-    await negotiation.populate("farmer", "fullName");
-    await negotiation.populate("millOwner", "fullName businessDetails");
-    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("farmer", "fullName profileImage");
+    await negotiation.populate("millOwner", "fullName profileImage businessDetails");
+    await negotiation.populate("messages.sender", "fullName profileImage");
     await negotiation.populate("listing");
 
     res.status(200).json({ message: "Messages marked as read", negotiation });
@@ -582,9 +582,9 @@ const editMessage = async (req, res) => {
       global.io.emit("dashboard_update");
     }
 
-    await negotiation.populate("farmer", "fullName");
-    await negotiation.populate("millOwner", "fullName businessDetails");
-    await negotiation.populate("messages.sender", "fullName");
+    await negotiation.populate("farmer", "fullName profileImage");
+    await negotiation.populate("millOwner", "fullName profileImage businessDetails");
+    await negotiation.populate("messages.sender", "fullName profileImage");
     await negotiation.populate("listing");
 
     res.status(200).json({ message: "Message edited successfully", negotiation });

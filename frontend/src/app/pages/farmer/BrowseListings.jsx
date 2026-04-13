@@ -6,6 +6,9 @@ import { Button } from "../../components/ui/button";
 
 const socket = io("http://localhost:5000");
 
+const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
+const BASE_URL = "http://localhost:5000";
+
 export default function BrowseListings() {
 
   const navigate = useNavigate();
@@ -351,8 +354,19 @@ export default function BrowseListings() {
 
                   <div className="flex items-center gap-3 mb-4">
 
-                    <div className="w-10 h-10 bg-[#22C55E]/10 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-[#22C55E]" />
+                    <div className="w-10 h-10 bg-[#22C55E]/10 rounded-full flex items-center justify-center overflow-hidden shrink-0">
+                      <img
+                        src={
+                          listing.owner?.profileImage
+                            ? `${BASE_URL}/uploads/${listing.owner.profileImage}`
+                            : defaultAvatar
+                        }
+                        onError={(e) => {
+                          e.target.src = defaultAvatar;
+                        }}
+                        className="w-full h-full object-cover"
+                        alt="User Avatar"
+                      />
                     </div>
 
                     <div>

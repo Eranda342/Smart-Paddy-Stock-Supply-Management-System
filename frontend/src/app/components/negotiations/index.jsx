@@ -14,6 +14,9 @@ import toast from "react-hot-toast";
 
 export const socket = io("http://localhost:5000");
 
+const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
+const BASE_URL = "http://localhost:5000";
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function timeAgo(dateStr) {
@@ -68,9 +71,17 @@ export const ConversationItem = memo(function ConversationItem({ grp, isSelected
     >
       <div className="flex items-center gap-3">
         {/* Avatar */}
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 transition-all
-          ${isSelected ? "bg-[#22C55E] text-black" : "bg-[#22C55E]/15 text-[#22C55E]"}`}>
-          {name.charAt(0).toUpperCase()}
+        <div className={`w-10 h-10 rounded-full shrink-0 overflow-hidden border-2 transition-all ${isSelected ? 'border-[#22C55E]' : 'border-transparent'}`}>
+          <img
+            src={
+              grp.user?.profileImage
+                ? `${BASE_URL}/uploads/${grp.user.profileImage}`
+                : defaultAvatar
+            }
+            onError={(e) => { e.target.src = defaultAvatar; }}
+            className="w-full h-full object-cover"
+            alt={name.charAt(0)}
+          />
         </div>
 
         <div className="flex-1 min-w-0">

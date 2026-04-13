@@ -6,6 +6,9 @@ import {
   DealCard,
 } from "../../components/negotiations/index.jsx";
 
+const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
+const BASE_URL = "http://localhost:5000";
+
 export default function FarmerNegotiations() {
   const [allNegotiations, setAllNegotiations] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -156,8 +159,17 @@ export default function FarmerNegotiations() {
               {/* Header */}
               <div className="px-5 py-4 border-b border-border/60 bg-[#0f1319] shrink-0 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/20 flex items-center justify-center font-bold text-sm">
-                    {(selectedGroup.user?.businessDetails?.businessName || selectedGroup.user?.fullName || selectedGroup.user?.email || "M").charAt(0).toUpperCase()}
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#22C55E]/15 border border-[#22C55E]/20 shrink-0">
+                    <img
+                      src={
+                        selectedGroup.user?.profileImage
+                          ? `${BASE_URL}/uploads/${selectedGroup.user.profileImage}`
+                          : defaultAvatar
+                      }
+                      onError={(e) => { e.target.src = defaultAvatar; }}
+                      className="w-full h-full object-cover"
+                      alt="Mill Owner"
+                    />
                   </div>
                   <div>
                     <div className="font-semibold">

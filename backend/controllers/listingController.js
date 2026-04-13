@@ -104,7 +104,7 @@ const getAllListings = async (req, res, next) => {
       listingType: "SELL",
       status: "ACTIVE"
     })
-      .populate("owner", "fullName email")
+      .populate("owner", "fullName email profileImage")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -129,7 +129,7 @@ const getBuyListings = async (req, res, next) => {
       listingType: "BUY",
       status: "ACTIVE"
     })
-      .populate("owner", "fullName email businessDetails")
+      .populate("owner", "fullName email profileImage businessDetails")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -151,7 +151,7 @@ const getListingById = async (req, res, next) => {
   try {
 
     const listing = await Listing.findById(req.params.id)
-      .populate("owner", "fullName email");
+      .populate("owner", "fullName email profileImage");
 
     if (!listing) {
       return res.status(404).json({

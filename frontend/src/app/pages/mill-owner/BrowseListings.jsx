@@ -7,6 +7,9 @@ import { Button } from "../../components/ui/button";
 
 const socket = io("http://localhost:5000");
 
+const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
+const BASE_URL = "http://localhost:5000";
+
 export default function BrowseListings() {
 
   const [listings, setListings] = useState([]);
@@ -271,8 +274,17 @@ export default function BrowseListings() {
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center shadow-inner">
-                      <User className="w-5 h-5 text-green-400" />
+                    <div className="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center shadow-inner overflow-hidden">
+                      <img
+                        src={
+                          listing.owner?.profileImage
+                            ? `${BASE_URL}/uploads/${listing.owner.profileImage}`
+                            : defaultAvatar
+                        }
+                        onError={(e) => { e.target.src = defaultAvatar; }}
+                        className="w-full h-full object-cover"
+                        alt="Farmer"
+                      />
                     </div>
                     <div>
                       <h3 className="font-semibold text-white text-lg tracking-tight">
