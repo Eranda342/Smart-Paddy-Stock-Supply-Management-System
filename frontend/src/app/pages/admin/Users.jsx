@@ -134,8 +134,100 @@ function RejectModal({ user, onConfirm, onClose, loading }) {
   );
 }
 
+// ─── Delete modal ─────────────────────────────────────────────────────────────
+function DeleteModal({ user, onConfirm, onClose, loading }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={!loading ? onClose : undefined} />
+      <div className="relative bg-card border border-red-500/30 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <Trash2 className="w-4 h-4 text-red-500" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-sm">Delete User</h2>
+              <p className="text-xs text-muted-foreground">{user.fullName}</p>
+            </div>
+          </div>
+          <Button onClick={onClose} variant="ghost" size="icon" disabled={loading}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-foreground">
+            Are you sure you want to permanently delete this user?
+          </p>
+          <p className="text-xs text-muted-foreground">
+            This action cannot be undone. All data associated with <span className="font-medium text-foreground">{user.email}</span> will be removed.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="danger"
+              onClick={onConfirm}
+              disabled={loading}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white border-none shadow-sm"
+            >
+              {loading ? 'Deleting…' : 'Delete'}
+            </Button>
+            <Button variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Suspend modal ─────────────────────────────────────────────────────────────
+function SuspendModal({ user, onConfirm, onClose, loading }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={!loading ? onClose : undefined} />
+      <div className="relative bg-card border border-amber-500/30 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+              <Ban className="w-4 h-4 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-sm">Suspend User</h2>
+              <p className="text-xs text-muted-foreground">{user.fullName}</p>
+            </div>
+          </div>
+          <Button onClick={onClose} variant="ghost" size="icon" disabled={loading}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-foreground">
+            Are you sure you want to suspend this user?
+          </p>
+          <p className="text-xs text-muted-foreground">
+            The user <span className="font-medium text-foreground">{user.email}</span> will be locked out of the platform immediately until unblocked.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="danger"
+              onClick={onConfirm}
+              disabled={loading}
+              className="flex-1 bg-amber-500 hover:bg-amber-600 text-white border-none shadow-sm"
+            >
+              {loading ? 'Suspending…' : 'Suspend'}
+            </Button>
+            <Button variant="secondary" onClick={onClose} disabled={loading} className="flex-1">
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Details modal ────────────────────────────────────────────────────────────
-function UserModal({ user, onClose, onAction, actionLoading }) {
+function UserModal({ user, onClose, onAction, actionLoading, onBlockPrompt }) {
   const [rejectMode, setRejectMode] = useState(user.rejectPrompt || false);
   const isFarmer = user.role === 'FARMER';
   const details  = isFarmer ? user.farmDetails : user.businessDetails;
@@ -243,12 +335,21 @@ function UserModal({ user, onClose, onAction, actionLoading }) {
               <>
                 <Button 
                   variant={user.isBlocked ? 'ghost' : 'secondary'}
-                  onClick={() => onAction(user, user.isBlocked ? 'unblock' : 'block')}
+                  onClick={() => {
+                    if (user.isBlocked) {
+                      onAction(user, 'unblock');
+                    } else if (onBlockPrompt) {
+                      onClose();
+                      onBlockPrompt(user);
+                    } else {
+                      onAction(user, 'block');
+                    }
+                  }}
                   disabled={actionLoading === user._id}
                   className={user.isBlocked ? 'text-amber-500 hover:bg-amber-500/10' : 'text-gray-400 hover:bg-gray-500/10'}
                   size="sm"
                 >
-                  {user.isBlocked ? 'Unblock User' : 'Block User'}
+                  {user.isBlocked ? 'Unblock User' : 'Suspend User'}
                 </Button>
                 
                 {(vstatus === 'PENDING' || vstatus === 'APPROVED') && !user.isBlocked && (
@@ -315,6 +416,8 @@ export default function AdminUsers() {
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   
   const [viewUser, setViewUser]     = useState(null);
+  const [deletePromptUser, setDeletePromptUser] = useState(null);
+  const [suspendPromptUser, setSuspendPromptUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
@@ -361,10 +464,6 @@ export default function AdminUsers() {
   const handleAction = async (user, actionType, reason = '') => {
     if (user.role === 'ADMIN') return; // Disable actions for ADMIN user
     
-    if (actionType === 'delete') {
-       if(!window.confirm(`Are you sure you want to permanently delete ${user.fullName}?`)) return;
-    }
-    
     setActionLoading(user._id);
     try {
       if (actionType === 'delete') {
@@ -375,7 +474,11 @@ export default function AdminUsers() {
          await axios.put(`${API}/users/${user._id}/${actionType}`, {}, { headers: headers() });
       }
       
-      toast.success(`User ${actionType}d successfully`);
+      if (actionType === 'delete') setDeletePromptUser(null);
+      if (actionType === 'block') setSuspendPromptUser(null);
+      
+      const successMsg = actionType === 'delete' ? 'deleted' : actionType === 'block' ? 'suspended' : actionType === 'unblock' ? 'unblocked' : actionType + 'd';
+      toast.success(`User ${successMsg} successfully`);
       fetchUsers();
     } catch (err) {
       toast.error(err?.response?.data?.message || `Failed to ${actionType} user`);
@@ -472,7 +575,7 @@ export default function AdminUsers() {
                   const vstatus = getVerificationStatus(user);
                   
                   return (
-                    <tr key={user._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors group">
+                    <tr key={user._id} className={`border-b border-border last:border-0 hover:bg-muted/30 transition-colors group ${user.isBlocked ? 'opacity-50 bg-muted/10' : ''}`}>
                       <td className="px-5 py-4">
                         <div className="font-medium text-sm">{user.fullName}</div>
                         {user.businessDetails?.businessName && (
@@ -514,13 +617,13 @@ export default function AdminUsers() {
                                   <ShieldCheck className="w-4 h-4" />
                                 </Button>
                               ) : (
-                                <Button variant="ghost" size="icon" onClick={() => handleAction(user, 'block')} title="Block / Suspend User" disabled={actionLoading === user._id}
-                                  className="text-gray-400 hover:bg-gray-500/20 disabled:opacity-50">
+                                <Button variant="ghost" size="icon" onClick={() => setSuspendPromptUser(user)} title="Suspend User" disabled={actionLoading === user._id || suspendPromptUser?._id === user._id}
+                                  className="text-amber-500 hover:bg-amber-500/10 disabled:opacity-50">
                                   <Ban className="w-4 h-4" />
                                 </Button>
                               )}
                               
-                              <Button variant="ghost" size="icon" onClick={() => handleAction(user, 'delete')} title="Delete User Permanently" disabled={actionLoading === user._id}
+                              <Button variant="ghost" size="icon" onClick={() => setDeletePromptUser(user)} title="Delete User Permanently" disabled={actionLoading === user._id || deletePromptUser?._id === user._id}
                                 className="text-red-500 hover:bg-red-500/10 disabled:opacity-50">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -548,7 +651,26 @@ export default function AdminUsers() {
           user={viewUser} 
           onClose={() => setViewUser(null)} 
           onAction={handleAction}
+          onBlockPrompt={(u) => setSuspendPromptUser(u)}
           actionLoading={actionLoading}
+        />
+      )}
+      
+      {deletePromptUser && (
+        <DeleteModal
+          user={deletePromptUser}
+          onConfirm={() => handleAction(deletePromptUser, 'delete')}
+          onClose={() => setDeletePromptUser(null)}
+          loading={actionLoading === deletePromptUser._id}
+        />
+      )}
+
+      {suspendPromptUser && (
+        <SuspendModal
+          user={suspendPromptUser}
+          onConfirm={() => handleAction(suspendPromptUser, 'block')}
+          onClose={() => setSuspendPromptUser(null)}
+          loading={actionLoading === suspendPromptUser._id}
         />
       )}
     </div>

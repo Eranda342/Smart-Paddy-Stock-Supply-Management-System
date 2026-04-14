@@ -131,6 +131,27 @@
   * {
     @apply border-border outline-ring/50;
     transition: background-color 200ms, border-color 200ms, color 200ms;
+    scrollbar-color: #2A2F3A #0B0F19;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #0B0F19;
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #2A2F3A;
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #3A4150;
   }
 
   body {
