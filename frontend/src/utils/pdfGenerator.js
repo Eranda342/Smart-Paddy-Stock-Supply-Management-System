@@ -1,11 +1,42 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+// frontend/src/utils/pdfGenerator.js
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import logoUrl from '../assets/navbar.svg';
 
-export const generateReportPDF = ({
+const getLogoBase64 = () => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = logoUrl;
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width || 200;
+      canvas.height = img.height || 200;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+  });
+};
+
+const runAutoTable = (doc, options) => {
+  if (typeof autoTable === 'function') {
+    return autoTable(doc, options);
+  } else if (autoTable && typeof autoTable.default === 'function') {
+    return autoTable.default(doc, options);
+  } else if (typeof doc.autoTable === 'function') {
+    return doc.autoTable(options);
+  }
+};
+
+export const generateReportPDF = async ({
   data,
   startDate,
   endDate,
   range,
+  chartBase64,
+  forEmail = false
 }) => {
   const {
     overview,
@@ -17,233 +48,213 @@ export const generateReportPDF = ({
     transactionsRaw,
   } = data;
 
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const GREEN = [34, 197, 94];
-  const DARK = [15, 23, 42];
-  const GRAY = [100, 116, 139];
-  const WHITE = [255, 255, 255];
-  const LIGHT = [241, 245, 249];
 
-  const avgTxnValueCalc =
-    overview.totalTransactions > 0
-      ? Math.round(overview.totalRevenue / overview.totalTransactions)
-      : 0;
-  const deliveryRateCalc =
-    overview.totalTransactions > 0
-      ? ((overview.completedDeliveries / overview.totalTransactions) * 100).toFixed(1)
-      : "0.0";
-  const topPaddyCalc =
-    paddyData.length > 0
-      ? [...paddyData].sort((a, b) => b.value - a.value)[0].name
-      : "—";
-  const topDistrictCalc =
-    districtData.length > 0
-      ? [...districtData].sort((a, b) => b.value - a.value)[0].name
-      : "—";
-  const generatedAt = new Date().toLocaleString("en-LK", {
-    dateStyle: "long",
-    timeStyle: "short",
+  // ENTERPRISE BRANDING COLORS
+  const HEADER_BG = [11, 15, 25]; // #0B0F19 (Dark Navy)
+  const SUBHEADER_BG = [243, 244, 246]; // #F3F4F6
+  const SUBHEADER_TEXT = [107, 114, 128]; // #6B7280
+  const TABLE_HEAD_BG = [17, 24, 39]; // #111827
+  const CARD_BG = [245, 247, 250]; // #F5F7FA
+  const TEXT_DARK = [17, 24, 39];
+  const WHITE = [255, 255, 255];
+
+  const avgTxnValueCalc = overview.totalTransactions > 0
+    ? Math.round(overview.totalRevenue / overview.totalTransactions) : 0;
+  
+  const deliveryRateCalc = overview.totalTransactions > 0
+    ? ((overview.completedDeliveries / overview.totalTransactions) * 100).toFixed(1) : '0.0';
+  
+  const topPaddyCalc = paddyData.length > 0
+    ? [...paddyData].sort((a, b) => b.value - a.value)[0].name : '—';
+  
+  const topDistrictCalc = districtData.length > 0
+    ? [...districtData].sort((a, b) => b.value - a.value)[0].name : '—';
+  
+  const generatedAt = new Date().toLocaleString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
 
-  const addHeader = (title, subtitle) => {
-    // Green header bar
-    doc.setFillColor(GREEN[0], GREEN[1], GREEN[2]);
-    doc.rect(0, 0, pageW, 22, "F");
-    // Logo text
+  const sysLogo = await getLogoBase64();
+
+  const addHeader = (title) => {
+    // Top Main Header
+    doc.setFillColor(HEADER_BG[0], HEADER_BG[1], HEADER_BG[2]);
+    doc.rect(0, 0, pageW, 22, 'F');
+    
+    // Logo and Platform Name
     doc.setTextColor(WHITE[0], WHITE[1], WHITE[2]);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("AgroBridge", 10, 14);
-    // Page title (right)
+    if (sysLogo) {
+      doc.addImage(sysLogo, 'PNG', 14, 6, 10, 10);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('AgroBridge', 28, 14);
+    } else {
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('AgroBridge', 14, 14);
+    }
+
+    // Page title (Right side)
     doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.text(title, pageW - 10, 14, { align: "right" });
-    // Subtitle strip
-    doc.setFillColor(DARK[0], DARK[1], DARK[2]);
-    doc.rect(0, 22, pageW, 8, "F");
+    doc.setFont('helvetica', 'normal');
+    doc.text(title, pageW - 14, 14, { align: 'right' });
+
+    // Sub-header (Thin row)
+    doc.setFillColor(SUBHEADER_BG[0], SUBHEADER_BG[1], SUBHEADER_BG[2]);
+    doc.rect(0, 22, pageW, 8, 'F');
     doc.setFontSize(8);
-    doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-    doc.text(subtitle || `Generated: ${generatedAt}`, 10, 27.5);
-    doc.text("ADMIN PORTAL  |  CONFIDENTIAL", pageW - 10, 27.5, {
-      align: "right",
-    });
-    doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
+    doc.text(`Generated: ${generatedAt}`, 14, 27.5);
+    doc.text('ADMIN PORTAL • CONFIDENTIAL', pageW - 14, 27.5, { align: 'right' });
   };
 
-  const addFooter = (pageNum, total) => {
-    doc.setFillColor(LIGHT[0], LIGHT[1], LIGHT[2]);
-    doc.rect(0, pageH - 10, pageW, 10, "F");
-    doc.setFontSize(7);
-    doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-    doc.text(`AgroBridge Analytics Report  •  ${generatedAt}`, 10, pageH - 3.5);
-    doc.text(`Page ${pageNum} of ${total}`, pageW - 10, pageH - 3.5, {
-      align: "right",
-    });
+  const addFooter = (pageNum, totalPages) => {
+    doc.setFontSize(8);
+    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
+    doc.text('AgroBridge • Smart Paddy Marketplace', 14, pageH - 8);
+    doc.text(`Page 1 of 1`, pageW - 14, pageH - 8, { align: 'right' }); // Will be replaced globally if using generic method
   };
 
   // ───────────────────────────────────────────────────────────────────────
-  // PAGE 1 — Executive Summary
+  // PAGE 1 — Executive Summary & Visuals
   // ───────────────────────────────────────────────────────────────────────
-  addHeader("Analytics Report", `Platform snapshot as of ${generatedAt}`);
+  addHeader('Platform Analytics Report');
 
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-  doc.text("Executive Summary", 10, 40);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+  doc.text('Executive Summary', 14, 40);
 
-  // KPI grid (2 rows × 4 cols)
+  // Executive Metric Cards Configuration
   const kpis = [
-    {
-      label: "Total Revenue",
-      value: `Rs ${overview.totalRevenue.toLocaleString()}`,
-      color: GREEN,
-    },
-    {
-      label: "Total Transactions",
-      value: overview.totalTransactions.toLocaleString(),
-      color: [59, 130, 246],
-    },
-    {
-      label: "Total Users",
-      value: overview.totalUsers.toLocaleString(),
-      color: [139, 92, 246],
-    },
-    {
-      label: "Total Listings",
-      value: overview.totalListings.toLocaleString(),
-      color: [245, 158, 11],
-    },
-    {
-      label: "Conversion Rate",
-      value: `${conversion.rate}%`,
-      color: [99, 102, 241],
-    },
-    {
-      label: "Completed Deliveries",
-      value: overview.completedDeliveries.toLocaleString(),
-      color: [20, 184, 166],
-    },
-    {
-      label: "Avg Transaction",
-      value: `Rs ${avgTxnValueCalc.toLocaleString()}`,
-      color: [236, 72, 153],
-    },
-    {
-      label: "Delivery Success",
-      value: `${deliveryRateCalc}%`,
-      color: [239, 68, 68],
-    },
+    { label: 'Total Revenue', value: `Rs ${overview.totalRevenue.toLocaleString()}` },
+    { label: 'Transactions', value: overview.totalTransactions.toLocaleString() },
+    { label: 'Users', value: overview.totalUsers.toLocaleString() },
+    { label: 'Listings', value: overview.totalListings.toLocaleString() },
+    { label: 'Conversion Rate', value: `${conversion.rate}%` },
+    { label: 'Deliveries', value: overview.completedDeliveries.toLocaleString() },
+    { label: 'Avg Transaction', value: `Rs ${avgTxnValueCalc.toLocaleString()}` },
+    { label: 'Delivery Success', value: `${deliveryRateCalc}%` }
   ];
 
-  const colW = (pageW - 20) / 4;
-  const rowH = 22;
-  const startY = 45;
+  const colW = (pageW - 40) / 4; 
+  const rowH = 18;
+  const startY = 46;
 
   kpis.forEach((kpi, i) => {
     const col = i % 4;
     const row = Math.floor(i / 4);
-    const x = 10 + col * colW;
+    const x = 14 + col * (colW + 4);
     const y = startY + row * (rowH + 4);
 
     // Card background
-    doc.setFillColor(LIGHT[0], LIGHT[1], LIGHT[2]);
-    doc.rect(x, y, colW - 2, rowH, "F");
-    // Color accent bar (left edge)
-    doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2]);
-    doc.rect(x, y, 3, rowH, "F");
-    // Label
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-    doc.text(kpi.label, x + 7, y + 7);
-    // Value
+    doc.setFillColor(CARD_BG[0], CARD_BG[1], CARD_BG[2]);
+    doc.roundedRect(x, y, colW, rowH, 2, 2, 'F');
+    
+    // Label (Top Left)
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
+    doc.text(kpi.label, x + 4, y + 6);
+    
+    // Bold Value (Bottom Left)
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-    doc.text(kpi.value, x + 7, y + 16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text(kpi.value, x + 4, y + 14);
   });
 
-  // Key Insights table
   const insightY = startY + 2 * (rowH + 4) + 8;
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-  doc.text("Key Insights", 10, insightY);
+  
+  // ─── Key Insights Table ──────────────────────────────────────────────────
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+  doc.text('Key Insights', 14, insightY);
 
-  const insightsTable = autoTable(doc, {
-    startY: insightY + 4,
-    head: [["Metric", "Value"]],
+  const tableStartY = insightY + 6;
+  runAutoTable(doc, {
+    startY: tableStartY,
+    head: [['Metric', 'Value']],
     body: [
-      ["Top Paddy Variety", topPaddyCalc],
-      ["Top District", topDistrictCalc],
-      ["Accepted Negotiations", String(conversion.acceptedNegotiations || 0)],
-      ["Avg Transaction Value", `Rs ${avgTxnValueCalc.toLocaleString()}`],
-      ["Delivery Success Rate", `${deliveryRateCalc}%`],
+      ['Top Paddy Variety', topPaddyCalc],
+      ['Top District', topDistrictCalc],
+      ['Accepted Negotiations', String(conversion.acceptedNegotiations || 0)],
+      ['Avg Transaction Value', `Rs ${avgTxnValueCalc.toLocaleString()}`],
+      ['Delivery Success Rate', `${deliveryRateCalc}%`]
     ],
-    theme: "grid",
-    styles: { fontSize: 9, cellPadding: 3 },
+    theme: 'grid',
+    styles: { fontSize: 10, cellPadding: 3.5, textColor: TEXT_DARK },
     headStyles: {
-      fillColor: GREEN,
+      fillColor: TABLE_HEAD_BG,
       textColor: WHITE,
-      fontStyle: "bold",
-      fontSize: 9,
+      fontStyle: 'bold',
+      fontSize: 10,
     },
-    alternateRowStyles: { fillColor: LIGHT },
+    alternateRowStyles: { fillColor: CARD_BG },
     columnStyles: {
-      0: { fontStyle: "bold", cellWidth: 70 },
-      1: { cellWidth: 80 },
+      0: { fontStyle: 'bold', cellWidth: 80 },
+      1: { cellWidth: 100 },
     },
-    margin: { left: 10, right: 10 },
+    margin: { left: 14, right: 14 },
   });
 
-  // Revenue Trend mini-table
-  if (revenueData.length > 0) {
-    const ry =
-      (insightsTable?.finalY ?? doc.lastAutoTable?.finalY ?? insightY + 40) +
-      10;
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-    doc.text("Revenue Trend (Last 6 Months)", 10, ry);
-    autoTable(doc, {
-      startY: ry + 4,
-      head: [revenueData.map((r) => r.month)],
-      body: [revenueData.map((r) => `Rs ${r.revenue.toLocaleString()}`)],
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 3, halign: "center" },
-      headStyles: { fillColor: DARK, textColor: WHITE, fontSize: 8 },
-      margin: { left: 10, right: 10 },
-    });
-  }
+  let nextY = doc.lastAutoTable.finalY + 12;
 
-  addFooter(1, 2);
+  // ─── Chart Visuals Processing ──────────────────────────────────────────
+  if (chartBase64) {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text('Revenue & Growth Analytics', 14, nextY);
+    
+    try {
+      const imgProps = doc.getImageProperties(chartBase64);
+      const maxWidth = pageW - 28;
+      const maxHeight = pageH - nextY - 14; 
+      
+      let imgWidth = maxWidth;
+      let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+      if (imgHeight > maxHeight) {
+        imgHeight = maxHeight;
+        imgWidth = (imgProps.width * imgHeight) / imgProps.height;
+      }
+      
+      const xOffset = (pageW - imgWidth) / 2;
+      doc.addImage(chartBase64, 'PNG', xOffset, nextY + 4, imgWidth, imgHeight);
+    } catch(err) {
+      console.warn("Chart embed skipped safely due to processing error");
+    }
+  }
 
   // ─── PAGE 2 — Transaction Register ──────────────────────────────────────
   doc.addPage();
-  addHeader("Transaction Register");
+  addHeader('Transaction Register');
 
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-  doc.text(`All Transactions  (${transactionsRaw.length} records)`, 10, 40);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+  doc.text(`All Transactions (${transactionsRaw.length} records)`, 14, 40);
 
   const txRows = transactionsRaw.map((t, i) => [
     i + 1,
     t.orderNumber || "—",
     new Date(t.createdAt).toLocaleDateString(),
     t.listing?.paddyType || "—",
-    t.millOwner?.fullName || "—",
-    t.farmer?.fullName || "—",
+    t.buyer?.fullName || t.millOwner?.fullName || "—",
+    t.seller?.fullName || t.farmer?.fullName || "—",
     `${t.quantityKg || 0} kg`,
-    `Rs ${(t.finalPricePerKg || 0).toLocaleString()}`,
-    `Rs ${(t.totalAmount || 0).toLocaleString()}`,
+    `Rs ${(t.finalPricePerKg || t.price || 0).toLocaleString()}`,
+    `Rs ${(t.totalAmount || t.totalPrice || 0).toLocaleString()}`,
     t.paymentStatus || "—",
     (t.status || "—").replace(/_/g, " "),
   ]);
 
-  autoTable(doc, {
+  runAutoTable(doc, {
     startY: 44,
     head: [
       [
@@ -251,8 +262,8 @@ export const generateReportPDF = ({
         "Order No.",
         "Date",
         "Paddy",
-        "Buyer (Mill)",
-        "Seller (Farmer)",
+        "Buyer",
+        "Seller",
         "Qty",
         "Price/kg",
         "Total",
@@ -262,14 +273,14 @@ export const generateReportPDF = ({
     ],
     body: txRows,
     theme: "striped",
-    styles: { fontSize: 7, cellPadding: 2.5 },
+    styles: { fontSize: 8, cellPadding: 3, textColor: TEXT_DARK },
     headStyles: {
-      fillColor: GREEN,
+      fillColor: TABLE_HEAD_BG,
       textColor: WHITE,
       fontStyle: "bold",
-      fontSize: 7,
+      fontSize: 8,
     },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
+    alternateRowStyles: { fillColor: CARD_BG },
     columnStyles: {
       0: { cellWidth: 8, halign: "center" },
       1: { cellWidth: 22 },
@@ -283,15 +294,24 @@ export const generateReportPDF = ({
       9: { cellWidth: 16, halign: "center" },
       10: { cellWidth: 22, halign: "center" },
     },
-    margin: { left: 10, right: 10 },
+    margin: { left: 14, right: 14 },
   });
 
-  addFooter(2, 2);
+  // Add global page footers
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
+    doc.text('AgroBridge • Smart Paddy Marketplace', 14, pageH - 8);
+    doc.text(`Page ${i} of ${pageCount}`, pageW - 14, pageH - 8, { align: 'right' });
+  }
 
-  // Normal download
-  const filename = `AgroBridge_Report_${new Date()
-    .toISOString()
-    .slice(0, 10)}.pdf`;
+  if (forEmail) {
+    return doc.output('blob');
+  }
+
+  const filename = `AgroBridge_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
   doc.save(filename);
   return true;
 };

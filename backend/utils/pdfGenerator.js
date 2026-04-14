@@ -1,5 +1,6 @@
 const { jsPDF } = require("jspdf");
-const autoTable = require("jspdf-autotable");
+const autoTableModule = require("jspdf-autotable");
+const autoTable = typeof autoTableModule === "function" ? autoTableModule : autoTableModule.default;
 
 const generateReportPDF = ({ data, startDate, endDate, range }) => {
   const {

@@ -5,7 +5,9 @@ import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 import { generateReportPDF } from '../../../utils/pdfGenerator';
+import { useRef } from 'react';
 
 
 const API_BASE = 'http://localhost:5000/api/admin/analytics';
@@ -14,6 +16,7 @@ const COLORS = ['#22C55E', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'
 
 export default function AdminReports() {
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [overview, setOverview] = useState({ totalUsers: 0, totalTransactions: 0, totalRevenue: 0, totalListings: 0, completedDeliveries: 0 });
   const [conversion, setConversion] = useState({ rate: 0, acceptedNegotiations: 0, transactions: 0 });
   const [revenueData, setRevenueData] = useState([]);
@@ -21,6 +24,7 @@ export default function AdminReports() {
   const [paddyData, setPaddyData] = useState([]);
   const [districtData, setDistrictData] = useState([]);
   const [transactionsRaw, setTransactionsRaw] = useState([]);
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -78,8 +82,9 @@ export default function AdminReports() {
 
     // ── Sheet 1: Platform Summary ──────────────────────────────────────────
     const summaryRows = [
-      ['AgroBridge – Platform Analytics Report'],
-      [`Generated: ${generatedAt}`],
+      ['AgroBridge'],
+      ['Report Name:', 'Platform Analytics Report'],
+      [`Date:`, generatedAt],
       [],
       ['PLATFORM OVERVIEW'],
       ['Metric', 'Value'],
@@ -173,26 +178,62 @@ export default function AdminReports() {
   };
 
   // ─── Export PDF ──────────────────────────────────────────────────────────────
-  const exportPDF = () => {
+  const getChartImage = async () => {
+    if (chartRef.current) {
+      try {
+        const canvas = await html2canvas(chartRef.current, { scale: 2, backgroundColor: '#ffffff' });
+        return canvas.toDataURL("image/png");
+      } catch (err) {
+        console.error("Failed to capture chart", err);
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const exportPDF = async () => {
     if (transactionsRaw.length === 0) return toast.error('No transaction data available to export');
 
+    setIsExporting(true);
+    const loadingToast = toast.loading('Generating PDF...');
     try {
-      generateReportPDF({
+      const chartBase64 = await getChartImage();
+      await generateReportPDF({
         data: { overview, conversion, revenueData, usersData, paddyData, districtData, transactionsRaw },
+        chartBase64,
         forEmail: false
       });
-      toast.success('PDF report downloaded!');
+      toast.success('PDF report downloaded!', { id: loadingToast });
     } catch (err) {
       console.error('PDF export error:', err);
-      toast.error(`PDF export failed: ${err.message}`);
+      toast.error(`PDF export failed: ${err.message}`, { id: loadingToast });
+    } finally {
+      setIsExporting(false);
     }
   };
 
   const exportAndEmail = async () => {
     if (transactionsRaw.length === 0) return toast.error('No transaction data available to export');
 
+    setIsExporting(true);
     const loadingToast = toast.loading('Generating and sending email...');
     try {
+      const chartBase64 = await getChartImage();
+      const pdfBlob = await generateReportPDF({
+        data: { overview, conversion, revenueData, usersData, paddyData, districtData, transactionsRaw },
+        chartBase64,
+        forEmail: true
+      });
+
+      const reader = new FileReader();
+      const pdfBase64 = await new Promise((resolve) => {
+        reader.onloadend = () => {
+          const base64data = reader.result.split(',')[1];
+          resolve(base64data);
+        };
+        reader.readAsDataURL(pdfBlob);
+      });
+
       const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:5000/api/reports/email', {
         method: 'POST',
@@ -203,7 +244,8 @@ export default function AdminReports() {
         body: JSON.stringify({
           startDate: '', // Not used in admin dashboard currently
           endDate: '',
-          range: 'all'
+          range: 'all',
+          pdfBase64
         })
       });
 
@@ -216,6 +258,8 @@ export default function AdminReports() {
     } catch (err) {
       console.error('Email export error:', err);
       toast.error(err.message || 'Failed to send email', { id: loadingToast });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -232,13 +276,13 @@ export default function AdminReports() {
           <p className="text-muted-foreground">Platform insights, growth metrics, and export tools</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={exportAndEmail} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 rounded-lg transition-colors text-sm font-medium">
-            <FileText className="w-4 h-4" /> Export & Email
+          <button onClick={exportAndEmail} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+            <FileText className="w-4 h-4" /> {isExporting ? 'Processing...' : 'Export & Email'}
           </button>
-          <button onClick={exportPDF} className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-colors text-sm font-medium">
+          <button onClick={exportPDF} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
             <FileText className="w-4 h-4" /> Export PDF
           </button>
-          <button onClick={exportExcel} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-medium shadow-sm">
+          <button onClick={exportExcel} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
             <Download className="w-4 h-4" /> Export Excel
           </button>
         </div>
@@ -347,7 +391,7 @@ export default function AdminReports() {
           </div>
 
           {/* CHARTS LAYER 1 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" ref={chartRef}>
             {/* Revenue Trend Line Chart */}
             <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
               <h2 className="text-lg font-semibold mb-6">Revenue Trend (Last 6 Months)</h2>

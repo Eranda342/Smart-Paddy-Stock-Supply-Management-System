@@ -10,6 +10,24 @@ import autoTable from "jspdf-autotable";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
+import logoUrl from "../../../assets/navbar.svg";
+
+const getLogoBase64 = () => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = logoUrl;
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width || 200;
+      canvas.height = img.height || 200;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => resolve(null);
+  });
+};
 
 export default function MillOwnerDashboard() {
   const [data, setData] = useState(null);
@@ -140,9 +158,9 @@ export default function MillOwnerDashboard() {
     // Sheet 1: Summary
     const fmt = (n) => new Intl.NumberFormat("en-LK").format(n || 0);
     const summaryData = [
-      ["AgroBridge Analytics Report"],
-      [],
-      ["Generated On:", now.toLocaleDateString("en-LK", { year: "numeric", month: "long", day: "numeric" })],
+      ["AgroBridge"],
+      ["Report Name:", "Mill Owner Procurement Report"],
+      ["Date:", now.toLocaleDateString("en-LK", { year: "numeric", month: "long", day: "numeric" })],
       ["Period:", periodLabel],
       [],
       ["SUMMARY"],
@@ -200,12 +218,22 @@ export default function MillOwnerDashboard() {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(255, 255, 255);
-    doc.text("AgroBridge", 14, 14);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(150, 220, 150);
-    doc.text("Mill Owner Procurement Report", 14, 22);
+    
+    const logoB64 = await getLogoBase64();
+    if (logoB64) {
+      doc.addImage(logoB64, "PNG", 14, 4, 11, 11);
+      doc.text("AgroBridge", 28, 13);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(150, 220, 150);
+      doc.text("Mill Owner Procurement Report", 28, 20);
+    } else {
+      doc.text("AgroBridge", 14, 14);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(150, 220, 150);
+      doc.text("Mill Owner Procurement Report", 14, 22);
+    }
 
     doc.setFontSize(8);
     doc.setTextColor(100, 180, 100);

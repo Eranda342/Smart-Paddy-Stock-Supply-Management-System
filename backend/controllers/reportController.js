@@ -54,19 +54,22 @@ const getReportData = async ({ userId, startDate, endDate, range, req }) => {
 
 const emailReport = async (req, res) => {
   try {
-    const { startDate, endDate, range } = req.body;
+    const { startDate, endDate, range, pdfBase64 } = req.body;
     
-    // Step 2: Backend - Fetch Data
-    const data = await getReportData({
-      userId: req.user.id,
-      startDate,
-      endDate,
-      range,
-      req
-    });
-
-    // Step 3: Backend - PDF Generation
-    const pdfBuffer = generateReportPDF({ data, startDate, endDate, range });
+    let pdfBuffer;
+    if (pdfBase64) {
+      pdfBuffer = Buffer.from(pdfBase64, 'base64');
+    } else {
+      // Fallback Backend Generation
+      const data = await getReportData({
+        userId: req.user.id,
+        startDate,
+        endDate,
+        range,
+        req
+      });
+      pdfBuffer = generateReportPDF({ data, startDate, endDate, range });
+    }
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
