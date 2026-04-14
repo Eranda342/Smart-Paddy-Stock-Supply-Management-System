@@ -1,5 +1,7 @@
 const Dispute = require('../models/Dispute');
 const Transaction = require('../models/Transaction');
+const SystemSetting = require('../models/SystemSetting');
+const sendEmail = require('../utils/sendEmail');
 
 // Create a new dispute complaint
 const createDispute = async (req, res) => {
@@ -32,6 +34,34 @@ const createDispute = async (req, res) => {
     // Broadcast to admins
     const io = req.app.get("io");
     if (io) io.emit("disputeUpdated"); // So admins see the new one immediately
+
+    // Send dispatch email using global settings
+    try {
+      const settings = await SystemSetting.findOne();
+      if (settings && settings.supportEmail) {
+        await sendEmail({
+          to: settings.supportEmail,
+          subject: `[AgroBridge] Urgent Dispute Escalation: ${title}`,
+          html: `
+            <div style="font-family: sans-serif; color: #111;">
+              <h2 style="color: #ef4444;">🚨 New Platform Dispute Filed</h2>
+              <p>A new dispute constraint was intercepted requiring administrative arbitration.</p>
+              <ul>
+                <li><strong>Reporter ID:</strong> ${req.user.id}</li>
+                <li><strong>Transaction ID:</strong> ${transactionId || 'N/A'}</li>
+                <li><strong>Title:</strong> ${title}</li>
+              </ul>
+              <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <p><strong>Description:</strong><br/>${description}</p>
+              </div>
+              <p>Please log in to the secure Admin Management module immediately to review attachments and process a rapid resolution.</p>
+            </div>
+          `
+        });
+      }
+    } catch (emailErr) {
+      console.error("Error dispatching dispute routing email: ", emailErr);
+    }
 
     res.status(201).json({ message: "Complaint submitted successfully", dispute });
   } catch (error) {

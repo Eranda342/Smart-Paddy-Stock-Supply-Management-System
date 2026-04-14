@@ -13,9 +13,9 @@ const ToggleSwitch = ({ value, onChange, label, description }) => (
     </div>
     <button
       onClick={() => onChange(!value)}
-      className={`relative w-11 h-6 rounded-full transition-all duration-300 ${value ? 'bg-[#22C55E]' : 'bg-muted border border-border'}`}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${value ? 'bg-[#22C55E]' : 'bg-muted-foreground/30'}`}
     >
-      <span className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] bg-white rounded-full shadow transition-transform duration-300 ${value ? 'translate-x-[20px]' : ''}`} />
+      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${value ? 'translate-x-5' : 'translate-x-0'}`} />
     </button>
   </div>
 );
@@ -55,14 +55,15 @@ export default function AdminSettings() {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (customPayload = null) => {
     setSaving(true);
     try {
+      const finalPayload = (customPayload && !customPayload.nativeEvent) ? customPayload : settings;
       const token = localStorage.getItem('token');
       const res = await fetch(API_BASE, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(settings)
+        body: JSON.stringify(finalPayload)
       });
       if (!res.ok) throw new Error();
       
@@ -137,8 +138,9 @@ export default function AdminSettings() {
         <div className="relative">
           {/* Global Parameters */}
           {activeTab === 'parameters' && (
-            <div className="bg-card border border-border rounded-2xl p-6 lg:p-8 space-y-8 shadow-sm">
-              <div className="flex gap-4 items-center mb-2">
+            <div className="group relative bg-card/60 backdrop-blur-2xl border border-border/50 hover:border-primary/20 rounded-3xl p-6 lg:p-8 space-y-8 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              <div className="flex gap-4 items-center mb-2 relative z-10">
                 <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                   <Sliders className="w-5 h-5 text-primary" />
                 </div>
@@ -148,26 +150,26 @@ export default function AdminSettings() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                <div className="group/input flex flex-col justify-between h-full bg-muted/10 p-5 rounded-2xl border border-transparent hover:border-border/60 transition-colors">
                   <label className="text-sm font-semibold mb-2 block">Maximum Listings Per Farmer</label>
                   <p className="text-xs text-muted-foreground mb-3 leading-relaxed">Limits the absolute number of active Paddy listings a verified farmer can possess concurrently.</p>
                   <input
                     type="number"
                     min="1"
                     value={settings.maxListingsPerUser}
-                    onChange={e => handleChange('maxListingsPerUser', Number(e.target.value))}
-                    className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:border-primary transition-all font-medium"
+                    onChange={e => handleChange('maxListingsPerUser', e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-full px-4 py-3 bg-background hover:bg-muted/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all duration-300 shadow-inner hover:shadow-md font-medium"
                   />
                 </div>
-                <div>
+                <div className="group/input flex flex-col justify-between h-full bg-muted/10 p-5 rounded-2xl border border-transparent hover:border-border/60 transition-colors">
                   <label className="text-sm font-semibold mb-2 block">Global Support Routing Email</label>
                   <p className="text-xs text-muted-foreground mb-3 leading-relaxed">The active mailbox handling escalated administrative disputes dispatched from users.</p>
                   <input
                     type="email"
                     value={settings.supportEmail}
                     onChange={e => handleChange('supportEmail', e.target.value)}
-                    className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:border-primary transition-all font-medium"
+                    className="w-full px-4 py-3 bg-background hover:bg-muted/50 border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all duration-300 shadow-inner hover:shadow-md font-medium"
                   />
                 </div>
               </div>
@@ -176,8 +178,9 @@ export default function AdminSettings() {
 
           {/* Financial Controls */}
           {activeTab === 'financials' && (
-            <div className="bg-card border border-border rounded-2xl p-6 lg:p-8 space-y-8 shadow-sm">
-              <div className="flex gap-4 items-center mb-2">
+            <div className="group relative bg-card/60 backdrop-blur-2xl border border-border/50 hover:border-green-500/20 rounded-3xl p-6 lg:p-8 space-y-8 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-bl from-green-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              <div className="flex gap-4 items-center mb-2 relative z-10">
                 <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center shrink-0">
                   <DollarSign className="w-5 h-5 text-green-500" />
                 </div>
@@ -187,13 +190,13 @@ export default function AdminSettings() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                <div className="group/slider flex flex-col justify-between h-full bg-muted/10 p-5 rounded-2xl border border-transparent hover:border-border/60 transition-colors">
                   <label className="text-sm font-semibold mb-2 flex justify-between">
                     Platform Commission Rate 
                     <span className="text-primary font-bold">{settings.platformFeePercentage}%</span>
                   </label>
-                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed">The percentage tax cut AgileBridge takes natively off entirely completed cross-platform transactions. Do not change drastically without user notice.</p>
+                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed">The percentage tax cut AgroBridge takes natively off entirely completed cross-platform transactions. Do not change drastically without user notice.</p>
                   <input
                     type="range"
                     min="0"
@@ -201,10 +204,17 @@ export default function AdminSettings() {
                     step="0.5"
                     value={settings.platformFeePercentage}
                     onChange={e => handleChange('platformFeePercentage', Number(e.target.value))}
-                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                    onMouseUp={() => handleSave({ ...settings })}
+                    onTouchEnd={() => handleSave({ ...settings })}
+                    style={{ 
+                      backgroundImage: `linear-gradient(currentColor, currentColor)`,
+                      backgroundSize: `${(settings.platformFeePercentage / 50) * 100}% 100%`,
+                      backgroundRepeat: 'no-repeat'
+                    }}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer text-primary accent-primary focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all hover:scale-[1.01]"
                   />
                 </div>
-                <div>
+                <div className="group/slider flex flex-col justify-between h-full bg-muted/10 p-5 rounded-2xl border border-transparent hover:border-border/60 transition-colors">
                   <label className="text-sm font-semibold mb-2 flex justify-between">
                     Auto-Dispute Trigger Threshold
                     <span className="text-amber-500 font-bold">{settings.autoDisputeDays} Days</span>
@@ -216,7 +226,14 @@ export default function AdminSettings() {
                      max="14"
                      value={settings.autoDisputeDays}
                      onChange={e => handleChange('autoDisputeDays', Number(e.target.value))}
-                     className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500"
+                     onMouseUp={() => handleSave({ ...settings })}
+                     onTouchEnd={() => handleSave({ ...settings })}
+                     style={{ 
+                       backgroundImage: `linear-gradient(#f59e0b, #f59e0b)`,
+                       backgroundSize: `${((settings.autoDisputeDays - 1) / 13) * 100}% 100%`,
+                       backgroundRepeat: 'no-repeat'
+                     }}
+                     className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all hover:scale-[1.01]"
                   />
                 </div>
               </div>
@@ -225,7 +242,7 @@ export default function AdminSettings() {
 
           {/* Maintenance & Safety */}
           {activeTab === 'maintenance' && (
-            <div className="bg-card border ${(settings.maintenanceMode ? 'border-red-400/50' : 'border-border')} rounded-2xl p-6 lg:p-8 shadow-sm transition-colors">
+            <div className={`bg-card border ${settings.maintenanceMode ? 'border-red-400/50' : 'border-border'} rounded-2xl p-6 lg:p-8 shadow-sm transition-colors`}>
               <div className="flex gap-4 items-center mb-6">
                 <div className={`w-10 h-10 ${settings.maintenanceMode ? 'bg-red-500/10' : 'bg-rose-500/10'} rounded-xl flex items-center justify-center shrink-0 transition-colors`}>
                   <Shield className={`w-5 h-5 ${settings.maintenanceMode ? 'text-red-500' : 'text-rose-500'}`} />
@@ -239,7 +256,11 @@ export default function AdminSettings() {
               <div className={`p-5 rounded-2xl border transition-colors ${settings.maintenanceMode ? 'bg-red-500/5 border-red-500/30' : 'bg-muted/30 border-border/50'}`}>
                 <ToggleSwitch
                   value={settings.maintenanceMode}
-                  onChange={v => handleChange('maintenanceMode', v)}
+                  onChange={v => {
+                    const newSettings = { ...settings, maintenanceMode: v };
+                    setSettings(newSettings);
+                    handleSave(newSettings);
+                  }}
                   label="Global Maintenance Mode Override"
                   description="⚠️ EMERGENCY ONLY: Throwing this switch will immediately intercept active connections across the entire system. All non-admin requests will hit a hardcoded 503 Maintenance landing block. Data states will freeze until un-toggled."
                 />

@@ -26,6 +26,7 @@ import OAuthSuccessPage from "./pages/OAuthSuccessPage";
 import RejectedPage from "./pages/RejectedPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import VerifyEmailNoticePage from "./pages/VerifyEmailNoticePage";
+import MaintenancePage from "./pages/MaintenancePage";
 
 // ================= LAYOUTS =================
 import MainLayout from "./layouts/MainLayout";
@@ -289,6 +290,12 @@ export const router = createBrowserRouter([
   {
     path: "/verify-email-notice",
     element: <VerifyEmailNoticePage />,
+  },
+
+  // ================= MAINTENANCE (Global Fallback) =================
+  {
+    path: "/maintenance",
+    element: <MaintenancePage />,
   },
 
 ]);

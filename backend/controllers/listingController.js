@@ -37,14 +37,16 @@ const createListing = async (req, res, next) => {
       });
     }
 
-    // Enforce maxListingsPerUser from system settings
-    const settings = await SystemSetting.findOne();
-    const maxAllowed = settings?.maxListingsPerUser || 20;
-    const activeCount = await Listing.countDocuments({ owner: ownerId, status: "ACTIVE" });
-    if (activeCount >= maxAllowed) {
-      return res.status(400).json({
-        message: `You have reached the maximum allowed active listings (${maxAllowed}). Please remove an existing listing first.`
-      });
+    // Enforce maxListingsPerUser from system settings for FARMERS
+    if (req.user.role === "FARMER") {
+      const settings = await SystemSetting.findOne();
+      const maxAllowed = settings?.maxListingsPerUser || 20;
+      const activeCount = await Listing.countDocuments({ owner: ownerId, status: "ACTIVE" });
+      if (activeCount >= maxAllowed) {
+        return res.status(400).json({
+          message: `You have reached the maximum allowed active listings (${maxAllowed}). Please remove an existing listing first.`
+        });
+      }
     }
 
     const newListing = new Listing({

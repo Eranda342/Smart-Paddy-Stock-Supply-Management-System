@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import axios from "axios";
 import CountUp from "react-countup";
 import {
@@ -14,8 +14,6 @@ import {
   CheckCircle,
   Building2,
   FileText,
-  Menu,
-  X,
 } from "lucide-react";
 
 
@@ -102,12 +100,6 @@ export default function LandingPage() {
                 >
                   Get Started
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link
-                  to="/features/farmer"
-                  className="w-full sm:w-auto px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-all flex items-center justify-center hover:scale-[1.02]"
-                >
-                  Explore Platform
                 </Link>
               </motion.div>
 
@@ -401,9 +393,6 @@ export default function LandingPage() {
               </div>
               <motion.h3 variants={fadeUp} className="text-xl font-bold mb-4">{feature.title}</motion.h3>
               <motion.p variants={fadeUp} className="text-gray-300 leading-relaxed">{feature.desc}</motion.p>
-              <div className="mt-6 flex items-center gap-2 text-[#22C55E] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Learn more <ArrowRight className="w-4 h-4" />
-              </div>
             </motion.div>
           ))}
         </div>

@@ -62,6 +62,10 @@ app.get("/", (req, res) => {
   res.send("AgroBridge API is running");
 });
 
+// ================= MAINTENANCE MODE GUARD =================
+// Applies globally, but middleware internally skips /admin and /auth
+app.use(maintenanceMode);
+
 // ================= API ROUTES =================
 app.use("/api/users", userRoutes);                          // existing user routes
 app.use("/api/auth", userRoutes);                           // alias: register + login via /api/auth
@@ -78,10 +82,6 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/disputes", disputeRoutes);
-
-// ================= MAINTENANCE MODE GUARD =================
-// Applied AFTER auth/admin routes are mounted so admin can still pass through
-app.use(maintenanceMode);
 
 // ================= SOCKET.IO =================
 const io = new Server(server, {
