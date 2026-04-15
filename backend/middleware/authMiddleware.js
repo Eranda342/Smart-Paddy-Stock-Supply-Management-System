@@ -1,14 +1,24 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// 1. verifyToken - checks JWT
-const verifyToken = (req, res, next) => {
+// 1. protect - verifies JWT AND checks isBlocked in DB
+const protect = async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
+
+      // Always fetch fresh user to catch isBlocked / deletion since token was issued
+      const user = await User.findById(decoded.id || decoded._id).select("-password");
+      if (!user) {
+        return res.status(401).json({ message: "Account not found. Please log in again." });
+      }
+      if (user.isBlocked) {
+        return res.status(403).json({ message: "Your account has been suspended. Please contact support." });
+      }
+
+      req.user = user; // attach full user object (not just decoded JWT payload)
       return next();
     } catch (error) {
       return res.status(401).json({ message: "Not authorized, token failed" });
@@ -16,6 +26,10 @@ const verifyToken = (req, res, next) => {
   }
   if (!token) return res.status(401).json({ message: "Not authorized, no token" });
 };
+
+// Legacy alias — verifyToken kept as protect for backward compatibility
+const verifyToken = protect;
+
 
 // 2. requireAdmin
 const requireAdmin = (req, res, next) => {
@@ -26,13 +40,16 @@ const requireAdmin = (req, res, next) => {
   }
 };
 
-// 3. requireVerifiedUser
+// 3. requireVerifiedUser / checkApproved
+// Note: req.user is already the full Mongoose user doc (set by protect above).
+// We use req.user directly instead of re-fetching from DB.
 const requireVerifiedUser = async (req, res, next) => {
   try {
     if (req.user && req.user.role === "ADMIN") {
       return next();
     }
-    const user = await User.findById(req.user.id);
+    // req.user is already the live DB user (fetched in protect)
+    const user = req.user;
     if (!user) return res.status(404).json({ message: "User not found" });
 
     let status = "PENDING";
@@ -48,17 +65,17 @@ const requireVerifiedUser = async (req, res, next) => {
   }
 };
 
-// Legacy alias to prevent breaking other routes
-const protect = verifyToken;
+const checkApproved = requireVerifiedUser;
+
+// 4. authorizeRoles — restricts route to specific roles
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ message: "Access denied: insufficient permissions" });
     }
     next();
   };
 };
-const checkApproved = requireVerifiedUser;
 
 module.exports = { 
   verifyToken, requireAdmin, requireVerifiedUser,

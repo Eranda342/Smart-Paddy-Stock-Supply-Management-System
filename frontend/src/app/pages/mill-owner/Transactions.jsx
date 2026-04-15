@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { AlertTriangle } from "lucide-react";
+import RaiseDisputeModal from "../../components/RaiseDisputeModal";
 
 const socket = io("http://localhost:5000");
 
@@ -8,6 +10,7 @@ export default function MillOwnerTransactions() {
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [disputeTxn, setDisputeTxn] = useState(null);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -178,12 +181,21 @@ export default function MillOwnerTransactions() {
 
                   <td className="p-4">
 
-                    <button
-                      onClick={() => navigate(`/mill-owner/transactions/${txn._id}`)}
-                      className="text-[#22C55E] hover:underline text-sm"
-                    >
-                      View
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => navigate(`/mill-owner/transactions/${txn._id}`)}
+                        className="text-[#22C55E] hover:underline text-sm"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => setDisputeTxn(txn)}
+                        title="Raise Dispute"
+                        className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
 
                   </td>
 
@@ -207,6 +219,15 @@ export default function MillOwnerTransactions() {
         </div>
 
       </div>
+
+      {/* Raise Dispute Modal */}
+      {disputeTxn && (
+        <RaiseDisputeModal
+          preselectedTransaction={disputeTxn}
+          onClose={() => setDisputeTxn(null)}
+          onSuccess={() => setDisputeTxn(null)}
+        />
+      )}
 
     </div>
 

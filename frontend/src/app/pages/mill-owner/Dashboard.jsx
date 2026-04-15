@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, ShoppingCart, MessageSquare, Package, DollarSign, MapPin, Leaf, FileText, FileSpreadsheet, Zap, BarChart2, Calendar, X } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from "socket.io-client";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -29,11 +29,13 @@ const getLogoBase64 = () => {
   });
 };
 
+import { getRangeDates, filterByDate, computeTrendData, computeDistributions, computeStats, computeGrowth, getRangeLabel } from '../../../utils/analyticsEngine';
+
 export default function MillOwnerDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [range, setRange] = useState("all");
+  const [range, setRange] = useState("1y");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [step, setStep] = useState(0);
   // Custom date range state
@@ -83,10 +85,8 @@ export default function MillOwnerDashboard() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        let url = `http://localhost:5000/api/dashboard/millOwner?range=${range}`;
-        if (appliedCustomRange) {
-          url = `http://localhost:5000/api/dashboard/millOwner?range=${range}&startDate=${appliedCustomRange.startDate}&endDate=${appliedCustomRange.endDate}`;
-        }
+        // Always fetch full details - filtering runs LOCALLY
+        let url = `http://localhost:5000/api/dashboard/millOwner?range=all`;
         const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -105,7 +105,84 @@ export default function MillOwnerDashboard() {
       }
     };
     fetchDashboard();
-  }, [range, refreshTrigger, appliedCustomRange]);
+  }, [refreshTrigger]);
+
+  // ── Stable cache for trend computation ────────────────────────────────────────────────
+  const trendCache = useRef(new Map());
+
+  const { startDate, endDate } = useMemo(
+    () => getRangeDates(range, appliedCustomRange),
+    [range, appliedCustomRange]
+  );
+
+  const rawTransactions = useMemo(() => data?.rawTransactions || [], [data]);
+
+  const filteredData = useMemo(
+    () => filterByDate(rawTransactions, startDate, endDate),
+    [rawTransactions, startDate, endDate]
+  );
+
+  const computedStats = useMemo(
+    () => computeStats(filteredData, data?.allListings),
+    [filteredData, data?.allListings]
+  );
+
+  const growth = useMemo(
+    () => computeGrowth(rawTransactions, range, appliedCustomRange?.startDate, appliedCustomRange?.endDate),
+    [rawTransactions, range, appliedCustomRange]
+  );
+
+  const salesData = useMemo(() => {
+    const cacheKey = `${range}|${startDate}|${endDate}|${filteredData.length}`;
+    if (trendCache.current.has(cacheKey)) return trendCache.current.get(cacheKey);
+    const result = computeTrendData(filteredData, startDate, endDate, range, appliedCustomRange);
+    if (trendCache.current.size >= 10) trendCache.current.delete(trendCache.current.keys().next().value);
+    trendCache.current.set(cacheKey, result);
+    return result;
+  }, [filteredData, startDate, endDate, range, appliedCustomRange]);
+
+  const { paddyData: paddyDistribution } = useMemo(
+    () => computeDistributions(filteredData),
+    [filteredData]
+  );
+
+  const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#22C55E', '#F59E0B', '#ef4444'];
+  const formattedPaddyDist = useMemo(
+    () => paddyDistribution.map((d, i) => ({ ...d, color: colors[i % colors.length] })),
+    [paddyDistribution]
+  );
+
+  const recentActivity = useMemo(() => [...filteredData]
+    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5)
+    .map((t, idx) => {
+      let statusColor = 'text-gray-500 bg-gray-500/10';
+      if (t.status === 'COMPLETED' || t.status === 'DELIVERED') statusColor = 'text-green-500 bg-green-500/10';
+      else if (t.status === 'DELIVERY_IN_PROGRESS') statusColor = 'text-blue-500 bg-blue-500/10';
+      else if (t.status === 'ORDER_CREATED' || t.status === 'PAYMENT_COMPLETED') statusColor = 'text-yellow-500 bg-yellow-500/10';
+      return {
+        id: t._id || idx,
+        date: new Date(t.createdAt).toLocaleDateString(),
+        paddyType: t.listing?.paddyType || "Paddy",
+        quantity: `${t.quantityKg || 0} kg`,
+        status: (t.status || "").replace("_", " "),
+        statusColor
+      };
+    }), [filteredData]);
+
+  const topLocation = useMemo(() => {
+    const map = {};
+    filteredData.forEach(t => {
+      const loc = t.listing?.location?.district || t.listing?.location || "Sri Lanka";
+      map[loc] = (map[loc] || 0) + (t.totalAmount || 0);
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
+  }, [filteredData]);
+
+  const bestSelling = useMemo(
+    () => [...formattedPaddyDist].sort((a,b) => b.value - a.value)[0]?.name || "N/A",
+    [formattedPaddyDist]
+  );
 
   // Custom range helpers
   const today = new Date().toISOString().split("T")[0];
@@ -121,7 +198,7 @@ export default function MillOwnerDashboard() {
       return;
     }
     setAppliedCustomRange({ startDate: customStart, endDate: customEnd });
-    setRange("all");
+    setRange("custom"); // signal engine to use custom window grouping
     setShowDatePicker(false);
   };
 
@@ -152,8 +229,8 @@ export default function MillOwnerDashboard() {
     const fmtPdfDate = (iso) => new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" });
     let periodLabel = appliedCustomRange 
       ? `${fmtPdfDate(appliedCustomRange.startDate)} → ${fmtPdfDate(appliedCustomRange.endDate)}` 
-      : range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time";
-    let rangeSlug = appliedCustomRange ? `${appliedCustomRange.startDate}_to_${appliedCustomRange.endDate}` : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "All-Time");
+      : range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "Last 12 Months";
+    let rangeSlug = appliedCustomRange ? `${appliedCustomRange.startDate}_to_${appliedCustomRange.endDate}` : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "Last-12-Months");
     
     // Sheet 1: Summary
     const fmt = (n) => new Intl.NumberFormat("en-LK").format(n || 0);
@@ -165,10 +242,10 @@ export default function MillOwnerDashboard() {
       [],
       ["SUMMARY"],
       [],
-      ["Total Spend:", `Rs ${fmt(data?.stats?.totalSpend)}`],
-      ["Monthly Procurement (kg):", fmt(data?.stats?.monthlyProcurementKg)],
-      ["Best Selling Paddy:", data?.bestSelling || "N/A"],
-      ["Highest Sourcing Area:", Object.entries(data?.locations || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A"]
+      ["Total Spend:", `Rs ${fmt(computedStats.totalRevenue)}`],
+      ["Monthly Procurement (kg):", fmt(computedStats.completedDeliveries)],
+      ["Best Selling Paddy:", bestSelling || "N/A"],
+      ["Highest Sourcing Area:", topLocationStr || "N/A"]
     ];
     
     const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
@@ -177,13 +254,13 @@ export default function MillOwnerDashboard() {
     
     // Sheet 2: Transactions
     const headers = [["Date", "Paddy Type", "Quantity (kg)", "Price (Rs)", "District", "Buyer/Seller"]];
-    const rows = (data.recent || []).map(t => [
-      new Date(t.createdAt).toLocaleDateString("en-LK"),
-      t.listing?.paddyType || "N/A",
-      t.quantityKg || 0,
-      t.totalAmount || t.totalPrice || t.price || 0,
-      t.listing?.location?.district || "N/A",
-      t.farmer?.fullName || t.seller?.fullName || "N/A"
+    const rows = (recentActivity || []).map(t => [
+      t.date,
+      t.paddyType,
+      t.quantity,
+      t.price,
+      "Sri Lanka",
+      t.farmer
     ]);
     
     const wsTransactions = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
@@ -245,7 +322,7 @@ export default function MillOwnerDashboard() {
     if (appliedCustomRange) {
       periodLabel = `Period: ${fmtPdfDate(appliedCustomRange.startDate)}  →  ${fmtPdfDate(appliedCustomRange.endDate)}`;
     } else {
-      periodLabel = `Period: ${range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time"}`;
+      periodLabel = `Period: ${range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "Last 12 Months"}`;
     }
     doc.setFontSize(8);
     doc.setTextColor(180, 230, 180);
@@ -254,7 +331,7 @@ export default function MillOwnerDashboard() {
     // Range badge (top-right pill)
     const badgeLabel = appliedCustomRange
       ? `${fmtPdfDate(appliedCustomRange.startDate)} -> ${fmtPdfDate(appliedCustomRange.endDate)}`
-      : (range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time");
+      : (range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "Last 12 Months");
     doc.setFontSize(7);
     const badgeW = Math.max(32, doc.getTextWidth(badgeLabel) + 8);
     doc.setFillColor(...GREEN);
@@ -267,10 +344,7 @@ export default function MillOwnerDashboard() {
     let y = 58;
 
     // No-data guard
-    const hasAnyData =
-      Object.keys(data?.distribution || {}).length > 0 ||
-      Object.keys(data?.monthly || {}).length > 0 ||
-      (data?.recent?.length || 0) > 0;
+    const hasAnyData = filteredData.length > 0;
     if (!hasAnyData) {
       doc.setFont("helvetica", "italic");
       doc.setFontSize(11);
@@ -293,11 +367,11 @@ export default function MillOwnerDashboard() {
     y += 6;
 
     const kpis = [
-      { label: "Active Purchases",       value: fmt(data?.stats?.activePurchases) },
-      { label: "Ongoing Negotiations",   value: fmt(data?.stats?.ongoingNegotiations) },
-      { label: "Monthly Procurement",    value: `${fmt(data?.stats?.monthlyProcurementKg)} kg` },
-      { label: "Total Spend",            value: fmtCur(data?.stats?.totalSpend) },
-      { label: "Best Selling Type",      value: data?.bestSelling || "N/A" },
+      { label: "Active Purchases",       value: fmt(computedStats.activeListings) },
+      { label: "Ongoing Negotiations",   value: fmt(computedStats.ongoingTransactions) },
+      { label: "Monthly Procurement",    value: `${fmt(computedStats.completedDeliveries)} kg` },
+      { label: "Total Spend",            value: fmtCur(computedStats.totalRevenue) },
+      { label: "Best Selling Type",      value: bestSelling || "N/A" },
       { label: "Highest Sourcing Area",  value: topLocationStr || "N/A" },
     ];
 
@@ -360,7 +434,7 @@ export default function MillOwnerDashboard() {
       }
     }
 
-    if (distChartRef.current && procurementData && procurementData.length > 0 && procurementData[0].type !== "No Data") {
+    if (distChartRef.current && formattedPaddyDist && formattedPaddyDist.length > 0 && formattedPaddyDist[0].name !== "No Data") {
       try {
         const canvas = await html2canvas(distChartRef.current, { scale: 2 });
         const imgData = canvas.toDataURL("image/png");
@@ -401,10 +475,9 @@ export default function MillOwnerDashboard() {
     doc.line(14, y, W - 14, y);
     y += 4;
 
-    const last6Months = generateLast6Months();
-    const trendRows = last6Months.map(month => [
-      month,
-      fmtCur(data?.monthly?.[month] || 0),
+    const trendRows = salesData.map(month => [
+      month.month,
+      fmtCur(month.revenue || 0),
     ]);
 
     autoTable(doc, {
@@ -430,13 +503,12 @@ export default function MillOwnerDashboard() {
     doc.line(14, y, W - 14, y);
     y += 4;
 
-    const distEntries = Object.entries(data?.distribution || {})
-      .sort((a, b) => b[1] - a[1]);
-    const totalKg = distEntries.reduce((s, [, v]) => s + v, 0);
-    const distRows = distEntries.map(([type, qty]) => [
-      type,
-      `${fmt(qty)} kg`,
-      totalKg > 0 ? `${((qty / totalKg) * 100).toFixed(1)}%` : "0%",
+    const distEntries = paddyDistribution;
+    const totalKg = distEntries.reduce((s, v) => s + v.value, 0);
+    const distRows = distEntries.map(type => [
+      type.name,
+      `${fmt(type.value)} kg`,
+      totalKg > 0 ? `${((type.value / totalKg) * 100).toFixed(1)}%` : "0%",
     ]);
 
     autoTable(doc, {
@@ -514,62 +586,7 @@ export default function MillOwnerDashboard() {
   if (loading) return <div className="flex h-[50vh] items-center justify-center text-[#22C55E] font-medium">Loading metrics...</div>;
   if (error || !data) return <div className="flex h-[50vh] items-center justify-center text-red-500 font-medium">{error || "No data"}</div>;
 
-  const generateLast6Months = () => {
-    const result = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      result.push(d.toLocaleString("default", { month: "short" }));
-    }
-    return result;
-  };
-
-  const last6Months = generateLast6Months();
-
-  const salesData = data && Object.keys(data.monthly || {}).length > 0 
-    ? last6Months.map(month => ({ month, sales: data.monthly[month] || 0 }))
-    : [{ month: "No Data", sales: 0 }];
-
-  const procurementData = Object.keys(data.distribution || {}).length > 0
-    ? Object.keys(data.distribution).map(type => ({
-      type,
-      quantity: data.distribution[type]
-    }))
-    : [{ type: "No Data", quantity: 0 }];
-
-  const recentActivity = (data.recent || []).map((t, idx) => {
-    let statusColor = 'text-gray-500 bg-gray-500/10';
-    let mappedStatus = 'Pending';
-    
-    if (t.status === 'COMPLETED' || t.status === 'DELIVERED') {
-      statusColor = 'text-green-500 bg-green-500/10';
-      mappedStatus = 'Completed';
-    }
-    else if (t.status === 'DELIVERY_IN_PROGRESS') {
-      statusColor = 'text-blue-500 bg-blue-500/10';
-      mappedStatus = 'In Transit';
-    }
-    else if (t.status === 'ORDER_CREATED' || t.status === 'PAYMENT_COMPLETED' || t.status === 'TRANSPORT_PENDING') {
-      statusColor = 'text-yellow-500 bg-yellow-500/10';
-      mappedStatus = 'Pending';
-    }
-    
-    return {
-      id: t._id || idx,
-      date: new Date(t.createdAt).toLocaleDateString(),
-      farmer: t.farmer?.fullName || "Farmer",
-      paddyType: t.listing?.paddyType || "Paddy",
-      quantity: `${t.quantityKg || 0} kg`,
-      price: new Intl.NumberFormat("en-LK", { style: "currency", currency: "LKR", maximumFractionDigits: 0 }).format(t.totalAmount || 0),
-      status: mappedStatus,
-      statusColor
-    };
-  });
-
-  const sparkData = last6Months.map(month => ({
-    month,
-    value: data?.monthly?.[month] || 0
-  }));
+  // Legacy block removed - unified API handles standard mappings natively
 
   const topLocationEntry = Object.entries(data.locations || {}).sort((a, b) => b[1] - a[1])[0];
   const topLocationStr = topLocationEntry?.[0] || "N/A";
@@ -617,7 +634,7 @@ export default function MillOwnerDashboard() {
           </div>
           {/* Range pills */}
           <div className="flex items-center p-1 rounded-xl gap-1" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            {[['7d','7 Days'],['30d','30 Days'],['all','All Time']].map(([val, label]) => (
+            {[['7d','7 Days'],['30d','30 Days'],['1y','1 Year']].map(([val, label]) => (
               <button key={val} onClick={() => { setRange(val); handleClearCustomRange(); }}
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200"
                 style={range === val && !appliedCustomRange ? { background: '#22C55E', color: '#000', boxShadow: '0 0 12px rgba(34,197,94,0.3)' } : { color: 'rgba(148,163,184,0.7)' }}>
@@ -713,10 +730,10 @@ export default function MillOwnerDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {[
-          { icon: ShoppingCart, color: '#22C55E', label: 'Active Purchases',      value: data?.stats?.activePurchases       || 0, growth: 8,  prefix: '',     suffix: '' },
-          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Negotiations',  value: data?.stats?.ongoingNegotiations   || 0, growth: 12, prefix: '',     suffix: '' },
-          { icon: Package,      color: '#A855F7', label: 'Monthly Procurement',   value: data?.stats?.monthlyProcurementKg  || 0, growth: 15, prefix: '',     suffix: ' kg' },
-          { icon: DollarSign,   color: '#F59E0B', label: 'Total Spend',           value: data?.stats?.totalSpend            || 0, growth: data?.stats?.growth||0, prefix: 'Rs ', suffix: '' },
+          { icon: ShoppingCart, color: '#22C55E', label: 'Active Purchases',      value: computedStats.activeListings, growth: 8,  prefix: '',     suffix: '' },
+          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Negotiations',  value: computedStats.ongoingTransactions, growth: 12, prefix: '',     suffix: '' },
+          { icon: Package,      color: '#A855F7', label: 'Monthly Procurement',   value: computedStats.completedDeliveries, growth: 15, prefix: '',     suffix: '' },
+          { icon: DollarSign,   color: '#F59E0B', label: 'Total Spend',           value: computedStats.totalRevenue, growth: growth, prefix: 'Rs ', suffix: '' },
         ].map(({ icon: Icon, color, label, value, growth, prefix, suffix }, i) => (
           <div key={i}
             className="relative overflow-hidden rounded-2xl p-6 border cursor-default group transition-all duration-300"
@@ -762,7 +779,7 @@ export default function MillOwnerDashboard() {
             <p className="text-xs font-semibold mb-1" style={{ color: 'rgba(148,163,184,0.6)' }}>PROCUREMENT INSIGHT</p>
             <p className="text-sm font-medium text-white">
               {(() => {
-                const growth = data?.stats?.growth || 0;
+                if (growth > 15) return 'Strong growth! You are scaling fast. Your procurement is performing above benchmark.';
                 if (growth > 0) return `Procurement increased ${growth.toFixed(1)}% this month. Keep sourcing to maintain momentum.`;
                 if (growth < 0) return `Procurement decreased ${Math.abs(growth).toFixed(1)}% this month. Consider expanding your sourcing locations.`;
                 return 'Procurement is stable. Explore new paddy types and districts to diversify supply.';
@@ -805,12 +822,16 @@ export default function MillOwnerDashboard() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-base font-semibold text-white">Procurement Trend</h2>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Monthly spending - Last 6 months</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>
+                Spending — {getRangeLabel(range, appliedCustomRange)}
+              </p>
             </div>
             <span className="text-xs font-semibold px-3 py-1 rounded-lg"
-              style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.2)' }}>6M</span>
+              style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.2)' }}>
+              {appliedCustomRange ? 'Custom' : range === '7d' ? '7D' : range === '30d' ? '30D' : '1Y'}
+            </span>
           </div>
-          {salesData[0].month === 'No Data' ? (
+          {salesData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-sm" style={{ color: 'rgba(148,163,184,0.5)' }}>
               <BarChart2 className="w-8 h-8 mb-3 opacity-30" />
               No data yet - start procuring to see insights
@@ -831,7 +852,8 @@ export default function MillOwnerDashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8} />
+                <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8}
+                  interval={salesData.length > 14 ? Math.ceil(salesData.length / 10) - 1 : 0} />
                 <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} width={72}
                   tickFormatter={v => v >= 1000000 ? `Rs ${(v/1000000).toFixed(1)}M` : v >= 1000 ? `Rs ${(v/1000).toFixed(0)}K` : `Rs ${v}`} />
                 <Tooltip
@@ -839,7 +861,7 @@ export default function MillOwnerDashboard() {
                   cursor={{ stroke: 'rgba(34,197,94,0.3)', strokeWidth: 1, strokeDasharray: '4 4' }}
                   labelStyle={{ color: 'rgba(148,163,184,0.7)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}
                   itemStyle={{ color: '#22C55E', fontWeight: 700 }} />
-                <Area type="monotone" dataKey="sales" name="Spend"
+                <Area type="monotone" dataKey="revenue" name="Spend"
                   stroke="url(#millStrokeGrad)" strokeWidth={2.5} fill="url(#millAreaGrad)"
                   dot={false} activeDot={{ r: 6, fill: '#22C55E', strokeWidth: 2, stroke: 'rgba(34,197,94,0.3)' }}
                   isAnimationActive animationDuration={1200} animationEasing="ease-out" />
@@ -857,14 +879,14 @@ export default function MillOwnerDashboard() {
               <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Quantity sourced by type (kg)</p>
             </div>
           </div>
-          {procurementData[0].type === 'No Data' ? (
+          {formattedPaddyDist.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-sm" style={{ color: 'rgba(148,163,184,0.5)' }}>
               <Leaf className="w-8 h-8 mb-3 opacity-30" />
               No procurement data yet
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={procurementData} barCategoryGap="30%" margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+              <BarChart data={formattedPaddyDist} barCategoryGap="30%" margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="millBarGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#22C55E" stopOpacity={0.9} />
@@ -872,7 +894,7 @@ export default function MillOwnerDashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="type" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8} />
+                <XAxis dataKey="name" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8} />
                 <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} width={70}
                   allowDecimals={false}
                   tickFormatter={v => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : `${v}`} />
@@ -882,7 +904,7 @@ export default function MillOwnerDashboard() {
                   labelStyle={{ color: 'rgba(148,163,184,0.7)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}
                   itemStyle={{ color: '#22C55E', fontWeight: 700 }}
                   formatter={v => [`${v.toLocaleString()} kg`, 'Quantity']} />
-                <Bar dataKey="quantity" fill="url(#millBarGrad)" radius={[6,6,0,0]}
+                <Bar dataKey="value" fill="url(#millBarGrad)" radius={[6,6,0,0]}
                   isAnimationActive animationDuration={900} animationEasing="ease-out" />
               </BarChart>
             </ResponsiveContainer>

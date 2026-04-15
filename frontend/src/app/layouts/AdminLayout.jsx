@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sprout, LayoutDashboard, ShieldCheck, Users, FileText, LogOut,
-  Search, Bell, Sun, Moon, Package, MessageSquare, Receipt, Truck,
+  Search, Bell, Package, MessageSquare, Receipt, Truck,
   AlertCircle, Settings, CheckCheck, X, RefreshCw, Info
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -31,11 +31,10 @@ const NavItem = ({ path, icon: Icon, label, badge, exact = false }) => {
   return (
     <Link
       to={path}
-      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg mb-0.5 transition-all duration-200 hover:translate-x-1 ${
-        active
+      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg mb-0.5 transition-all duration-200 hover:translate-x-1 ${active
           ? 'bg-[#22C55E]/10 text-foreground border border-[#22c55e]/30 shadow-[0_0_12px_rgba(34,197,94,0.07)]'
           : 'text-sidebar-foreground hover:bg-sidebar-accent'
-      }`}
+        }`}
     >
       <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-[#22c55e]' : 'opacity-70'}`} />
       <span className={`text-sm font-medium flex-1 ${active ? 'text-foreground' : ''}`}>{label}</span>
@@ -52,11 +51,11 @@ const NavItem = ({ path, icon: Icon, label, badge, exact = false }) => {
 // Notification types → icons + colors
 // ─────────────────────────────────────────────────────────────────
 const NOTIF_ICONS = {
-  kyc:         { icon: ShieldCheck, color: '#F97316' },
-  listing:     { icon: Package,     color: '#3B82F6' },
-  transaction: { icon: Receipt,     color: '#A855F7' },
-  dispute:     { icon: AlertCircle, color: '#EF4444' },
-  system:      { icon: Info,        color: '#22C55E' },
+  kyc: { icon: ShieldCheck, color: '#F97316' },
+  listing: { icon: Package, color: '#3B82F6' },
+  transaction: { icon: Receipt, color: '#A855F7' },
+  dispute: { icon: AlertCircle, color: '#EF4444' },
+  system: { icon: Info, color: '#22C55E' },
 };
 
 function NotifIcon({ type }) {
@@ -162,9 +161,8 @@ function NotificationDropdown({ onClose, pendingKyc }) {
             <button
               key={n.id}
               onClick={() => handleClick(n)}
-              className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b border-border/50 last:border-0 ${
-                n.action ? 'cursor-pointer' : 'cursor-default'
-              }`}
+              className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b border-border/50 last:border-0 ${n.action ? 'cursor-pointer' : 'cursor-default'
+                }`}
             >
               <NotifIcon type={n.type} />
               <div className="flex-1 min-w-0">
@@ -202,7 +200,7 @@ function NotificationDropdown({ onClose, pendingKyc }) {
 // ─────────────────────────────────────────────────────────────────
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [pendingKyc, setPendingKyc] = useState(0);
@@ -269,10 +267,10 @@ export default function AdminLayout() {
             </SidebarSection>
 
             <SidebarSection title="Marketplace">
-              <NavItem path="/admin/listings"     icon={Package}      label="Listings" />
+              <NavItem path="/admin/listings" icon={Package} label="Listings" />
               <NavItem path="/admin/negotiations" icon={MessageSquare} label="Negotiations" />
-              <NavItem path="/admin/transactions" icon={Receipt}       label="Transactions" />
-              <NavItem path="/admin/transport"    icon={Truck}         label="Transport" />
+              <NavItem path="/admin/transactions" icon={Receipt} label="Transactions" />
+              <NavItem path="/admin/transport" icon={Truck} label="Transport" />
             </SidebarSection>
 
             <SidebarSection title="Analytics">
@@ -280,8 +278,8 @@ export default function AdminLayout() {
             </SidebarSection>
 
             <SidebarSection title="Support">
-              <NavItem path="/admin/disputes"            icon={AlertCircle} label="Disputes" />
-              <NavItem path="/admin/notifications-center" icon={Bell}       label="Notifications" />
+              <NavItem path="/admin/disputes" icon={AlertCircle} label="Disputes" />
+              <NavItem path="/admin/notifications-center" icon={Bell} label="Notifications" />
             </SidebarSection>
 
             <SidebarSection title="Configuration">
@@ -316,17 +314,6 @@ export default function AdminLayout() {
             {/* Right controls */}
             <div className="flex items-center gap-2">
 
-              {/* Theme toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                title="Toggle theme"
-                className="bg-muted hover:bg-muted/70"
-              >
-                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </Button>
-
               {/* Notification Bell */}
               <div className="relative">
                 <Button
@@ -334,9 +321,8 @@ export default function AdminLayout() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowNotifications((v) => !v)}
-                  className={`relative ${
-                    showNotifications ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-muted hover:bg-muted/70'
-                  }`}
+                  className={`relative ${showNotifications ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-muted hover:bg-muted/70'
+                    }`}
                   title="Notifications"
                 >
                   <Bell className="w-4 h-4" />

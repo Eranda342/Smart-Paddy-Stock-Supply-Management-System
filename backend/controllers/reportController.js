@@ -26,7 +26,15 @@ const executeController = (controller, req) => {
 
 const getReportData = async ({ userId, startDate, endDate, range, req }) => {
   if (req.user && req.user.role === 'ADMIN') {
+    
+    // BACKEND FIX: In the PDF generation controller, BEFORE generating report, apply filter
+    // Pass the startDate and endDate into the requst query so the 'ONE source of truth' handles it perfectly
+    req.query.startDate = startDate || null;
+    req.query.endDate = endDate || null;
+    req.query.range = range || "all";
+
     // Reuse existing admin analytics endpoints logic without duplicating aggregations
+    // ALL exports use the SAME filtered dataset
     const [overview, conversion, revenueData, usersData, paddyData, districtData, txRes] = await Promise.all([
       executeController(adminController.getAnalyticsOverview, req),
       executeController(adminController.getAnalyticsConversion, req),

@@ -1,14 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Download, FileText, TrendingUp, Users, Package, Receipt, Award, MapPin, Truck, Crosshair } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { FileText, TrendingUp, Users, Package, Receipt, Award, MapPin, Truck, Download, Crosshair, Calendar, X } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import { generateReportPDF } from '../../../utils/pdfGenerator';
-import { useRef } from 'react';
 
+import { getRangeDates, filterByDate, computeTrendData, computeDistributions, computeStats, getRangeLabel } from '../../../utils/analyticsEngine';
 
 const API_BASE = 'http://localhost:5000/api/admin/analytics';
 const API_TXN = 'http://localhost:5000/api/admin/transactions';
@@ -24,8 +22,61 @@ export default function AdminReports() {
   const [paddyData, setPaddyData] = useState([]);
   const [districtData, setDistrictData] = useState([]);
   const [transactionsRaw, setTransactionsRaw] = useState([]);
-  const chartRef = useRef(null);
+  const revenueChartRef = useRef(null);
+  const usersChartRef = useRef(null);
 
+  // Date Filtering State
+  const [range, setRange] = useState('1y');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [appliedCustomRange, setAppliedCustomRange] = useState(null);
+  const [dateError, setDateError] = useState("");
+  const datePickerRef = useRef(null);
+
+  // Close date picker on outer click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target)) {
+        setShowDatePicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const handleApplyCustomRange = () => {
+    setDateError("");
+    if (!customStart || !customEnd) {
+      setDateError("Please select both start and end dates.");
+      return;
+    }
+    if (new Date(customEnd) < new Date(customStart)) {
+      setDateError("End date cannot be before start date.");
+      return;
+    }
+    setAppliedCustomRange({ startDate: customStart, endDate: customEnd });
+    setRange("custom"); // signal the engine to use custom grouping logic
+    setShowDatePicker(false);
+  };
+
+  const handleClearCustomRange = () => {
+    setAppliedCustomRange(null);
+    setCustomStart("");
+    setCustomEnd("");
+    setDateError("");
+  };
+
+  const formatDisplayDate = (iso) => {
+    return new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" });
+  };
+
+  const [rawTransactionsAll, setRawTransactionsAll] = useState([]);
+  const trendCache = useRef(new Map()); // in-memory cache: cacheKey → salesDataArray
+
+  // ── Fetch raw data ONCE (or on manual refresh) ────────────────────────────
   useEffect(() => {
     const fetchAnalytics = async () => {
       setLoading(true);
@@ -33,27 +84,29 @@ export default function AdminReports() {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
 
-        const [oRes, cRes, rRes, uRes, pRes, dRes, tRes] = await Promise.all([
-          fetch(`${API_BASE}/overview`, { headers }),
-          fetch(`${API_BASE}/conversion`, { headers }),
-          fetch(`${API_BASE}/revenue`, { headers }),
-          fetch(`${API_BASE}/users`, { headers }),
-          fetch(`${API_BASE}/paddy`, { headers }),
-          fetch(`${API_BASE}/districts`, { headers }),
-          fetch(`${API_TXN}`, { headers })
+        const [oRes, cRes, uRes, tRes] = await Promise.all([
+          fetch(`${API_BASE}/overview?range=all`, { headers }),
+          fetch(`${API_BASE}/conversion?range=all`, { headers }),
+          fetch(`${API_BASE}/users?range=all`, { headers }),
+          fetch(`${API_TXN}?range=all`, { headers })
         ]);
 
-        if (!oRes.ok || !rRes.ok || !uRes.ok || !pRes.ok || !dRes.ok || !cRes.ok || !tRes.ok) throw new Error('Failed to fetch analytics');
+        if (!oRes.ok || !uRes.ok || !cRes.ok || !tRes.ok) throw new Error('Failed to fetch analytics');
 
-        setOverview(await oRes.json());
+        const rawOverview = await oRes.json();
         setConversion(await cRes.json());
-        setRevenueData(await rRes.json());
         setUsersData(await uRes.json());
-        setPaddyData(await pRes.json());
-        setDistrictData(await dRes.json());
-        
+
         const txnData = await tRes.json();
-        setTransactionsRaw(txnData.transactions || []);
+        const allTxns = txnData.transactions || [];
+        setRawTransactionsAll(allTxns);
+
+        // Store backend-level totals (users/listings don't filter client-side)
+        setOverview(prev => ({
+          ...prev,
+          totalUsers:    rawOverview.totalUsers    || 0,
+          totalListings: rawOverview.totalListings || 0
+        }));
       } catch (err) {
         toast.error('Error loading analytics');
       } finally {
@@ -61,18 +114,73 @@ export default function AdminReports() {
       }
     };
     fetchAnalytics();
-  }, []);
+  }, []); // fetch once
 
-  // ─── Derived values used by both exports ───────────────────────────────────
-  const avgTxnValueCalc = overview.totalTransactions > 0
-    ? Math.round(overview.totalRevenue / overview.totalTransactions)
-    : 0;
-  const deliveryRateCalc = overview.totalTransactions > 0
-    ? ((overview.completedDeliveries / overview.totalTransactions) * 100).toFixed(1)
-    : '0.0';
-  const topPaddyCalc   = paddyData.length  > 0 ? [...paddyData].sort((a,b)=>b.value-a.value)[0].name : '—';
-  const topDistrictCalc = districtData.length > 0 ? [...districtData].sort((a,b)=>b.value-a.value)[0].name : '—';
-  const generatedAt = new Date().toLocaleString('en-LK', { dateStyle: 'long', timeStyle: 'short' });
+  // ── Recompute derived data whenever range or raw data changes ─────────────
+  useEffect(() => {
+    if (rawTransactionsAll.length === 0) return; // nothing to compute yet
+
+    const { startDate, endDate } = getRangeDates(range, appliedCustomRange);
+    const filteredTxns = filterByDate(rawTransactionsAll, startDate, endDate);
+
+    console.log('[Admin Analytics] startDate:', startDate, 'endDate:', endDate);
+    console.log('[Admin Analytics] Filtered count:', filteredTxns.length);
+
+    const computedStats = computeStats(filteredTxns, []);
+
+    // Use cache for expensive trend computation
+    const cacheKey = `${range}|${String(startDate)}|${String(endDate)}|${filteredTxns.length}`;
+    let salesDataArray;
+    if (trendCache.current.has(cacheKey)) {
+      salesDataArray = trendCache.current.get(cacheKey);
+    } else {
+      salesDataArray = computeTrendData(filteredTxns, startDate, endDate, range, appliedCustomRange);
+      if (trendCache.current.size >= 10) trendCache.current.delete(trendCache.current.keys().next().value);
+      trendCache.current.set(cacheKey, salesDataArray);
+    }
+
+    const { paddyData: computedPaddy, districtData: computedDistrict } = computeDistributions(filteredTxns);
+
+    console.log('[Admin Analytics] Trend data points:', salesDataArray.length);
+
+    setOverview(prev => ({
+      ...prev,
+      totalTransactions:   computedStats.totalTransactions,
+      totalRevenue:        computedStats.totalRevenue,
+      completedDeliveries: computedStats.completedDeliveries
+    }));
+
+    setRevenueData(salesDataArray);
+    setPaddyData(computedPaddy);
+    setDistrictData(computedDistrict);
+    setTransactionsRaw(filteredTxns);
+  }, [range, appliedCustomRange, rawTransactionsAll]);
+
+  // ── Derived values for exports — memoised, don't recompute on every render ──
+  const avgTxnValueCalc = useMemo(() =>
+    overview.totalTransactions > 0
+      ? Math.round(overview.totalRevenue / overview.totalTransactions)
+      : 0
+  , [overview.totalRevenue, overview.totalTransactions]);
+
+  const deliveryRateCalc = useMemo(() =>
+    overview.totalTransactions > 0
+      ? ((overview.completedDeliveries / overview.totalTransactions) * 100).toFixed(1)
+      : '0.0'
+  , [overview.completedDeliveries, overview.totalTransactions]);
+
+  const topPaddyCalc = useMemo(() =>
+    paddyData.length > 0 ? [...paddyData].sort((a,b) => b.value - a.value)[0].name : '—'
+  , [paddyData]);
+
+  const topDistrictCalc = useMemo(() =>
+    districtData.length > 0 ? [...districtData].sort((a,b) => b.value - a.value)[0].name : '—'
+  , [districtData]);
+
+  const generatedAt = useMemo(
+    () => new Date().toLocaleString('en-LK', { dateStyle: 'long', timeStyle: 'short' }),
+    [] // computed once at mount — report generation timestamp
+  );
 
   // ─── Export Excel (multi-sheet) ─────────────────────────────────────────────
   const exportExcel = () => {
@@ -80,22 +188,31 @@ export default function AdminReports() {
 
     const wb = XLSX.utils.book_new();
 
+    const fmtPdfDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" }) : '';
+    let periodLabel = "Last 12 Months";
+    if (appliedCustomRange) {
+      periodLabel = `${fmtPdfDate(appliedCustomRange.startDate)} to ${fmtPdfDate(appliedCustomRange.endDate)}`;
+    } else if (range === "7d") {
+      periodLabel = "Last 7 Days";
+    } else if (range === "30d") {
+      periodLabel = "Last 30 Days";
+    }
+
     // ── Sheet 1: Platform Summary ──────────────────────────────────────────
     const summaryRows = [
       ['AgroBridge'],
       ['Report Name:', 'Platform Analytics Report'],
-      [`Date:`, generatedAt],
+      [`Generated On:`, generatedAt],
+      [`Report Period:`, periodLabel],
       [],
       ['PLATFORM OVERVIEW'],
       ['Metric', 'Value'],
-      ['Total Revenue (Rs)', overview.totalRevenue],
+      ['Total Revenue', `Rs ${overview.totalRevenue.toLocaleString()}`],
       ['Total Transactions', overview.totalTransactions],
       ['Total Users', overview.totalUsers],
       ['Total Listings', overview.totalListings],
-      ['Conversion Rate (%)', conversion.rate],
-      ['Completed Deliveries', overview.completedDeliveries],
-      ['Accepted Negotiations', conversion.acceptedNegotiations],
-      ['Avg Transaction Value (Rs)', avgTxnValueCalc],
+      ['Avg Transaction Value', `Rs ${Math.round(avgTxnValueCalc).toLocaleString()}`],
+      ['Overall Conversion Rate (%)', conversion.rate],
       ['Delivery Success Rate (%)', deliveryRateCalc],
       ['Top Paddy Variety', topPaddyCalc],
       ['Top District', topDistrictCalc],
@@ -178,10 +295,10 @@ export default function AdminReports() {
   };
 
   // ─── Export PDF ──────────────────────────────────────────────────────────────
-  const getChartImage = async () => {
-    if (chartRef.current) {
+  const getChartImage = async (ref) => {
+    if (ref && ref.current) {
       try {
-        const canvas = await html2canvas(chartRef.current, { scale: 2, backgroundColor: '#ffffff' });
+        const canvas = await html2canvas(ref.current, { scale: 2, backgroundColor: '#ffffff' });
         return canvas.toDataURL("image/png");
       } catch (err) {
         console.error("Failed to capture chart", err);
@@ -197,10 +314,14 @@ export default function AdminReports() {
     setIsExporting(true);
     const loadingToast = toast.loading('Generating PDF...');
     try {
-      const chartBase64 = await getChartImage();
+      const revenueImage = await getChartImage(revenueChartRef);
+      const usersImage = await getChartImage(usersChartRef);
       await generateReportPDF({
         data: { overview, conversion, revenueData, usersData, paddyData, districtData, transactionsRaw },
-        chartBase64,
+        chartImages: { revenue: revenueImage, users: usersImage },
+        startDate: appliedCustomRange?.startDate || null,
+        endDate: appliedCustomRange?.endDate || null,
+        range: range,
         forEmail: false
       });
       toast.success('PDF report downloaded!', { id: loadingToast });
@@ -218,10 +339,11 @@ export default function AdminReports() {
     setIsExporting(true);
     const loadingToast = toast.loading('Generating and sending email...');
     try {
-      const chartBase64 = await getChartImage();
+      const revenueImage = await getChartImage(revenueChartRef);
+      const usersImage = await getChartImage(usersChartRef);
       const pdfBlob = await generateReportPDF({
         data: { overview, conversion, revenueData, usersData, paddyData, districtData, transactionsRaw },
-        chartBase64,
+        chartImages: { revenue: revenueImage, users: usersImage },
         forEmail: true
       });
 
@@ -242,9 +364,9 @@ export default function AdminReports() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          startDate: '', // Not used in admin dashboard currently
-          endDate: '',
-          range: 'all',
+          startDate: appliedCustomRange?.startDate || '',
+          endDate: appliedCustomRange?.endDate || '',
+          range: range,
           pdfBase64
         })
       });
@@ -275,16 +397,98 @@ export default function AdminReports() {
           <h1 className="text-3xl font-semibold mb-2">Reports & Analytics</h1>
           <p className="text-muted-foreground">Platform insights, growth metrics, and export tools</p>
         </div>
-        <div className="flex gap-3">
-          <button onClick={exportAndEmail} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-            <FileText className="w-4 h-4" /> {isExporting ? 'Processing...' : 'Export & Email'}
-          </button>
-          <button onClick={exportPDF} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-            <FileText className="w-4 h-4" /> Export PDF
-          </button>
-          <button onClick={exportExcel} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            <Download className="w-4 h-4" /> Export Excel
-          </button>
+        <div className="flex flex-col items-end gap-4">
+          
+          {/* Date Filter Strip */}
+          <div className="flex items-center p-1 rounded-xl gap-1" style={{ background: 'rgba(15,23,42,0.03)', border: '1px solid rgba(15,23,42,0.06)' }}>
+            {[['7d','7 Days'],['30d','30 Days'],['1y','1 Year']].map(([val, label]) => (
+              <button key={val} onClick={() => { setRange(val); handleClearCustomRange(); }}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                  range === val && !appliedCustomRange 
+                    ? 'bg-[#22C55E] text-white shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-black/5'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+            {/* Custom Range button */}
+            <div className="relative" ref={datePickerRef}>
+              <button
+                onClick={() => setShowDatePicker(prev => !prev)}
+                className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                  appliedCustomRange 
+                    ? 'bg-[#22C55E] text-white shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-black/5'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                {appliedCustomRange ? `${formatDisplayDate(appliedCustomRange.startDate)} → ${formatDisplayDate(appliedCustomRange.endDate)}` : 'Custom Range'}
+              </button>
+              {showDatePicker && (
+                <div className="absolute top-[calc(100%+8px)] right-0 z-50 p-4 rounded-2xl shadow-2xl min-w-[280px]"
+                  style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <p className="text-xs font-semibold mb-3 text-white/70">SELECT DATE RANGE</p>
+                  <div className="space-y-3" style={{ colorScheme: 'dark' }}>
+                    <div>
+                      <label className="text-xs text-white/50 mb-1 block">Start Date</label>
+                      <input
+                        type="date"
+                        value={customStart}
+                        max={today}
+                        onChange={e => { setCustomStart(e.target.value); setDateError(""); }}
+                        className="w-full px-3 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-[#22C55E]/50"
+                        style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-white/50 mb-1 block">End Date</label>
+                      <input
+                        type="date"
+                        value={customEnd}
+                        min={customStart || undefined}
+                        max={today}
+                        onChange={e => { setCustomEnd(e.target.value); setDateError(""); }}
+                        className="w-full px-3 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-[#22C55E]/50"
+                        style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}
+                      />
+                    </div>
+                    {dateError && <p className="text-xs text-red-400">{dateError}</p>}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={handleApplyCustomRange}
+                        className="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-black hover:opacity-90"
+                        style={{ background: '#22C55E' }}
+                      >
+                        Apply
+                      </button>
+                      {appliedCustomRange && (
+                        <button
+                          onClick={() => { handleClearCustomRange(); setShowDatePicker(false); }}
+                          className="px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-red-500/20"
+                          style={{ background: 'rgba(239,68,68,0.15)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={exportAndEmail} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+              <FileText className="w-4 h-4" /> {isExporting ? 'Processing...' : 'Export & Email'}
+            </button>
+            <button onClick={exportPDF} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+              <FileText className="w-4 h-4" /> Export PDF
+            </button>
+            <button onClick={exportExcel} disabled={isExporting} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              <Download className="w-4 h-4" /> Export Excel
+            </button>
+          </div>
         </div>
       </div>
 
@@ -362,19 +566,19 @@ export default function AdminReports() {
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
               <Award className="w-6 h-6 text-indigo-500 mb-2" />
               <div className="text-xs text-muted-foreground">Top Paddy</div>
-              <div className="text-sm font-semibold mt-1">{topPaddy}</div>
+              <div className="text-sm font-semibold mt-1">{topPaddyCalc}</div>
             </div>
 
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
               <MapPin className="w-6 h-6 text-rose-500 mb-2" />
               <div className="text-xs text-muted-foreground">Top District</div>
-              <div className="text-sm font-semibold mt-1">{topDistrict}</div>
+              <div className="text-sm font-semibold mt-1">{topDistrictCalc}</div>
             </div>
 
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
               <Receipt className="w-6 h-6 text-emerald-500 mb-2" />
               <div className="text-xs text-muted-foreground">Avg Transaction</div>
-              <div className="text-sm font-semibold mt-1">Rs {Math.round(avgTxnValue).toLocaleString()}</div>
+              <div className="text-sm font-semibold mt-1">Rs {Math.round(avgTxnValueCalc).toLocaleString()}</div>
             </div>
 
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
@@ -386,46 +590,59 @@ export default function AdminReports() {
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
               <Truck className="w-6 h-6 text-teal-500 mb-2" />
               <div className="text-xs text-muted-foreground">Delivery Success</div>
-              <div className="text-sm font-semibold mt-1">{deliveryRate}%</div>
+              <div className="text-sm font-semibold mt-1">{deliveryRateCalc}%</div>
             </div>
           </div>
 
           {/* CHARTS LAYER 1 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" ref={chartRef}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Revenue Trend Line Chart */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-6">Revenue Trend (Last 6 Months)</h2>
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm" ref={revenueChartRef}>
+              <h2 className="text-lg font-semibold mb-6">
+                Revenue Trend ({getRangeLabel(range, appliedCustomRange)})
+              </h2>
               {revenueData.length === 0 ? (
                  <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm border border-dashed border-border rounded-xl">No data available</div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                    <XAxis dataKey="month" stroke="var(--color-muted-foreground)" fontSize={12} />
-                    <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="#1f2937" 
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                      interval={revenueData.length > 14 ? Math.ceil(revenueData.length / 10) - 1 : 0}
+                    />
+                    <YAxis stroke="#1f2937" tick={{ fill: '#9ca3af', fontSize: 12 }} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '8px' }}
+                      cursor={{ fill: 'transparent' }}
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }}
+                      itemStyle={{ color: '#fff' }}
+                      labelStyle={{ color: '#9ca3af', fontWeight: 'bold', marginBottom: '4px' }}
                       formatter={(val) => `Rs ${val.toLocaleString()}`}
                     />
-                    <Line type="monotone" dataKey="revenue" stroke="#22C55E" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="revenue" stroke="#22C55E" strokeWidth={2.5} strokeLinecap="round" dot={false} activeDot={{ r: 5, fill: '#22C55E', strokeWidth: 2, stroke: 'rgba(34,197,94,0.3)' }} />
                   </LineChart>
                 </ResponsiveContainer>
               )}
             </div>
 
             {/* User Distribution Bar Chart */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm" ref={usersChartRef}>
               <h2 className="text-lg font-semibold mb-6">User Growth (Farmers vs Mills)</h2>
               {usersData.length === 0 ? (
                  <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm border border-dashed border-border rounded-xl">No data available</div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={usersData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                    <XAxis dataKey="name" stroke="var(--color-muted-foreground)" fontSize={12} />
-                    <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} tickFormatter={(v) => Math.floor(v)} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                    <XAxis dataKey="name" stroke="#1f2937" tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                    <YAxis stroke="#1f2937" tick={{ fill: '#9ca3af', fontSize: 12 }} allowDecimals={false} tickFormatter={(v) => Math.floor(v)} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '8px' }}
+                      cursor={{ fill: 'transparent' }}
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }}
+                      itemStyle={{ color: '#fff' }}
+                      labelStyle={{ color: '#9ca3af', fontWeight: 'bold', marginBottom: '4px' }}
                     />
                     <Bar dataKey="value" fill="#3B82F6" radius={[6, 6, 0, 0]} barSize={60} />
                   </BarChart>
@@ -464,7 +681,10 @@ export default function AdminReports() {
                             ))}
                           </Pie>
                           <Tooltip
-                            contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '8px', fontSize: '12px' }}
+                            cursor={{ fill: 'transparent' }}
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            itemStyle={{ color: '#fff' }}
+                            labelStyle={{ color: '#9ca3af', fontWeight: 'bold', marginBottom: '4px' }}
                             formatter={(val, name) => [`${val} listings (${((val / total) * 100).toFixed(1)}%)`, name]}
                           />
                         </PieChart>
@@ -511,11 +731,14 @@ export default function AdminReports() {
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={districtData} layout="vertical" margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
-                    <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} tickFormatter={(v) => Math.floor(v)} />
-                    <YAxis type="category" dataKey="name" stroke="var(--color-muted-foreground)" fontSize={12} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" horizontal={false} />
+                    <XAxis type="number" stroke="#1f2937" tick={{ fill: '#9ca3af', fontSize: 12 }} allowDecimals={false} tickFormatter={(v) => Math.floor(v)} />
+                    <YAxis type="category" dataKey="name" stroke="#1f2937" tick={{ fill: '#9ca3af', fontSize: 12 }} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '8px' }}
+                      cursor={{ fill: 'transparent' }}
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }}
+                      itemStyle={{ color: '#fff' }}
+                      labelStyle={{ color: '#9ca3af', fontWeight: 'bold', marginBottom: '4px' }}
                     />
                     <Bar dataKey="value" fill="#8B5CF6" radius={[0, 6, 6, 0]} barSize={25} />
                   </BarChart>

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Sprout, Eye, EyeOff, ShieldCheck, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -12,6 +12,8 @@ import { Logo } from "../components/ui/Logo";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isSuspended = searchParams.get('suspended') === 'true';
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -135,6 +137,19 @@ export default function LoginPage() {
 
               <h1 className="text-3xl font-bold mb-2 tracking-tight">Welcome Back</h1>
               <p className="text-white/50 mb-8 font-medium">Log in to manage your operations securely.</p>
+
+              {/* Suspension Warning Banner */}
+              {isSuspended && (
+                <div className="mb-6 p-4 rounded-xl border border-red-500/40 bg-red-500/10 flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-red-400 text-xs font-bold">!</span>
+                  </div>
+                  <div>
+                    <p className="text-red-400 font-semibold text-sm">Account Suspended</p>
+                    <p className="text-red-400/70 text-xs mt-0.5">Your account has been suspended by an administrator. Please contact support for assistance.</p>
+                  </div>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
                 {/* Email */}

@@ -13,6 +13,8 @@ const getLogoBase64 = () => {
       canvas.width = img.width || 200;
       canvas.height = img.height || 200;
       const ctx = canvas.getContext('2d');
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
       resolve(canvas.toDataURL('image/png'));
     };
@@ -35,7 +37,7 @@ export const generateReportPDF = async ({
   startDate,
   endDate,
   range,
-  chartBase64,
+  chartImages,
   forEmail = false
 }) => {
   const {
@@ -48,17 +50,15 @@ export const generateReportPDF = async ({
     transactionsRaw,
   } = data;
 
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
 
-  // ENTERPRISE BRANDING COLORS
-  const HEADER_BG = [11, 15, 25]; // #0B0F19 (Dark Navy)
-  const SUBHEADER_BG = [243, 244, 246]; // #F3F4F6
-  const SUBHEADER_TEXT = [107, 114, 128]; // #6B7280
-  const TABLE_HEAD_BG = [17, 24, 39]; // #111827
-  const CARD_BG = [245, 247, 250]; // #F5F7FA
-  const TEXT_DARK = [17, 24, 39];
+  // EXACT BRANDING COLORS
+  const DARK_NAVY = [15, 23, 42]; // #0f172a
+  const GREEN = [34, 197, 94]; // #22c55e
+  const LIGHT_GRAY = [241, 245, 249]; // #f1f5f9
+  const TEXT_GRAY = [100, 116, 139]; // Subtle gray
   const WHITE = [255, 255, 255];
 
   const avgTxnValueCalc = overview.totalTransactions > 0
@@ -79,13 +79,13 @@ export const generateReportPDF = async ({
 
   const sysLogo = await getLogoBase64();
 
-  const addHeader = (title) => {
-    // Top Main Header
-    doc.setFillColor(HEADER_BG[0], HEADER_BG[1], HEADER_BG[2]);
-    doc.rect(0, 0, pageW, 22, 'F');
+  const addHeader = () => {
+    // Dark navy top bar (#0f172a)
+    doc.setFillColor(...DARK_NAVY);
+    doc.rect(0, 0, W, 25, 'F');
     
-    // Logo and Platform Name
-    doc.setTextColor(WHITE[0], WHITE[1], WHITE[2]);
+    // Left: AgroBridge logo
+    doc.setTextColor(...WHITE);
     if (sysLogo) {
       doc.addImage(sysLogo, 'PNG', 14, 6, 10, 10);
       doc.setFontSize(16);
@@ -97,104 +97,118 @@ export const generateReportPDF = async ({
       doc.text('AgroBridge', 14, 14);
     }
 
-    // Page title (Right side)
+    // Right: Report title
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text(title, pageW - 14, 14, { align: 'right' });
+    doc.setTextColor(...WHITE);
+    doc.text('Platform Analytics Report', W - 14, 14, { align: 'right' });
 
-    // Sub-header (Thin row)
-    doc.setFillColor(SUBHEADER_BG[0], SUBHEADER_BG[1], SUBHEADER_BG[2]);
-    doc.rect(0, 22, pageW, 8, 'F');
-    doc.setFontSize(8);
-    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
-    doc.text(`Generated: ${generatedAt}`, 14, 27.5);
-    doc.text('ADMIN PORTAL • CONFIDENTIAL', pageW - 14, 27.5, { align: 'right' });
+    // Under it: thin green line
+    doc.setFillColor(...GREEN);
+    doc.rect(0, 25, W, 1.5, 'F');
+
+    // Below header: Meta Info
+    const fmtPdfDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" }) : '';
+    let periodLabel = "All Time";
+    if (startDate && endDate) {
+      periodLabel = `${fmtPdfDate(startDate)} to ${fmtPdfDate(endDate)}`;
+    } else if (range === "7d") {
+      periodLabel = "Last 7 Days";
+    } else if (range === "30d") {
+      periodLabel = "Last 30 Days";
+    }
+
+    doc.setFontSize(9);
+    doc.setTextColor(...TEXT_GRAY);
+    doc.text(`Generated: ${generatedAt}`, 14, 34);
+    doc.text(`Report Period: ${periodLabel}`, 14, 40);
+    
+    doc.text('Admin Portal • Confidential', W - 14, 34, { align: 'right' });
+
+    return 50; // Next Y Position
   };
 
-  const addFooter = (pageNum, totalPages) => {
-    doc.setFontSize(8);
-    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
-    doc.text('AgroBridge • Smart Paddy Marketplace', 14, pageH - 8);
-    doc.text(`Page 1 of 1`, pageW - 14, pageH - 8, { align: 'right' }); // Will be replaced globally if using generic method
+  const addSectionTitle = (title, currentY) => {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...DARK_NAVY);
+    doc.text(title, 14, currentY);
+    
+    // Green underline divider
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(...GREEN);
+    doc.line(14, currentY + 3, W - 14, currentY + 3);
+    
+    return currentY + 12; // 12mm spacing below
   };
 
   // ───────────────────────────────────────────────────────────────────────
   // PAGE 1 — Executive Summary & Visuals
   // ───────────────────────────────────────────────────────────────────────
-  addHeader('Platform Analytics Report');
+  let currentY = addHeader();
 
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
-  doc.text('Executive Summary', 14, 40);
+  // Section 1: Executive Summary (3 cards per row)
+  currentY = addSectionTitle('Executive Summary', currentY);
 
-  // Executive Metric Cards Configuration
   const kpis = [
     { label: 'Total Revenue', value: `Rs ${overview.totalRevenue.toLocaleString()}` },
     { label: 'Transactions', value: overview.totalTransactions.toLocaleString() },
-    { label: 'Users', value: overview.totalUsers.toLocaleString() },
-    { label: 'Listings', value: overview.totalListings.toLocaleString() },
+    { label: 'Total Users', value: overview.totalUsers.toLocaleString() },
+    { label: 'Total Listings', value: overview.totalListings.toLocaleString() },
     { label: 'Conversion Rate', value: `${conversion.rate}%` },
-    { label: 'Deliveries', value: overview.completedDeliveries.toLocaleString() },
-    { label: 'Avg Transaction', value: `Rs ${avgTxnValueCalc.toLocaleString()}` },
-    { label: 'Delivery Success', value: `${deliveryRateCalc}%` }
+    { label: 'Completed Deliveries', value: overview.completedDeliveries.toLocaleString() }
   ];
 
-  const colW = (pageW - 40) / 4; 
-  const rowH = 18;
-  const startY = 46;
+  const cols = 3;
+  const colW = (W - 28 - (cols - 1) * 6) / cols; 
+  const rowH = 22;
 
   kpis.forEach((kpi, i) => {
-    const col = i % 4;
-    const row = Math.floor(i / 4);
-    const x = 14 + col * (colW + 4);
-    const y = startY + row * (rowH + 4);
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = 14 + col * (colW + 6);
+    const y = currentY + row * (rowH + 6);
 
-    // Card background
-    doc.setFillColor(CARD_BG[0], CARD_BG[1], CARD_BG[2]);
+    // Light gray cards (#f1f5f9)
+    doc.setFillColor(...LIGHT_GRAY);
     doc.roundedRect(x, y, colW, rowH, 2, 2, 'F');
     
-    // Label (Top Left)
+    // Label (small text)
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
+    doc.setTextColor(...TEXT_GRAY);
     doc.text(kpi.label, x + 4, y + 6);
     
-    // Bold Value (Bottom Left)
-    doc.setFontSize(11);
+    // Value (BIG bold text)
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
-    doc.text(kpi.value, x + 4, y + 14);
+    doc.setTextColor(...DARK_NAVY);
+    doc.text(kpi.value, x + 4, y + 16);
   });
 
-  const insightY = startY + 2 * (rowH + 4) + 8;
+  currentY += (Math.ceil(kpis.length / cols) * (rowH + 6)) + 10; // Vertical spacing between sections (24-32px ~ 10-12mm)
   
-  // ─── Key Insights Table ──────────────────────────────────────────────────
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
-  doc.text('Key Insights', 14, insightY);
+  // Section 2: Key Insights
+  currentY = addSectionTitle('Key Insights', currentY);
 
-  const tableStartY = insightY + 6;
   runAutoTable(doc, {
-    startY: tableStartY,
+    startY: currentY,
     head: [['Metric', 'Value']],
     body: [
       ['Top Paddy Variety', topPaddyCalc],
       ['Top District', topDistrictCalc],
-      ['Accepted Negotiations', String(conversion.acceptedNegotiations || 0)],
       ['Avg Transaction Value', `Rs ${avgTxnValueCalc.toLocaleString()}`],
       ['Delivery Success Rate', `${deliveryRateCalc}%`]
     ],
     theme: 'grid',
-    styles: { fontSize: 10, cellPadding: 3.5, textColor: TEXT_DARK },
+    styles: { fontSize: 10, cellPadding: 4, textColor: DARK_NAVY },
     headStyles: {
-      fillColor: TABLE_HEAD_BG,
+      fillColor: DARK_NAVY,
       textColor: WHITE,
       fontStyle: 'bold',
       fontSize: 10,
     },
-    alternateRowStyles: { fillColor: CARD_BG },
+    alternateRowStyles: { fillColor: LIGHT_GRAY },
     columnStyles: {
       0: { fontStyle: 'bold', cellWidth: 80 },
       1: { cellWidth: 100 },
@@ -202,109 +216,123 @@ export const generateReportPDF = async ({
     margin: { left: 14, right: 14 },
   });
 
-  let nextY = doc.lastAutoTable.finalY + 12;
+  currentY = doc.lastAutoTable.finalY + 16;
 
-  // ─── Chart Visuals Processing ──────────────────────────────────────────
-  if (chartBase64) {
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
-    doc.text('Revenue & Growth Analytics', 14, nextY);
+  // Section 3: Charts
+  const drawChart = (title, chartData, currentY) => {
+    if (!chartData) return currentY;
     
+    // Chart height: 350px minimum translates to roughly 95mm
+    const chartHeightTarget = 95;
+    
+    if (currentY + chartHeightTarget + 10 > H) {
+      doc.addPage();
+      currentY = addHeader();
+    }
+
+    currentY = addSectionTitle(title, currentY);
+
     try {
-      const imgProps = doc.getImageProperties(chartBase64);
-      const maxWidth = pageW - 28;
-      const maxHeight = pageH - nextY - 14; 
+      const imgProps = doc.getImageProperties(chartData);
+      const maxWidth = W - 28;
       
       let imgWidth = maxWidth;
       let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-      if (imgHeight > maxHeight) {
-        imgHeight = maxHeight;
-        imgWidth = (imgProps.width * imgHeight) / imgProps.height;
+      // Force height to be large as requested
+      if (imgHeight < chartHeightTarget) {
+        imgHeight = chartHeightTarget;
       }
       
-      const xOffset = (pageW - imgWidth) / 2;
-      doc.addImage(chartBase64, 'PNG', xOffset, nextY + 4, imgWidth, imgHeight);
+      // Center aligned
+      const xOffset = (W - imgWidth) / 2;
+      doc.addImage(chartData, 'PNG', xOffset, currentY, imgWidth, imgHeight);
+      
+      // Spacing below
+      return currentY + imgHeight + 16;
     } catch(err) {
-      console.warn("Chart embed skipped safely due to processing error");
+      console.warn(`Chart embed skipped for ${title}`, err);
+      return currentY;
     }
+  };
+
+  if (chartImages) {
+    currentY = drawChart('Revenue Trend', chartImages.revenue, currentY);
+    currentY = drawChart('User Growth', chartImages.users, currentY);
   }
 
-  // ─── PAGE 2 — Transaction Register ──────────────────────────────────────
-  doc.addPage();
-  addHeader('Transaction Register');
+  // Section 4: Transactions Overview
+  // Need a new page if list doesn't fit
+  if (currentY + 60 > H) {
+    doc.addPage();
+    currentY = addHeader();
+  } else {
+    currentY += 4;
+  }
 
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
-  doc.text(`All Transactions (${transactionsRaw.length} records)`, 14, 40);
+  currentY = addSectionTitle('Transactions Overview', currentY);
 
   const txRows = transactionsRaw.map((t, i) => [
     i + 1,
-    t.orderNumber || "—",
+    t.orderNumber?.slice(0, 8) || "—",
     new Date(t.createdAt).toLocaleDateString(),
     t.listing?.paddyType || "—",
     t.buyer?.fullName || t.millOwner?.fullName || "—",
     t.seller?.fullName || t.farmer?.fullName || "—",
-    `${t.quantityKg || 0} kg`,
-    `Rs ${(t.finalPricePerKg || t.price || 0).toLocaleString()}`,
+    `${t.quantityKg || 0}kg`,
     `Rs ${(t.totalAmount || t.totalPrice || 0).toLocaleString()}`,
-    t.paymentStatus || "—",
-    (t.status || "—").replace(/_/g, " "),
+    (t.status || "—").replace(/_/g, " ").slice(0,12)
   ]);
 
   runAutoTable(doc, {
-    startY: 44,
+    startY: currentY,
     head: [
       [
         "#",
-        "Order No.",
+        "Order",
         "Date",
         "Paddy",
         "Buyer",
         "Seller",
         "Qty",
-        "Price/kg",
         "Total",
-        "Payment",
         "Status",
       ],
     ],
     body: txRows,
     theme: "striped",
-    styles: { fontSize: 8, cellPadding: 3, textColor: TEXT_DARK },
+    styles: { fontSize: 8, cellPadding: 3.5, textColor: DARK_NAVY },
     headStyles: {
-      fillColor: TABLE_HEAD_BG,
+      fillColor: DARK_NAVY,
       textColor: WHITE,
       fontStyle: "bold",
       fontSize: 8,
     },
-    alternateRowStyles: { fillColor: CARD_BG },
+    alternateRowStyles: { fillColor: LIGHT_GRAY },
     columnStyles: {
       0: { cellWidth: 8, halign: "center" },
-      1: { cellWidth: 22 },
-      2: { cellWidth: 20 },
+      1: { cellWidth: 16 },
+      2: { cellWidth: 18 },
       3: { cellWidth: 18 },
-      4: { cellWidth: 32 },
-      5: { cellWidth: 32 },
+      4: { cellWidth: 24 },
+      5: { cellWidth: 24 },
       6: { cellWidth: 14, halign: "right" },
       7: { cellWidth: 20, halign: "right" },
-      8: { cellWidth: 22, halign: "right" },
-      9: { cellWidth: 16, halign: "center" },
-      10: { cellWidth: 22, halign: "center" },
+      8: { cellWidth: 22, halign: "center" },
     },
     margin: { left: 14, right: 14 },
   });
 
-  // Add global page footers
+  // Footer on all pages
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
-    doc.setTextColor(SUBHEADER_TEXT[0], SUBHEADER_TEXT[1], SUBHEADER_TEXT[2]);
-    doc.text('AgroBridge • Smart Paddy Marketplace', 14, pageH - 8);
-    doc.text(`Page ${i} of ${pageCount}`, pageW - 14, pageH - 8, { align: 'right' });
+    doc.setTextColor(...TEXT_GRAY);
+    // Left
+    doc.text('AgroBridge • Smart Paddy Marketplace', 14, H - 8);
+    // Right
+    doc.text(`Page ${i} of ${pageCount}`, W - 14, H - 8, { align: 'right' });
   }
 
   if (forEmail) {

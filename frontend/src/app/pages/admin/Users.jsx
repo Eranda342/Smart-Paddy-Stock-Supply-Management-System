@@ -464,6 +464,13 @@ export default function AdminUsers() {
   const handleAction = async (user, actionType, reason = '') => {
     if (user.role === 'ADMIN') return; // Disable actions for ADMIN user
     
+    // Self-protection guard
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (currentUser._id && currentUser._id === user._id) {
+      toast.error('You cannot perform this action on your own account.');
+      return;
+    }
+    
     setActionLoading(user._id);
     try {
       if (actionType === 'delete') {

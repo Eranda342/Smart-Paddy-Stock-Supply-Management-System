@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Package, MessageSquare, Receipt, DollarSign, MapPin, Leaf, RefreshCw, FileText, FileSpreadsheet, Zap, Calendar, X, ChevronRight } from 'lucide-react';
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from "socket.io-client";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -29,11 +29,13 @@ const getLogoBase64 = () => {
   });
 };
 
+import { getRangeDates, filterByDate, computeTrendData, computeDistributions, computeStats, computeGrowth, getRangeLabel } from '../../../utils/analyticsEngine';
+
 export default function FarmerDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [range, setRange] = useState("all");
+  const [range, setRange] = useState("1y");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [step, setStep] = useState(0);
   // Custom date range state
@@ -83,10 +85,9 @@ export default function FarmerDashboard() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        let url = `http://localhost:5000/api/dashboard/farmer?range=${range}`;
-        if (appliedCustomRange) {
-          url = `http://localhost:5000/api/dashboard/farmer?range=${range}&startDate=${appliedCustomRange.startDate}&endDate=${appliedCustomRange.endDate}`;
-        }
+        // Always fetch full details - filtering runs LOCALLY
+        let url = `http://localhost:5000/api/dashboard/farmer?range=all`;
+        
         const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -105,7 +106,96 @@ export default function FarmerDashboard() {
       }
     };
     fetchDashboard();
-  }, [range, refreshTrigger, appliedCustomRange]);
+  }, [refreshTrigger]);
+
+  // ── Stable cache for trend computation ────────────────────────────────────────────────
+  const trendCache = useRef(new Map());
+
+  // Memo: derive working window from current range/custom selection
+  const { startDate, endDate } = useMemo(
+    () => getRangeDates(range, appliedCustomRange),
+    [range, appliedCustomRange]
+  );
+
+  const rawTransactions = useMemo(() => data?.rawTransactions || [], [data]);
+
+  // Memo: filter raw data to the selected window (O(n) scan, memoised)
+  const filteredData = useMemo(
+    () => filterByDate(rawTransactions, startDate, endDate),
+    [rawTransactions, startDate, endDate]
+  );
+
+  // Memo: KPI cards — O(n)
+  const computedStats = useMemo(
+    () => computeStats(filteredData, data?.allListings),
+    [filteredData, data?.allListings]
+  );
+
+  // Memo: growth % vs prior period
+  const growth = useMemo(
+    () => computeGrowth(rawTransactions, range, appliedCustomRange?.startDate, appliedCustomRange?.endDate),
+    [rawTransactions, range, appliedCustomRange]
+  );
+
+  // Memo: trend chart data with in-memory cache keyed by window + range
+  const salesData = useMemo(() => {
+    const cacheKey = `${range}|${startDate}|${endDate}|${filteredData.length}`;
+    if (trendCache.current.has(cacheKey)) return trendCache.current.get(cacheKey);
+    const result = computeTrendData(filteredData, startDate, endDate, range, appliedCustomRange);
+    // Keep cache small — evict oldest if > 10 entries
+    if (trendCache.current.size >= 10) {
+      trendCache.current.delete(trendCache.current.keys().next().value);
+    }
+    trendCache.current.set(cacheKey, result);
+    return result;
+  }, [filteredData, startDate, endDate, range, appliedCustomRange]);
+
+  // Memo: distribution charts — O(n)
+  const { paddyData: paddyDistribution } = useMemo(
+    () => computeDistributions(filteredData),
+    [filteredData]
+  );
+
+  // Add colors to paddyDistribution
+  const colors = ['#22C55E', '#3B82F6', '#F59E0B', '#8B5CF6', '#EF4444', '#14B8A6'];
+  const formattedPaddyDist = useMemo(
+    () => paddyDistribution.map((d, i) => ({ ...d, color: colors[i % colors.length] })),
+    [paddyDistribution]
+  );
+
+  // Memo: recent activity list — sort+slice only when filteredData changes
+  const recentActivity = useMemo(() => [...filteredData]
+    .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5)
+    .map((t, idx) => {
+      let statusColor = 'text-gray-500 bg-gray-500/10';
+      if (t.status === 'COMPLETED' || t.status === 'DELIVERED') statusColor = 'text-green-500 bg-green-500/10';
+      else if (t.status === 'DELIVERY_IN_PROGRESS') statusColor = 'text-blue-500 bg-blue-500/10';
+      else if (t.status === 'ORDER_CREATED' || t.status === 'PAYMENT_COMPLETED') statusColor = 'text-yellow-500 bg-yellow-500/10';
+      return {
+        id: t._id || idx,
+        date: new Date(t.createdAt).toLocaleDateString(),
+        paddyType: t.listing?.paddyType || "Paddy",
+        quantity: `${t.quantityKg || 0} kg`,
+        status: (t.status || "").replace("_", " "),
+        statusColor
+      };
+    }), [filteredData]);
+
+  // Memo: location breakdown
+  const topLocation = useMemo(() => {
+    const map = {};
+    filteredData.forEach(t => {
+      const loc = t.listing?.location?.district || t.listing?.location || "Sri Lanka";
+      map[loc] = (map[loc] || 0) + (t.totalAmount || 0);
+    });
+    return Object.entries(map).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
+  }, [filteredData]);
+
+  const bestSelling = useMemo(
+    () => [...formattedPaddyDist].sort((a,b) => b.value - a.value)[0]?.name || "N/A",
+    [formattedPaddyDist]
+  );
 
   // Custom range helpers
   const today = new Date().toISOString().split("T")[0];
@@ -121,7 +211,7 @@ export default function FarmerDashboard() {
       return;
     }
     setAppliedCustomRange({ startDate: customStart, endDate: customEnd });
-    setRange("all"); // reset predefined range; backend uses custom dates instead
+    setRange("custom"); // signal engine to use custom window grouping
     setShowDatePicker(false);
   };
 
@@ -152,8 +242,8 @@ export default function FarmerDashboard() {
     const fmtPdfDate = (iso) => new Date(iso).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" });
     let periodLabel = appliedCustomRange 
       ? `${fmtPdfDate(appliedCustomRange.startDate)} → ${fmtPdfDate(appliedCustomRange.endDate)}` 
-      : range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time";
-    let rangeSlug = appliedCustomRange ? `${appliedCustomRange.startDate}_to_${appliedCustomRange.endDate}` : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "All-Time");
+      : range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "Last 12 Months";
+    let rangeSlug = appliedCustomRange ? `${appliedCustomRange.startDate}_to_${appliedCustomRange.endDate}` : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "Last-12-Months");
     
     // Sheet 1: Summary
     const fmt = (n) => new Intl.NumberFormat("en-LK").format(n || 0);
@@ -165,10 +255,10 @@ export default function FarmerDashboard() {
       [],
       ["SUMMARY"],
       [],
-      ["Total Revenue:", `Rs ${fmt(data?.stats?.monthlyRevenue)}`],
-      ["Completed Sales:", fmt(data?.stats?.completedTransactions)],
-      ["Best Selling Paddy:", data?.bestSelling || "N/A"],
-      ["Top Market:", Object.entries(data?.locations || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A"]
+      ["Total Revenue:", `Rs ${fmt(computedStats.totalRevenue)}`],
+      ["Completed Sales:", fmt(computedStats.completedDeliveries)],
+      ["Best Selling Paddy:", bestSelling || "N/A"],
+      ["Top Market:", topLocation?.[0] || "N/A"]
     ];
     
     const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
@@ -177,13 +267,13 @@ export default function FarmerDashboard() {
     
     // Sheet 2: Transactions
     const headers = [["Date", "Paddy Type", "Quantity (kg)", "Price (Rs)", "District", "Buyer/Seller"]];
-    const rows = (data.recent || []).map(t => [
-      new Date(t.createdAt).toLocaleDateString("en-LK"),
-      t.listing?.paddyType || "N/A",
-      t.quantityKg || 0,
-      t.totalPrice || t.price || 0,
-      t.listing?.location?.district || "N/A",
-      t.buyer?.businessDetails?.businessName || t.buyer?.fullName || t.seller?.fullName || "N/A"
+    const rows = (recentActivity || []).map(t => [
+      t.date,
+      t.paddyType,
+      t.quantity,
+      t.status,
+      "Sri Lanka", // Simplified
+      "N/A"
     ]);
     
     const wsTransactions = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
@@ -248,7 +338,7 @@ export default function FarmerDashboard() {
     if (appliedCustomRange) {
       periodLabel = `Period: ${fmtPdfDate(appliedCustomRange.startDate)}  →  ${fmtPdfDate(appliedCustomRange.endDate)}`;
     } else {
-      periodLabel = `Period: ${range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time"}`;
+      periodLabel = `Period: ${range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "Last 12 Months"}`;
     }
     doc.setFontSize(8);
     doc.setTextColor(180, 230, 180);
@@ -257,7 +347,7 @@ export default function FarmerDashboard() {
     // Range badge (top-right pill)
     const badgeLabel = appliedCustomRange
       ? `${fmtPdfDate(appliedCustomRange.startDate)} -> ${fmtPdfDate(appliedCustomRange.endDate)}`
-      : (range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "All Time");
+      : (range === "7d" ? "Last 7 Days" : range === "30d" ? "Last 30 Days" : "Last 12 Months");
     // Dynamic badge width: measure text at fontSize 7, then add padding
     doc.setFontSize(7);
     const badgeW = Math.max(32, doc.getTextWidth(badgeLabel) + 8);
@@ -297,11 +387,11 @@ export default function FarmerDashboard() {
     y += 6;
 
     const kpis = [
-      { label: "Active Listings",       value: fmt(data?.stats?.activeListings) },
-      { label: "Ongoing Orders",         value: fmt(data?.stats?.ongoingTransactions) },
-      { label: "Completed Sales",        value: fmt(data?.stats?.completedTransactions) },
-      { label: "Total Revenue",          value: fmtCur(data?.stats?.monthlyRevenue) },
-      { label: "Best Selling Type",      value: data?.bestSelling || "N/A" },
+      { label: "Active Listings",       value: fmt(computedStats.activeListings) },
+      { label: "Ongoing Orders",         value: fmt(computedStats.ongoingTransactions) },
+      { label: "Completed Sales",        value: fmt(computedStats.completedDeliveries) },
+      { label: "Total Revenue",          value: fmtCur(computedStats.totalRevenue) },
+      { label: "Best Selling Type",      value: bestSelling || "N/A" },
       { label: "Top Market Location",    value: topLocation?.[0] || "N/A" },
     ];
 
@@ -405,9 +495,9 @@ export default function FarmerDashboard() {
     doc.line(14, y, W - 14, y);
     y += 4;
 
-    const trendRows = last6Months.map(month => [
-      month,
-      fmtCur(data?.monthly?.[month] || 0),
+    const trendRows = salesData.map(month => [
+      month.month,
+      fmtCur(month.revenue || 0),
     ]);
 
     autoTable(doc, {
@@ -433,12 +523,12 @@ export default function FarmerDashboard() {
     doc.line(14, y, W - 14, y);
     y += 4;
 
-    const distEntries = Object.entries(data?.distribution || {}).sort((a, b) => b[1] - a[1]);
-    const totalQty    = distEntries.reduce((s, [, v]) => s + v, 0);
-    const distRows    = distEntries.map(([type, qty]) => [
-      type,
-      `${fmt(qty)} kg`,
-      totalQty > 0 ? `${((qty / totalQty) * 100).toFixed(1)}%` : "0%",
+    const distEntries = paddyDistribution;
+    const totalQty    = distEntries.reduce((s, v) => s + v.value, 0);
+    const distRows    = distEntries.map(type => [
+      type.name,
+      `${fmt(type.value)} kg`,
+      totalQty > 0 ? `${((type.value / totalQty) * 100).toFixed(1)}%` : "0%",
     ]);
 
     autoTable(doc, {
@@ -485,7 +575,7 @@ export default function FarmerDashboard() {
       margin: { left: 14, right: 14 },
     });
 
-    // â”€â”€ Footer on every page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Footer on every page ──────────────────────────
     const pageCount = doc.internal.getNumberOfPages();
     for (let p = 1; p <= pageCount; p++) {
       doc.setPage(p);
@@ -494,70 +584,30 @@ export default function FarmerDashboard() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7.5);
       doc.setTextColor(100, 180, 100);
-      doc.text("AgroBridge Â· Smart Paddy Stock Supply Management System Â· Confidential", 14, H - 4.5);
+      doc.text("AgroBridge · Smart Paddy Stock Supply Management System · Confidential", 14, H - 4.5);
       doc.text(`Page ${p} of ${pageCount}`, W - 14, H - 4.5, { align: "right" });
     }
 
     const rangeSlug = appliedCustomRange
       ? `${appliedCustomRange.startDate}_to_${appliedCustomRange.endDate}`
-      : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "All-Time");
+      : (range === "7d" ? "Last-7-Days" : range === "30d" ? "Last-30-Days" : "Last-12-Months");
     doc.save(`AgroBridge_Farmer_Report_${rangeSlug}_${now.toISOString().slice(0, 10)}.pdf`);
   };
 
   if (loading) return <div className="flex h-[50vh] items-center justify-center text-[#22C55E]">Loading metrics...</div>;
   if (error || !data) return <div className="flex h-[50vh] items-center justify-center text-red-500">{error || "No data"}</div>;
 
-  const generateLast6Months = () => {
-    const result = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      result.push(d.toLocaleString("default", { month: "short" }));
-    }
-    return result;
-  };
-
-  const last6Months = generateLast6Months();
-
-  const salesData = data && Object.keys(data.monthly || {}).length > 0 
-    ? last6Months.map(month => ({ month, sales: data.monthly[month] || 0 }))
-    : [{ month: "No Data", sales: 0 }];
-
-  const paddyDistribution = Object.keys(data.distribution || {}).map((type, i) => {
-    const colors = ['#22C55E', '#3B82F6', '#F59E0B', '#8B5CF6', '#EF4444', '#14B8A6'];
-    return {
-      id: type,
-      name: type,
-      value: data.distribution[type],
-      color: colors[i % colors.length]
-    };
-  });
-
-  const recentActivity = (data.recent || []).map((t, idx) => {
-    let statusColor = 'text-gray-500 bg-gray-500/10';
-    if (t.status === 'COMPLETED' || t.status === 'DELIVERED') statusColor = 'text-green-500 bg-green-500/10';
-    else if (t.status === 'DELIVERY_IN_PROGRESS') statusColor = 'text-blue-500 bg-blue-500/10';
-    else if (t.status === 'ORDER_CREATED' || t.status === 'PAYMENT_COMPLETED') statusColor = 'text-yellow-500 bg-yellow-500/10';
-    
-    return {
-      id: t._id || idx,
-      date: new Date(t.createdAt).toLocaleDateString(),
-      paddyType: t.listing?.paddyType || "Paddy",
-      quantity: `${t.quantityKg || 0} kg`,
-      status: t.status.replace("_", " "),
-      statusColor
-    };
-  });
-
-  const sparkData = last6Months.map(month => ({
-    month,
-    value: data?.monthly?.[month] || 0
-  }));
-
-  const topLocation = Object.entries(data.locations || {}).sort((a, b) => b[1] - a[1])[0];
+  // Legacy block removed - unified API handles standard mappings natively
   return (
     <div id="dashboard-content" className="w-full relative">
-
+      {/* Scoped scrollbar styles — farmer paddy list (webkit + firefox) */}
+      <style>{`
+        .farmer-paddy-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+        .farmer-paddy-scroll::-webkit-scrollbar { width: 6px; }
+        .farmer-paddy-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+        .farmer-paddy-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
+        .farmer-paddy-scroll::-webkit-scrollbar-track { background: transparent; }
+      `}</style>
       {/* â”€â”€ Ambient background glows (matches Admin) â”€â”€ */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #22C55E 0%, transparent 70%)' }} />
@@ -598,7 +648,7 @@ export default function FarmerDashboard() {
           </div>
           {/* Range pills */}
           <div className="flex items-center p-1 rounded-xl gap-1" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            {[['7d','7 Days'],['30d','30 Days'],['all','All Time']].map(([val, label]) => (
+            {[['7d','7 Days'],['30d','30 Days'],['1y','1 Year']].map(([val, label]) => (
               <button key={val} onClick={() => { setRange(val); handleClearCustomRange(); }}
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200"
                 style={range === val && !appliedCustomRange ? {
@@ -701,10 +751,10 @@ export default function FarmerDashboard() {
       {/* â”€â”€ KPI Cards â”€â”€ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {[
-          { icon: Package,      color: '#22C55E', label: 'Active Listings',  value: data?.stats?.activeListings    || 0, growth: 12, prefix: '' },
-          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Orders',   value: data?.stats?.ongoingTransactions|| 0, growth: 5,  prefix: '' },
-          { icon: Receipt,      color: '#A855F7', label: 'Completed Sales',  value: data?.stats?.completedTransactions||0,growth: 18, prefix: '' },
-          { icon: DollarSign,   color: '#F59E0B', label: 'Total Revenue',    value: data?.stats?.monthlyRevenue    || 0, growth: data?.stats?.growth||0, prefix: 'Rs ' },
+          { icon: Package,      color: '#22C55E', label: 'Active Listings',  value: computedStats.activeListings, growth: 12, prefix: '' },
+          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Orders',   value: computedStats.ongoingTransactions, growth: 5,  prefix: '' },
+          { icon: Receipt,      color: '#A855F7', label: 'Completed Sales',  value: computedStats.completedDeliveries,growth: 18, prefix: '' },
+          { icon: DollarSign,   color: '#F59E0B', label: 'Total Revenue',    value: computedStats.totalRevenue, growth: growth, prefix: 'Rs ' },
         ].map(({ icon: Icon, color, label, value, growth, prefix }, i) => (
           <div key={i}
             className="relative overflow-hidden rounded-2xl p-6 border cursor-default group transition-all duration-300"
@@ -754,7 +804,6 @@ export default function FarmerDashboard() {
             <p className="text-xs font-semibold mb-1" style={{ color: 'rgba(148,163,184,0.6)' }}>PERFORMANCE INSIGHT</p>
             <p className="text-sm font-medium text-white">
               {(() => {
-                const growth = data?.stats?.growth || 0;
                 if (growth > 15) return 'Strong growth! You are scaling fast. Your listings are performing above benchmark.';
                 if (growth > 5)  return 'Good progress. Keep the momentum going with more ACTIVE listings.';
                 if (growth < 0)  return 'Drop detected. Consider revising your pricing or listing more paddy varieties.';
@@ -798,12 +847,16 @@ export default function FarmerDashboard() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-base font-semibold text-white">Sales Trend</h2>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Monthly revenue - Last 6 months</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>
+                Revenue — {getRangeLabel(range, appliedCustomRange)}
+              </p>
             </div>
             <span className="text-xs font-semibold px-3 py-1 rounded-lg"
-              style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.2)' }}>6M</span>
+              style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.2)' }}>
+              {appliedCustomRange ? 'Custom' : range === '7d' ? '7D' : range === '30d' ? '30D' : '1Y'}
+            </span>
           </div>
-          {salesData[0].month === 'No Data' ? (
+          {salesData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-sm" style={{ color: 'rgba(148,163,184,0.5)' }}>
               <Package className="w-8 h-8 mb-3 opacity-30" />
               No data yet â€” start selling to see insights
@@ -824,14 +877,15 @@ export default function FarmerDashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8} />
+                <XAxis dataKey="month" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} dy={8}
+                  interval={salesData.length > 14 ? Math.ceil(salesData.length / 10) - 1 : 0} />
                 <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} tickLine={false} axisLine={false} width={72}
                   tickFormatter={v => v >= 1000000 ? `Rs ${(v/1000000).toFixed(1)}M` : v >= 1000 ? `Rs ${(v/1000).toFixed(0)}K` : `Rs ${v}`} />
                 <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(20px)' }}
                   cursor={{ stroke: 'rgba(34,197,94,0.3)', strokeWidth: 1, strokeDasharray: '4 4' }}
                   labelStyle={{ color: 'rgba(148,163,184,0.7)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}
                   itemStyle={{ color: '#22C55E', fontWeight: 700 }} />
-                <Area type="monotone" dataKey="sales" name="Revenue"
+                <Area type="monotone" dataKey="revenue" name="Revenue"
                   stroke="url(#farmerStrokeGrad)" strokeWidth={2.5}
                   fill="url(#farmerAreaGrad)"
                   dot={false} activeDot={{ r: 6, fill: '#22C55E', strokeWidth: 2, stroke: 'rgba(34,197,94,0.3)' }}
@@ -850,7 +904,7 @@ export default function FarmerDashboard() {
               <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Crop mix by quantity sold</p>
             </div>
           </div>
-          {paddyDistribution.length === 0 ? (
+          {formattedPaddyDist.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-sm" style={{ color: 'rgba(148,163,184,0.5)' }}>
               <Leaf className="w-8 h-8 mb-3 opacity-30" />
               No distribution data yet
@@ -859,10 +913,10 @@ export default function FarmerDashboard() {
             <div className="flex flex-col lg:flex-row items-center gap-4">
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
-                  <Pie data={paddyDistribution} cx="50%" cy="50%" innerRadius={55} outerRadius={90}
+                  <Pie data={formattedPaddyDist} cx="50%" cy="50%" innerRadius={55} outerRadius={90}
                     paddingAngle={4} dataKey="value" isAnimationActive animationDuration={900}>
-                    {paddyDistribution.map((entry) => (
-                      <Cell key={entry.id} fill={entry.color} stroke="rgba(0,0,0,0.3)" strokeWidth={1} />
+                    {formattedPaddyDist.map((entry) => (
+                      <Cell key={entry.name} fill={entry.color} stroke="rgba(0,0,0,0.3)" strokeWidth={1} />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', backdropFilter: 'blur(20px)' }}
@@ -870,24 +924,38 @@ export default function FarmerDashboard() {
                     labelStyle={{ color: 'rgba(148,163,184,0.6)', fontSize: 11 }} />
                 </PieChart>
               </ResponsiveContainer>
-              {/* Custom legend with progress bars */}
-              <div className="w-full lg:w-44 space-y-2.5 shrink-0">
-                {paddyDistribution.map(entry => {
-                  const total = paddyDistribution.reduce((s, e) => s + e.value, 0);
-                  const pct = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
-                  return (
-                    <div key={entry.id}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="font-medium" style={{ color: entry.color }}>{entry.name}</span>
-                        <span style={{ color: 'rgba(148,163,184,0.7)' }}>{pct}%</span>
-                      </div>
-                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                        <div className="h-full rounded-full transition-all duration-700"
-                          style={{ width: `${pct}%`, background: entry.color, boxShadow: `0 0 6px ${entry.color}80` }} />
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Custom legend with progress bars — scrollable when many paddy types */}
+              <div className="w-full lg:w-44 shrink-0 flex flex-col">
+                {/* Scrollable list */}
+                <div
+                  style={{
+                    maxHeight: '220px',
+                    overflowY: 'auto',
+                    paddingRight: '4px',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(255,255,255,0.18) transparent',
+                  }}
+                  className="farmer-paddy-scroll space-y-2.5"
+                >
+                  {(() => {
+                    const total = formattedPaddyDist.reduce((s, e) => s + e.value, 0);
+                    return formattedPaddyDist.map(entry => {
+                      const pct = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
+                      return (
+                        <div key={entry.name}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="font-medium" style={{ color: entry.color }}>{entry.name}</span>
+                            <span style={{ color: 'rgba(148,163,184,0.7)' }}>{pct}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                            <div className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${pct}%`, background: entry.color, boxShadow: `0 0 6px ${entry.color}80` }} />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
               </div>
             </div>
           )}

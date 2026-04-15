@@ -412,9 +412,8 @@ const forgotPassword = async (req, res) => {
 
     try {
       await sendEmail({
-        email: user.email,
+        to: user.email,
         subject: "Reset Your Password - AgroBridge",
-        message: message,
         html: htmlMessage
       });
 

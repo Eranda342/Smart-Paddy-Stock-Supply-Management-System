@@ -103,9 +103,8 @@ const sendVerificationEmail = async (user, token) => {
   const verifyUrl = `${frontendUrl}/verify-email/${token}`;
   
   await sendEmail({
-    email: user.email,
+    to: user.email,
     subject: "Action Required: Verify your AgroBridge account",
-    message: `Please verify your email: ${verifyUrl}`,
     html: getVerificationEmailTemplate(verifyUrl, user.fullName)
   });
 };

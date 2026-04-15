@@ -121,6 +121,9 @@ const getAllUsers = async (req, res) => {
 // Delete a user
 const deleteUser = async (req, res) => {
   try {
+    if (req.params.id === String(req.user._id)) {
+      return res.status(403).json({ message: "You cannot delete your own account" });
+    }
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json({ message: "User deleted" });
@@ -132,6 +135,9 @@ const deleteUser = async (req, res) => {
 // Block user
 const blockUser = async (req, res) => {
   try {
+    if (req.params.id === String(req.user._id)) {
+      return res.status(403).json({ message: "You cannot suspend your own account" });
+    }
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
     if (user.role === "ADMIN") return res.status(403).json({ message: "Cannot block admins" });
@@ -274,11 +280,25 @@ const getAllTransactions = async (req, res) => {
     const { status, search } = req.query;
     let filter = {};
     if (status) filter.paymentStatus = status;  // filter by paymentStatus
+    
+    // Support date filtering if present in query
+    const range = req.query.range || "all";
+    const { startDate, endDate } = req.query;
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      filter.createdAt = { $gte: start, $lte: end };
+    } else if (range === "7d") {
+      filter.createdAt = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
+    } else if (range === "30d") {
+      filter.createdAt = { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
+    }
 
     let transactions = await Transaction.find(filter)
       .populate("farmer", "fullName email")
       .populate("millOwner", "fullName email")
-      .populate("listing", "paddyType")
+      .populate("listing", "paddyType location")
       .populate("vehicle")
       .sort({ createdAt: -1 });
 
@@ -342,7 +362,58 @@ const getAllTransport = async (req, res) => {
 
 // ================= DISPUTES MANAGEMENT =================
 
-// Get all disputes (admin view)
+const emailTpl = (title, lines) => `
+<div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;background:#0b0f19;color:#e5e7eb;border-radius:12px;overflow:hidden;">
+  <div style="background:#0f172a;padding:24px 32px;border-bottom:2px solid #22C55E;">
+    <h2 style="margin:0;color:#22C55E;font-size:20px;">🌾 AgroBridge</h2>
+  </div>
+  <div style="padding:28px 32px;">
+    <h3 style="margin:0 0 16px;color:#fff;font-size:18px;">${title}</h3>
+    ${lines.map(l => `<p style="margin:6px 0;color:#9ca3af;font-size:14px;line-height:1.6;">${l}</p>`).join('')}
+    <div style="margin-top:24px;padding:16px;background:#1e293b;border-radius:8px;border-left:3px solid #22C55E;">
+      <p style="margin:0;color:#6b7280;font-size:12px;">Log in to AgroBridge to view the full case details.</p>
+    </div>
+  </div>
+</div>`;
+
+const notifyParties = async (dispute, subject, title, lines, io) => {
+  try {
+    const populated = await Dispute.findById(dispute._id)
+      .populate('raisedBy', 'email fullName')
+      .populate('againstUser', 'email fullName');
+      
+    const parties = [];
+    if (populated?.raisedBy) parties.push(populated.raisedBy);
+    if (populated?.againstUser) parties.push(populated.againstUser);
+
+    for (const party of parties) {
+      if (party.email) {
+        await sendEmail({ to: party.email, subject, html: emailTpl(title, lines) });
+      }
+      
+      const msgText = lines[0]?.replace(/<[^>]*>?/gm, '') || 'Dispute update';
+      
+      await Notification.create({
+        user: party._id,
+        message: `${title} - ${msgText}`,
+        type: 'DISPUTE_UPDATE',
+        transactionId: dispute.transaction || null
+      }).catch(err => console.error('Notification save error:', err));
+
+      if (io) {
+        io.to(String(party._id)).emit('userNotification', {
+          title,
+          message: msgText,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+  } catch (e) {
+    console.error('Admin dispute email error:', e.message);
+  }
+};
+
+// Get all disputes (admin view) — fully populated
 const getAllDisputes = async (req, res) => {
   try {
     const { status } = req.query;
@@ -350,15 +421,18 @@ const getAllDisputes = async (req, res) => {
     if (status && status !== 'ALL') filter.status = status;
 
     const disputes = await Dispute.find(filter)
-      .populate("reporter", "fullName role email")
+      .populate('raisedBy',    'fullName role email')
+      .populate('againstUser', 'fullName role email')
+      .populate('resolvedBy',  'fullName email')
+      .populate('messages.sender', 'fullName role')
       .populate({
-        path: "transaction",
-        select: "_id status paymentStatus totalAmount quantityKg",
+        path:    'transaction',
+        select:  '_id orderNumber status paymentStatus totalAmount quantityKg finalPricePerKg createdAt transportStatus',
         populate: [
-          { path: "farmer", select: "fullName" },
-          { path: "millOwner", select: "fullName" },
-          { path: "listing", select: "paddyType" } // populating paddyType correctly
-        ]
+          { path: 'farmer',    select: 'fullName email' },
+          { path: 'millOwner', select: 'fullName email' },
+          { path: 'listing',   select: 'paddyType location' },
+        ],
       })
       .sort({ createdAt: -1 });
 
@@ -368,46 +442,192 @@ const getAllDisputes = async (req, res) => {
   }
 };
 
-// Update a dispute status
+// Mark UNDER_REVIEW
 const updateDisputeStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    
-    const dispute = await Dispute.findById(req.params.id);
-    if (!dispute) return res.status(404).json({ message: "Dispute not found" });
+    const allowed = ['OPEN', 'UNDER_REVIEW', 'RESOLVED', 'REJECTED'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: `Invalid status.` });
+    }
 
-    if (status) dispute.status = status;
+    const dispute = await Dispute.findById(req.params.id);
+    if (!dispute) return res.status(404).json({ message: 'Dispute not found' });
+
+    const oldStatus   = dispute.status;
+    dispute.status    = status;
+    dispute.auditLog.push({
+      action:          'STATUS_CHANGED',
+      performedBy:     req.user._id,
+      performedByRole: 'ADMIN',
+      note:            `Status changed from ${oldStatus} to ${status}`,
+    });
     await dispute.save();
 
-    const io = req.app.get("io");
-    if (io) io.emit("disputeUpdated", dispute);
+    const io = req.app.get('io');
+    if (io) io.emit('disputeUpdated', dispute);
 
-    res.status(200).json({ message: "Dispute updated", dispute });
+    if (status === 'UNDER_REVIEW') {
+      await notifyParties(dispute,
+        `[AgroBridge] Dispute Is Now Under Review`,
+        'Dispute Under Review',
+        [
+          `The case <strong>${dispute.title}</strong> is now being actively reviewed by our team.`,
+          `We will contact you if additional information is required.`,
+        ],
+        io
+      );
+    }
+
+    res.status(200).json({ message: 'Dispute updated', dispute });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Add a note to dispute
-const addDisputeNote = async (req, res) => {
+// Request More Information from reporter
+const requestMoreInfo = async (req, res) => {
   try {
     const { message } = req.body;
-    if (!message) return res.status(400).json({ message: "Note message is required" });
+    if (!message?.trim()) return res.status(400).json({ message: 'A message is required.' });
 
     const dispute = await Dispute.findById(req.params.id);
-    if (!dispute) return res.status(404).json({ message: "Dispute not found" });
+    if (!dispute) return res.status(404).json({ message: 'Dispute not found' });
+    if (['RESOLVED', 'REJECTED'].includes(dispute.status)) {
+      return res.status(400).json({ message: 'This dispute is closed.' });
+    }
 
-    dispute.notes.push({ message });
+    // Store as an in-dispute message
+    dispute.messages.push({
+      sender:     req.user._id,
+      senderRole: 'ADMIN',
+      message:    message.trim(),
+    });
+
+    dispute.auditLog.push({
+      action:          'INFO_REQUESTED',
+      performedBy:     req.user._id,
+      performedByRole: 'ADMIN',
+      note:            `Admin requested info: "${message.trim().slice(0, 80)}"`,
+    });
+
     await dispute.save();
 
-    const io = req.app.get("io");
-    if (io) io.emit("disputeUpdated", dispute);
+    const io = req.app.get('io');
+    if (io) {
+      io.to(req.params.id).emit('disputeMessage', dispute.messages[dispute.messages.length - 1]);
+      io.emit('disputeUpdated');
+    }
 
-    res.status(200).json({ message: "Note added successfully", dispute });
+    await notifyParties(dispute,
+      `[AgroBridge] Additional Information Required — ${dispute.title}`,
+      'Information Required',
+      [
+        `An administrator has reviewed your case and needs additional information.`,
+        `<strong>Admin message:</strong> ${message.trim()}`,
+        `Please log in and reply in the case chat to continue.`,
+      ],
+      io
+    );
+
+    res.status(200).json({ message: 'Request sent.', dispute });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Resolve a dispute
+const resolveDispute = async (req, res) => {
+  try {
+    const { resolution, decisionType } = req.body;
+    if (!resolution?.trim()) {
+      return res.status(400).json({ message: 'A resolution message is required.' });
+    }
+
+    const dispute = await Dispute.findById(req.params.id);
+    if (!dispute) return res.status(404).json({ message: 'Dispute not found' });
+    if (['RESOLVED', 'REJECTED'].includes(dispute.status)) {
+      return res.status(400).json({ message: 'This dispute is already closed.' });
+    }
+
+    dispute.status       = 'RESOLVED';
+    dispute.resolution   = resolution.trim();
+    dispute.decisionType = decisionType || '';
+    dispute.resolvedBy   = req.user._id;
+    dispute.resolvedAt   = new Date();
+    dispute.auditLog.push({
+      action:          'DISPUTE_RESOLVED',
+      performedBy:     req.user._id,
+      performedByRole: 'ADMIN',
+      note:            `Resolved — Decision: ${decisionType || 'N/A'} — ${resolution.trim()}`,
+    });
+    await dispute.save();
+
+    const io = req.app.get('io');
+    if (io) io.emit('disputeUpdated', dispute);
+
+    await notifyParties(dispute,
+      `[AgroBridge] Dispute Has Been Resolved`,
+      'Dispute Resolved ✅',
+      [
+        `The case <strong>${dispute.title}</strong> has been reviewed and resolved.`,
+        `<strong>Decision:</strong> ${decisionType ? decisionType.replace('_', ' ') : 'No specific action'}`,
+        `<strong>Resolution:</strong> ${resolution.trim()}`,
+        `If you have further concerns, please contact our support team.`,
+      ],
+      io
+    );
+
+    res.status(200).json({ message: 'Dispute resolved successfully', dispute });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Reject a dispute
+const rejectDispute = async (req, res) => {
+  try {
+    const { resolution } = req.body;
+
+    const dispute = await Dispute.findById(req.params.id);
+    if (!dispute) return res.status(404).json({ message: 'Dispute not found' });
+    if (['RESOLVED', 'REJECTED'].includes(dispute.status)) {
+      return res.status(400).json({ message: 'This dispute is already closed.' });
+    }
+
+    dispute.status     = 'REJECTED';
+    dispute.resolution = (resolution || 'Dispute rejected by administrator.').trim();
+    dispute.resolvedBy = req.user._id;
+    dispute.resolvedAt = new Date();
+    dispute.auditLog.push({
+      action:          'DISPUTE_REJECTED',
+      performedBy:     req.user._id,
+      performedByRole: 'ADMIN',
+      note:            `Rejected — ${dispute.resolution}`,
+    });
+    await dispute.save();
+
+    const io = req.app.get('io');
+    if (io) io.emit('disputeUpdated', dispute);
+
+    await notifyParties(dispute,
+      `[AgroBridge] Dispute Outcome — ${dispute.title}`,
+      'Dispute Closed',
+      [
+        `The case <strong>${dispute.title}</strong> has been reviewed.`,
+        `<strong>Outcome:</strong> Dispute rejected.`,
+        `<strong>Reason:</strong> ${dispute.resolution}`,
+        `If you believe this decision is incorrect, please contact support.`,
+      ],
+      io
+    );
+
+    res.status(200).json({ message: 'Dispute rejected', dispute });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 // ================= PLATFORM STATS =================
 
@@ -677,7 +897,7 @@ const approveVerification = async (req, res) => {
 
     try {
       await sendEmail({
-        email: user.email,
+        to: user.email,
         subject: "AgroBridge - Account Approved",
         html: getApprovalEmailTemplate(loginUrl)
       });
@@ -719,7 +939,7 @@ const rejectVerification = async (req, res) => {
 
     try {
       await sendEmail({
-        email: user.email,
+        to: user.email,
         subject: "AgroBridge - Action Required on Your Application",
         html: getRejectionEmailTemplate(reason, resubmitUrl)
       });
@@ -735,18 +955,46 @@ const rejectVerification = async (req, res) => {
 
 // ================= ANALYTICS =================
 
+const getDateFilter = (req) => {
+  const range = req.query.range || "all";
+  const { startDate, endDate } = req.query;
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    return { $gte: start, $lte: end };
+  } else if (range === "7d") {
+    return { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
+  } else if (range === "30d") {
+    return { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
+  }
+  return null;
+};
+
 const getAnalyticsOverview = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments({ role: { $ne: "ADMIN" } });
-    const totalTransactions = await Transaction.countDocuments();
-    const totalListings = await Listing.countDocuments();
+    const dateFilter = getDateFilter(req);
+    const filter = dateFilter ? { createdAt: dateFilter } : {};
     
+    const userFilter = { role: { $ne: "ADMIN" } };
+    if (dateFilter) userFilter.createdAt = dateFilter;
+
+    const totalUsers = await User.countDocuments(userFilter);
+    const totalTransactions = await Transaction.countDocuments(filter);
+    const totalListings = await Listing.countDocuments(filter);
+    
+    const revMatch = { paymentStatus: "PAID" };
+    if (dateFilter) revMatch.createdAt = dateFilter;
+
     const revResult = await Transaction.aggregate([
-      { $match: { paymentStatus: "PAID" } }, // or paymentStatus: 'PAID'
+      { $match: revMatch },
       { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } }
     ]);
     const totalRevenue = revResult[0]?.totalRevenue || 0;
-    const completedDeliveries = await Transaction.countDocuments({ transportStatus: "DELIVERED" });
+    
+    const deliveryFilter = { transportStatus: "DELIVERED" };
+    if (dateFilter) deliveryFilter.createdAt = dateFilter;
+    const completedDeliveries = await Transaction.countDocuments(deliveryFilter);
 
     res.status(200).json({ totalUsers, totalTransactions, totalRevenue, totalListings, completedDeliveries });
   } catch (error) { res.status(500).json({ message: error.message }); }
@@ -755,37 +1003,101 @@ const getAnalyticsOverview = async (req, res) => {
 const getAnalyticsRevenue = async (req, res) => {
   try {
     const now = new Date();
-    const windowStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const dateFilter = getDateFilter(req);
+    
+    // Always align revenue with paymentStatus="PAID" for consistency with Overview
+    const matchCriteria = { paymentStatus: "PAID" };
+    
+    let isDaily = false;
+    let daysDiff = 180; // default 6 months
+    let startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    let endDate = now;
+
+    if (dateFilter) {
+      matchCriteria.createdAt = dateFilter;
+      startDate = dateFilter.$gte;
+      // If there's an end date use it, otherwise use 'now'
+      endDate = dateFilter.$lte || now;
+      
+      const diffTime = Math.abs(endDate - startDate);
+      daysDiff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Use daily granularity if range <= 60 days
+      if (daysDiff <= 60) {
+        isDaily = true;
+      }
+    } else {
+      matchCriteria.createdAt = { $gte: startDate };
+    }
     
     const revenueAgg = await Transaction.aggregate([
-      { $match: { status: "COMPLETED", createdAt: { $gte: windowStart } } },
+      { $match: matchCriteria },
       {
         $group: {
-          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" }, day: { $dayOfMonth: "$createdAt" } },
           revenue: { $sum: "$totalAmount" }
         }
       }
     ]);
     
-    const monthlyRevenue = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const yr = d.getFullYear();
-      const mo = d.getMonth() + 1;
-      const hit = revenueAgg.find(a => a._id.year === yr && a._id.month === mo);
-      monthlyRevenue.push({
-        month: MONTH_NAMES[mo - 1],
-        revenue: hit ? hit.revenue : 0
-      });
+    let monthlyRevenue = [];
+    
+    if (isDaily) {
+      // Fill missing days
+      for (let i = daysDiff - 1; i >= 0; i--) {
+        const d = new Date(endDate);
+        d.setDate(d.getDate() - i);
+        const yr = d.getFullYear();
+        const mo = d.getMonth() + 1;
+        const day = d.getDate();
+        
+        const hit = revenueAgg.find(a => a._id.year === yr && a._id.month === mo && a._id.day === day);
+        monthlyRevenue.push({
+          month: `${MONTH_NAMES[mo - 1]} ${day}`,
+          revenue: hit ? hit.revenue : 0
+        });
+      }
+    } else {
+      // Fill missing months (up to 12 max or dynamically based on range)
+      // Since default is 6 months, we'll keep 6 months if range='all'
+      // If custom > 60 days, we'll calculate month difference
+      let monthsToGenerate = 6;
+      if (dateFilter) {
+        monthsToGenerate = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1;
+      }
+      
+      for (let i = monthsToGenerate - 1; i >= 0; i--) {
+        const d = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
+        const yr = d.getFullYear();
+        const mo = d.getMonth() + 1;
+        
+        const hit = revenueAgg.filter(a => a._id.year === yr && a._id.month === mo)
+                              .reduce((s, a) => s + a.revenue, 0);
+        monthlyRevenue.push({
+          month: `${MONTH_NAMES[mo - 1]} ${yr.toString().slice(-2)}`,
+          revenue: hit || 0
+        });
+      }
     }
+    
+    // Debug logging for prompt validation
+    console.log(`[getAnalyticsRevenue] Filter applied: isDaily=${isDaily}, dataPoints=${monthlyRevenue.length}, totalRevenueCount=${revenueAgg.length}`);
+    
     res.status(200).json(monthlyRevenue);
-  } catch (error) { res.status(500).json({ message: error.message }); }
+  } catch (error) { 
+    console.error(error);
+    res.status(500).json({ message: error.message }); 
+  }
 };
 
 const getAnalyticsUsers = async (req, res) => {
   try {
+    const dateFilter = getDateFilter(req);
+    const match = { role: { $ne: "ADMIN" } };
+    if (dateFilter) match.createdAt = dateFilter;
+
     const data = await User.aggregate([
-      { $match: { role: { $ne: "ADMIN" } } },
+      { $match: match },
       { $group: { _id: "$role", count: { $sum: 1 } } }
     ]);
     const formatted = data.map(d => ({ name: d._id, value: d.count }));
@@ -795,7 +1107,12 @@ const getAnalyticsUsers = async (req, res) => {
 
 const getAnalyticsPaddy = async (req, res) => {
   try {
+    const dateFilter = getDateFilter(req);
+    const match = {};
+    if (dateFilter) match.createdAt = dateFilter;
+
     const data = await Listing.aggregate([
+      { $match: match },
       { $group: { _id: "$paddyType", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
@@ -806,7 +1123,12 @@ const getAnalyticsPaddy = async (req, res) => {
 
 const getAnalyticsDistricts = async (req, res) => {
   try {
+    const dateFilter = getDateFilter(req);
+    const match = {};
+    if (dateFilter) match.createdAt = dateFilter;
+
     const data = await Listing.aggregate([
+      { $match: match },
       { $group: { _id: "$location.district", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
@@ -817,13 +1139,21 @@ const getAnalyticsDistricts = async (req, res) => {
 
 const getAnalyticsConversion = async (req, res) => {
   try {
-    const accepted = await Negotiation.countDocuments({ status: { $in: ["ACCEPTED", "AGREED"] } });
-    const transactions = await Transaction.countDocuments();
+    const dateFilter = getDateFilter(req);
+    const negFilter = { status: { $in: ["ACCEPTED", "AGREED"] } };
+    const txnFilter = {};
+    
+    if (dateFilter) {
+      negFilter.updatedAt = dateFilter;
+      txnFilter.createdAt = dateFilter;
+    }
+
+    const accepted = await Negotiation.countDocuments(negFilter);
+    const transactions = await Transaction.countDocuments(txnFilter);
     let rate = 0;
     if (accepted > 0) {
       rate = (transactions / accepted) * 100;
     }
-    // Cap at 100 just in case
     if (rate > 100) rate = 100;
 
     res.status(200).json({ 
@@ -954,7 +1284,9 @@ module.exports = {
   getAnalyticsConversion,
   getAllDisputes,
   updateDisputeStatus,
-  addDisputeNote,
+  resolveDispute,
+  rejectDispute,
+  requestMoreInfo,
   getPlatformSettings,
   updatePlatformSettings,
   getAnnouncements,

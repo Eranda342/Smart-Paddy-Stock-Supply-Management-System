@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Eye, X } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, X, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { PADDY_TYPES, DISTRICTS } from "../../../constants/paddyTypes";
@@ -20,6 +20,8 @@ export default function FarmerListings() {
   const [listings, setListings] = useState([]);
   const [search, setSearch] = useState("");
   const [editListingId, setEditListingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -147,29 +149,26 @@ export default function FarmerListings() {
     }
   };
 
-  const handleDeleteListing = async (id) => {
-
-    const confirmDelete = window.confirm("Delete this listing?");
-    if (!confirmDelete) return;
-
+  const handleDeleteListing = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
-
-      const res = await fetch(`http://localhost:5000/api/listings/${id}`, {
+      const res = await fetch(`http://localhost:5000/api/listings/${deleteTarget._id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
       if (res.ok) {
-        toast.success("Listing deleted", {
-          style: { borderRadius: "8px", background: "#1f2937", color: "#fff" }
-        });
+        toast.success("Listing deleted successfully");
+        setDeleteTarget(null);
         fetchListings();
+      } else {
+        const json = await res.json();
+        toast.error(json.message || "Failed to delete listing");
       }
-
-    } catch (error) {
-      console.error(error);
+    } catch {
+      toast.error("Server error — please try again");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -255,7 +254,7 @@ export default function FarmerListings() {
                           className="text-white/60 hover:text-white hover:bg-white/10">
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteListing(listing._id)} title="Delete"
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(listing)} title="Delete"
                           className="text-white/60 hover:text-red-400 hover:bg-red-500/10">
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -371,6 +370,50 @@ export default function FarmerListings() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={!isDeleting ? () => setDeleteTarget(null) : undefined} />
+          <div className="relative bg-[#0A1120] border border-red-500/30 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500/50 to-transparent rounded-t-2xl" />
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-sm text-white">Delete Listing</h2>
+                  <p className="text-xs text-white/50">{deleteTarget.paddyType} — {deleteTarget.quantityKg?.toLocaleString()} kg</p>
+                </div>
+              </div>
+              <button onClick={() => setDeleteTarget(null)} disabled={isDeleting} className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors disabled:opacity-50">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-white/80">Are you sure you want to permanently delete this listing?</p>
+              <p className="text-xs text-white/40">This action cannot be undone. All associated negotiations may be affected.</p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleDeleteListing}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-medium rounded-xl transition-colors text-sm"
+                >
+                  {isDeleting ? "Deleting…" : "Delete Listing"}
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 disabled:opacity-60 text-white font-medium rounded-xl border border-white/10 transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

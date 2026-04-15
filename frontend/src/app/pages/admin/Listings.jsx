@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, Trash2, CheckCircle, XCircle, Package, RefreshCw, Eye, Ban, X } from 'lucide-react';
+import { Search, Trash2, CheckCircle, Package, RefreshCw, Eye, Ban, X, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { io } from "socket.io-client";
 
@@ -28,6 +28,8 @@ export default function AdminListings() {
   const [statusFilter, setStatusFilter] = useState('');
   const [stats, setStats] = useState({ total: 0, open: 0, sold: 0 });
   const [selectedListing, setSelectedListing] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -61,15 +63,19 @@ export default function AdminListings() {
     return () => socket.off("dashboard_update", fetchListings);
   }, [fetchListings]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this listing? This cannot be undone.')) return;
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/listings/${id}`, { method: 'DELETE', headers });
+      const res = await fetch(`${API_BASE}/admin/listings/${deleteTarget._id}`, { method: 'DELETE', headers });
       if (!res.ok) throw new Error();
-      toast.success('Listing deleted');
+      toast.success('Listing deleted successfully');
+      setDeleteTarget(null);
       fetchListings();
     } catch {
       toast.error('Failed to delete listing');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -208,7 +214,7 @@ export default function AdminListings() {
                           </button>
                         )}
                         <button
-                          onClick={() => handleDelete(listing._id)}
+                          onClick={() => setDeleteTarget(listing)}
                           className="p-2 hover:bg-red-500/10 rounded-lg transition-colors group"
                           title="Delete Listing"
                         >
@@ -278,6 +284,48 @@ export default function AdminListings() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-card border border-red-500/30 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-sm">Delete Listing</h2>
+                  <p className="text-xs text-muted-foreground">{deleteTarget.paddyType} — {deleteTarget.quantityKg?.toLocaleString()} kg</p>
+                </div>
+              </div>
+              <button onClick={() => setDeleteTarget(null)} disabled={isDeleting} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm">Are you sure you want to permanently delete this listing?</p>
+              <p className="text-xs text-muted-foreground">This action cannot be undone.</p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-medium rounded-xl transition-colors text-sm"
+                >
+                  {isDeleting ? 'Deleting…' : 'Delete Listing'}
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2.5 bg-muted hover:bg-muted/70 disabled:opacity-60 font-medium rounded-xl transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

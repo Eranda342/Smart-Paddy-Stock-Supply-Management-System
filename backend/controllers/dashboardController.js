@@ -130,8 +130,6 @@ const getFarmerDashboard = async (req, res) => {
       monthly[month] = (monthly[month] || 0) + (t.totalAmount || 0);
     });
 
-    //-------------------------------------
-
     res.json({
       stats: {
         activeListings,
@@ -144,7 +142,8 @@ const getFarmerDashboard = async (req, res) => {
       distribution,
       monthly,
       bestSelling,
-      locations
+      locations,
+      rawTransactions: allTransactions
     });
 
   } catch (error) {
@@ -275,7 +274,8 @@ const getMillOwnerDashboard = async (req, res) => {
       distribution,
       monthly,
       bestSelling,
-      locations
+      locations,
+      rawTransactions: allTransactions
     });
 
   } catch (error) {

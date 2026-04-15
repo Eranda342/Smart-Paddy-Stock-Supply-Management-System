@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CheckCircle2, Truck, CreditCard, Package, ArrowLeft, Loader2 } from "lucide-react";
+import { CheckCircle2, Truck, CreditCard, Package, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import RaiseDisputeModal from "../../components/RaiseDisputeModal";
 
 const socket = io("http://localhost:5000");
 
@@ -14,6 +15,7 @@ export default function TransactionDetails() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
 
   const [vehicleType, setVehicleType] = useState("");
   const [vehicles, setVehicles] = useState([]);
@@ -591,7 +593,15 @@ export default function TransactionDetails() {
             Detailed transaction context and live workflow coordination.
           </p>
         </div>
+        <button
+          onClick={() => setShowDisputeModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 font-semibold text-sm rounded-xl transition-colors shrink-0"
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Raise Dispute
+        </button>
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
         
@@ -682,6 +692,23 @@ export default function TransactionDetails() {
         </div>
 
       </div>
+
+      {/* Raise Dispute Modal */}
+      {showDisputeModal && transaction && (
+        <RaiseDisputeModal
+          preselectedTransaction={{
+            _id:            transaction._id,
+            orderNumber:    transaction.orderNumber,
+            totalAmount:    transaction.totalAmount,
+            quantityKg:     transaction.quantityKg,
+            finalPricePerKg:transaction.finalPricePerKg,
+            listing:        transaction.listing,
+            createdAt:      transaction.createdAt,
+          }}
+          onClose={() => setShowDisputeModal(false)}
+          onSuccess={() => setShowDisputeModal(false)}
+        />
+      )}
     </div>
   );
 }
