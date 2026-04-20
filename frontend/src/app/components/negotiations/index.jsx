@@ -11,11 +11,12 @@ import {
 import { Button } from "../ui/button";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
+import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 
-export const socket = io("http://localhost:5000");
+export const socket = io(SOCKET_URL);
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
-const BASE_URL = "http://localhost:5000";
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -391,7 +392,7 @@ export function ActionBar({
 
     if (editingMessageId) {
       try {
-        const res = await fetch(`http://localhost:5000/api/negotiations/${neg._id}/message/${editingMessageId}`, {
+        const res = await fetch(`${API_BASE_URL}/negotiations/${neg._id}/message/${editingMessageId}`, {
           method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ newText: message })
         });
@@ -404,7 +405,7 @@ export function ActionBar({
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/negotiations/${neg._id}/message`, {
+      const res = await fetch(`${API_BASE_URL}/negotiations/${neg._id}/message`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ message })
       });
@@ -425,7 +426,7 @@ export function ActionBar({
     try {
       const payload = { message: "Counter Offer", offeredPrice: Number(counterPrice) };
       if (counterQuantity) payload.quantityKg = Number(counterQuantity);
-      const res = await fetch(`http://localhost:5000/api/negotiations/${neg._id}/message`, {
+      const res = await fetch(`${API_BASE_URL}/negotiations/${neg._id}/message`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
@@ -441,7 +442,7 @@ export function ActionBar({
   const updateStatus = async (status) => {
     try {
       const endpoint = status === "ACCEPTED" ? "accept" : status === "REJECTED" ? "reject" : "status";
-      const res = await fetch(`http://localhost:5000/api/negotiations/${neg._id}/${endpoint}`, {
+      const res = await fetch(`${API_BASE_URL}/negotiations/${neg._id}/${endpoint}`, {
         method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status })
       });
@@ -572,7 +573,7 @@ export function DealCard({ neg, decodedUser, token, fetchNegotiations, defaultEx
   useEffect(() => {
     const unread = decodedUser?.role === "farmer" ? neg.unreadCountFarmer : neg.unreadCountMillOwner;
     if (unread > 0 && expanded) {
-      fetch(`http://localhost:5000/api/negotiations/${neg._id}/read`, {
+      fetch(`${API_BASE_URL}/negotiations/${neg._id}/read`, {
         method: "PUT", headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
         if (res.ok) socket.emit("markAsRead", { negotiationId: neg._id, userId: decodedUser.id });
@@ -582,7 +583,7 @@ export function DealCard({ neg, decodedUser, token, fetchNegotiations, defaultEx
 
   const deleteMessage = async (msgId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/negotiations/${neg._id}/message/${msgId}`, {
+      const res = await fetch(`${API_BASE_URL}/negotiations/${neg._id}/message/${msgId}`, {
         method: "DELETE", headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {

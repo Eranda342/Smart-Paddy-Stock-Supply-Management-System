@@ -12,6 +12,7 @@ import {
   Tooltip, ResponsiveContainer
 } from 'recharts';
 import { io } from 'socket.io-client';
+import { API_BASE_URL, SOCKET_URL } from '@/api/api';
 
 // ─────────────────────────────────────────────────────────────────
 // Shared status color system (consistent across admin panel)
@@ -265,13 +266,13 @@ export default function AdminDashboard() {
     try {
       if (isManual) setRefreshing(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get('http://localhost:5000/api/admin/dashboard', {
+      const { data } = await axios.get(`${API_BASE_URL}/admin/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(data);
       console.log("Dashboard stats:", data);
 
-      const resSales = await axios.get('http://localhost:5000/api/analytics/monthly-sales', {
+      const resSales = await axios.get(`${API_BASE_URL}/analytics/monthly-sales`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (Array.isArray(resSales.data)) {
@@ -294,7 +295,7 @@ export default function AdminDashboard() {
     document.title = "Admin Dashboard | AgroBridge";
     fetchStats();
     
-    const socket = io("http://localhost:5000");
+    const socket = io(SOCKET_URL);
     
     // Listen for dashboard update events
     socket.on("dashboard_update", () => {

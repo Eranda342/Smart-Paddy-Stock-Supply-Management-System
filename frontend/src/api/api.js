@@ -1,4 +1,9 @@
-const API_BASE_URL = "http://localhost:5000/api";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+export const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+export const BASE_URL =
+  import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
 export const API = {
   login: `${API_BASE_URL}/users/login`,
@@ -22,7 +27,7 @@ export const API = {
 
   // ── Google OAuth ──────────────────────────────────────────────────────────
   // Browser redirect URL (not a fetch endpoint)
-  googleAuth: "http://localhost:5000/api/auth/google",
+  googleAuth: `${SOCKET_URL}/api/auth/google`,
   // Sets role in DB for new Google OAuth users during onboarding
   setRole: `${API_BASE_URL}/users/set-role`,
   // Allows REJECTED users to upload a new document and re-enter PENDING queue

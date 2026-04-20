@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { API } from "../../api/api";
+import { API } from "@/api/api";
 import { loginSchema } from "../lib/schemas";
 import { Logo } from "../components/ui/Logo";
 

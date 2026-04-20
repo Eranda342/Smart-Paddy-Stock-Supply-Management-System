@@ -3,7 +3,8 @@ import { Settings, Save, ToggleLeft, ToggleRight, Info, Shield, Sliders, DollarS
 import toast from 'react-hot-toast';
 import { Button } from '../../components/ui/button';
 
-const API_BASE = 'http://localhost:5000/api/admin/settings';
+import { API_BASE_URL } from '@/api/api';
+const API_BASE = `${API_BASE_URL}/admin/settings`;
 
 const ToggleSwitch = ({ value, onChange, label, description }) => (
   <div className="flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors px-4 rounded-lg -mx-4">

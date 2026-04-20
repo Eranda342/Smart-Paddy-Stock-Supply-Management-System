@@ -4,8 +4,9 @@ import { CheckCircle2, Truck, CreditCard, Package, ArrowLeft, Loader2, AlertTria
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import RaiseDisputeModal from "../../components/RaiseDisputeModal";
+import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
 export default function TransactionDetails() {
   const { id } = useParams();
@@ -36,7 +37,7 @@ export default function TransactionDetails() {
       setLoading(true);
       setError("");
       
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/transactions/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -72,7 +73,7 @@ export default function TransactionDetails() {
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/vehicles", {
+        const res = await fetch(`${API_BASE_URL}/vehicles`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -88,7 +89,7 @@ export default function TransactionDetails() {
     try {
       setActionLoading(true);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}/${endpoint}`, {
+      const res = await fetch(`${API_BASE_URL}/transactions/${id}/${endpoint}`, {
         method: "PUT",
         headers: { 
   Authorization: `Bearer ${token}`,
@@ -114,7 +115,7 @@ export default function TransactionDetails() {
     try {
       setActionLoading(true);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}/transport-decision`, {
+      const res = await fetch(`${API_BASE_URL}/transactions/${id}/transport-decision`, {
         method: "PUT",
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -144,7 +145,7 @@ export default function TransactionDetails() {
   const handlePickup = async () => {
     try {
       setActionLoading(true);
-      const res = await fetch(`http://localhost:5000/api/transactions/${transaction?._id}/pickup`, {
+      const res = await fetch(`${API_BASE_URL}/transactions/${transaction?._id}/pickup`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -170,7 +171,7 @@ export default function TransactionDetails() {
   const handleDelivered = async () => {
     try {
       setActionLoading(true);
-      const res = await fetch(`http://localhost:5000/api/transactions/${transaction?._id}/deliver`, {
+      const res = await fetch(`${API_BASE_URL}/transactions/${transaction?._id}/deliver`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -196,7 +197,7 @@ export default function TransactionDetails() {
     try {
       setActionLoading(true);
 
-      const res = await fetch(`http://localhost:5000/api/transactions/${id}/assign-vehicle`, {
+      const res = await fetch(`${API_BASE_URL}/transactions/${id}/assign-vehicle`, {
         method: "PUT",
         headers: { 
           Authorization: `Bearer ${token}`,

@@ -5,8 +5,8 @@ import { io } from 'socket.io-client';
 import { Button } from '../../components/ui/button';
 import { FormInput, FormTextarea } from '../../components/ui/form-fields';
 
-const API_BASE = 'http://localhost:5000/api';
-const SOCKET_URL = 'http://localhost:5000';
+import { API_BASE_URL, SOCKET_URL } from '@/api/api';
+const API_BASE = API_BASE_URL;
 
 const TARGETS = [
   { value: 'ALL', label: 'All Users', icon: Users, color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },

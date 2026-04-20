@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { API_BASE_URL } from "@/api/api";
 
 export default function VerifyEmailPage() {
   const { token } = useParams();
@@ -14,7 +15,7 @@ export default function VerifyEmailPage() {
 
     const verifyToken = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/users/verify-email/${token}`);
+        const res = await fetch(`${API_BASE_URL}/users/verify-email/${token}`);
         const data = await res.json();
         
         if (!res.ok) {

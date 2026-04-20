@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { X, AlertTriangle, UploadCloud, Paperclip } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API_BASE = 'http://localhost:5000/api';
+import { API_BASE_URL as API_BASE } from '@/api/api';
 
 const DISPUTE_TYPES = [
   { value: 'QUANTITY_MISMATCH', label: 'Quantity Mismatch', icon: '⚖️', desc: 'Received wrong quantity' },

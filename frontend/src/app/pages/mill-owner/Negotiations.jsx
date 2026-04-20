@@ -7,7 +7,7 @@ import {
 } from "../../components/negotiations/index.jsx";
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
-const BASE_URL = "http://localhost:5000";
+import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 
 export default function MillOwnerNegotiations() {
   const [allNegotiations, setAllNegotiations] = useState([]);
@@ -23,7 +23,7 @@ export default function MillOwnerNegotiations() {
   const fetchNegotiations = async () => {
     if (allNegotiations.length === 0) setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/negotiations", {
+      const res = await fetch(`${API_BASE_URL}/negotiations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

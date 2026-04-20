@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { AlertTriangle } from "lucide-react";
 import RaiseDisputeModal from "../../components/RaiseDisputeModal";
+import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
 export default function MillOwnerTransactions() {
 
@@ -22,7 +23,7 @@ export default function MillOwnerTransactions() {
 
       setLoading(true);
 
-      const res = await fetch("http://localhost:5000/api/transactions", {
+      const res = await fetch(`${API_BASE_URL}/transactions`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

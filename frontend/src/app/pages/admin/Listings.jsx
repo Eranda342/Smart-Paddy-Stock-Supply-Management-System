@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, Trash2, CheckCircle, Package, RefreshCw, Eye, Ban, X, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { io } from "socket.io-client";
+import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = API_BASE_URL;
 
 const StatusBadge = ({ status }) => {
   const map = {

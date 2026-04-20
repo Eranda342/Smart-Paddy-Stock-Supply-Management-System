@@ -3,12 +3,13 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sprout, LayoutDashboard, ShieldCheck, Users, FileText, LogOut,
   Search, Bell, Package, MessageSquare, Receipt, Truck,
-  AlertCircle, Settings, CheckCheck, X, RefreshCw, Info
+  AlertCircle, Settings, CheckCheck, X, RefreshCw, Info, ChevronDown
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import GlobalSearchBar from '../components/GlobalSearchBar';
 import { Button } from '../components/ui/button';
 import { Logo } from "../components/ui/Logo";
+import { API_BASE_URL } from "@/api/api";
 
 
 // ─────────────────────────────────────────────────────────────────
@@ -205,12 +206,25 @@ export default function AdminLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [pendingKyc, setPendingKyc] = useState(0);
   const [statsLoaded, setStatsLoaded] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Click-outside closes admin profile dropdown
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // Fetch platform stats (for KYC badge)
   const fetchPendingKyc = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/admin/stats', {
+      const res = await fetch(`${API_BASE_URL}/admin/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return;
@@ -341,30 +355,60 @@ export default function AdminLayout() {
                 )}
               </div>
 
-              {/* Admin badge */}
-              <div className="flex items-center gap-2.5 pl-3 border-l border-border ml-1">
-                {/* Avatar */}
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-[#0F1115] shadow-[0_0_10px_rgba(34,197,94,0.3)]"
-                    style={{ background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)' }}>
-                    AD
+              {/* Admin profile dropdown */}
+              <div className="flex items-center gap-2.5 pl-3 border-l border-border ml-1 relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2.5 hover:bg-muted/50 p-1.5 pr-2 rounded-xl transition-colors"
+                >
+                  {/* Avatar */}
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-[#0F1115] shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                      style={{ background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)' }}>
+                      AD
+                    </div>
+                    {/* Online indicator */}
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#22C55E] border-2 border-card" />
                   </div>
-                  {/* Online indicator */}
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#22C55E] border-2 border-card" />
-                </div>
-                {/* Text */}
-                <div>
-                  <div className="text-sm font-semibold leading-tight">Administrator</div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[9px] font-bold px-1.5 py-px rounded-sm uppercase tracking-wider"
-                      style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
-                      Super Admin
-                    </span>
-                    {statsLoaded && (
-                      <span className="text-[9px] text-muted-foreground/60">· {pendingKyc > 0 ? `${pendingKyc} pending` : 'All clear'}</span>
-                    )}
+                  {/* Text */}
+                  <div className="hidden md:block text-left">
+                    <div className="text-sm font-semibold leading-tight">Administrator</div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] font-bold px-1.5 py-px rounded-sm uppercase tracking-wider"
+                        style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
+                        Super Admin
+                      </span>
+                      {statsLoaded && (
+                        <span className="text-[9px] text-muted-foreground/60">· {pendingKyc > 0 ? `${pendingKyc} pending` : 'All clear'}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                  <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground hidden md:block" />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-card border border-border rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="px-4 py-3 border-b border-border">
+                      <p className="text-sm font-semibold">Administrator</p>
+                      <p className="text-xs text-muted-foreground">Super Admin</p>
+                    </div>
+
+                    <div className="py-2">
+                      <button onClick={() => { setDropdownOpen(false); navigate('/admin'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors">
+                        <LayoutDashboard className="w-4 h-4 mr-3" /> Dashboard
+                      </button>
+                      <button onClick={() => { setDropdownOpen(false); navigate('/admin/settings'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors">
+                        <Settings className="w-4 h-4 mr-3" /> System Settings
+                      </button>
+                    </div>
+
+                    <div className="border-t border-border py-2">
+                      <button onClick={handleLogout} className="w-full flex items-center px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
+                        <LogOut className="w-4 h-4 mr-3" /> Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

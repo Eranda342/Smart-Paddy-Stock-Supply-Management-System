@@ -11,6 +11,7 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import logoUrl from "../../../assets/navbar.svg";
+import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
 const getLogoBase64 = () => {
   return new Promise((resolve) => {
@@ -64,7 +65,7 @@ export default function MillOwnerDashboard() {
 
   useEffect(() => {
     document.title = "Dashboard | AgroBridge";
-    const socket = io("http://localhost:5000");
+    const socket = io(SOCKET_URL);
 
     socket.on("dashboard_update", () => {
       setRefreshTrigger(prev => prev + 1);
@@ -86,7 +87,7 @@ export default function MillOwnerDashboard() {
       try {
         const token = localStorage.getItem("token");
         // Always fetch full details - filtering runs LOCALLY
-        let url = `http://localhost:5000/api/dashboard/millOwner?range=all`;
+        let url = `${API_BASE_URL}/dashboard/millOwner?range=all`;
         const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`

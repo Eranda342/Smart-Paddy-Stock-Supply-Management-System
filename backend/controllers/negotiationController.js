@@ -338,7 +338,7 @@ const updateNegotiationStatus = async (req, res) => {
           {
             $inc: { availableQuantityKg: -quantity }
           },
-          { new: true }
+          { returnDocument: "after" }
         );
 
         if (!updatedListing) {

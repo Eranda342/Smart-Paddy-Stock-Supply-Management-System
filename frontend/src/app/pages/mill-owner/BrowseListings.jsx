@@ -4,11 +4,12 @@ import { MapPin, User, Package, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { Button } from "../../components/ui/button";
+import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
-const BASE_URL = "http://localhost:5000";
+
 
 export default function BrowseListings() {
 
@@ -29,7 +30,7 @@ export default function BrowseListings() {
 
     try {
 
-      const res = await fetch("http://localhost:5000/api/listings/marketplace", {
+      const res = await fetch(`${API_BASE_URL}/listings/marketplace`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -60,7 +61,7 @@ export default function BrowseListings() {
   const handleNegotiate = async (listing) => {
     setNegotiatingId(listing._id);
     try {
-      const res = await fetch("http://localhost:5000/api/negotiations", {
+      const res = await fetch(`${API_BASE_URL}/negotiations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
