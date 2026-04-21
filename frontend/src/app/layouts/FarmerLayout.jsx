@@ -25,6 +25,7 @@ import NotificationDropdown from "../components/NotificationDropdown";
 import GlobalSearchBar from "../components/GlobalSearchBar";
 import { Button } from "../components/ui/button";
 import { Logo } from "../components/ui/Logo";
+import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 
 
 export default function FarmerLayout() {
@@ -47,7 +48,7 @@ export default function FarmerLayout() {
   }, []);
 
   useEffect(() => {
-    const socket = io("http://localhost:5000");
+    const socket = io(SOCKET_URL);
 
     const token = localStorage.getItem("token");
     let decodedUser = null;
@@ -74,7 +75,7 @@ export default function FarmerLayout() {
         const localUser = localStorage.getItem("user");
         if (localUser) setUser(JSON.parse(localUser));
 
-        const res = await fetch("http://localhost:5000/api/users/me", {
+        const res = await fetch(`${API_BASE_URL}/users/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -214,7 +215,7 @@ export default function FarmerLayout() {
                 <div className="relative">
                   <div className="w-10 h-10 bg-[#22C55E] rounded-full flex items-center justify-center font-medium text-[#0F1115] overflow-hidden">
                     {user?.profileImage ? (
-                       <img src={`http://localhost:5000/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Profile" />
+                       <img src={`${BASE_URL}/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Profile" />
                     ) : (
                        user ? getInitials(user.fullName) : "??"
                     )}

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import axios from "axios";
 import CountUp from "react-countup";
+import { Logo } from "../components/ui/Logo";
 import {
   Sprout,
   Users,
@@ -23,29 +23,12 @@ import {
    LANDING PAGE
 ══════════════════════════════════════════════ */
 export default function LandingPage() {
-  const [stats, setStats] = useState({
+  const stats = {
     users: 12500,
     listings: 4200,
     transactions: 850,
     districts: 25,
-  });
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const listingsRes = await axios
-          .get("http://localhost:5000/api/listings")
-          .catch(() => null);
-        setStats((prev) => ({
-          ...prev,
-          listings: listingsRes?.data?.length || prev.listings,
-        }));
-      } catch (err) {
-        console.error("Failed to fetch live stats, using fallbacks:", err);
-      }
-    };
-    fetchStats();
-  }, []);
+  };
 
   const fadeUp = {
     hidden: { opacity: 0, y: 20 },
@@ -539,7 +522,7 @@ export default function LandingPage() {
             {/* Col 1 — Brand + tagline */}
             <div className="col-span-2 md:col-span-1 flex flex-col gap-5">
               <div className="opacity-90 hover:opacity-100 transition-opacity">
-                <img src="/logo.png" alt="AgroBridge" className="max-h-12 w-auto" />
+                <Logo layout="navbar" />
               </div>
               <p className="text-sm text-white/40 leading-relaxed max-w-[200px]">
                 Sri Lanka's premium digital grain market, connecting farmers and mill owners.

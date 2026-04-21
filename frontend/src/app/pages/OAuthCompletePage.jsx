@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import logo from "@/assets/navbar.svg";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Building2, ChevronRight, Loader2, ShieldCheck } from "lucide-react";
 
 import toast from "react-hot-toast";
-import { API } from "../../api/api";
+import { API } from "@/api/api";
 import { DISTRICTS as SRI_LANKAN_DISTRICTS } from "../../constants/paddyTypes";
 
 /**
@@ -163,7 +164,7 @@ export default function OAuthCompletePage() {
             {/* Logo */}
             <div className="flex justify-center mb-8">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <img src="/logo.png" alt="AgroBridge" className="h-10 w-auto" />
+                <img src={logo} alt="AgroBridge" className="h-10 w-auto" />
               </Link>
             </div>
 

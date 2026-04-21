@@ -892,7 +892,7 @@ const approveVerification = async (req, res) => {
     await user.save();
 
     // Send approval email
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL;
     const loginUrl = `${frontendUrl}/login`; 
 
     try {
@@ -934,7 +934,7 @@ const rejectVerification = async (req, res) => {
     await user.save();
 
     // Send rejection email
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL;
     const resubmitUrl = `${frontendUrl}/login`; 
 
     try {

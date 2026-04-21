@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import logo from "@/assets/navbar.svg";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { API } from "../../api/api";
+import { API } from "@/api/api";
 import { resetPasswordSchema } from "../lib/schemas";
 
 
@@ -75,7 +76,7 @@ export default function ResetPasswordPage() {
 
             <div className="flex justify-center mb-8">
               <Link to="/" className="hover:opacity-80 transition-opacity outline-none">
-                <img src="/logo.png" alt="AgroBridge" className="h-12 w-auto mx-auto" />
+                <img src={logo} alt="AgroBridge" className="h-12 w-auto mx-auto" />
               </Link>
             </div>
 

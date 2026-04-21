@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sprout, AlertCircle } from "lucide-react";
-import { API } from "../../api/api";
+import { API } from "@/api/api";
 import { resolveUserDestination } from "../lib/resolveUserDestination";
 
 /**

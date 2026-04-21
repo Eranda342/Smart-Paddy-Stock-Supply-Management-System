@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { Button } from "../../components/ui/button";
 import { FormInput } from "../../components/ui/form-fields";
 
-const BASE_URL = "http://localhost:5000";
+import { SOCKET_URL, BASE_URL } from "@/api/api";
 const PHONE_REGEX = /^(\+94|0)[0-9]{9}$/;
 
 export default function MillOwnerProfile() {

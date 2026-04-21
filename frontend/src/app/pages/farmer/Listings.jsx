@@ -9,8 +9,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput, FormSelect, FormTextarea } from "../../components/ui/form-fields";
 import { Button } from "../../components/ui/button";
 import { listingSchema } from "../../lib/schemas";
+import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
 export default function FarmerListings() {
 
@@ -48,7 +49,7 @@ export default function FarmerListings() {
   const fetchListings = async () => {
     try {
 
-      const res = await fetch("http://localhost:5000/api/listings/my", {
+      const res = await fetch(`${API_BASE_URL}/listings/my`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -107,8 +108,8 @@ export default function FarmerListings() {
   const handleSaveListing = async (data) => {
     try {
       const url = editListingId
-        ? `http://localhost:5000/api/listings/${editListingId}`
-        : "http://localhost:5000/api/listings";
+        ? `${API_BASE_URL}/listings/${editListingId}`
+        : `${API_BASE_URL}/listings`;
 
       const method = editListingId ? "PUT" : "POST";
 
@@ -153,7 +154,7 @@ export default function FarmerListings() {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/listings/${deleteTarget._id}`, {
+      const res = await fetch(`${API_BASE_URL}/listings/${deleteTarget._id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

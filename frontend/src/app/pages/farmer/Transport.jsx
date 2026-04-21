@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Truck, MapPin, Loader2, CheckCircle2, Package, Phone, Check, Circle } from 'lucide-react';
+import { API_BASE_URL } from '@/api/api';
 
-const API = "http://localhost:5000/api";
+const API = API_BASE_URL;
 
 export default function FarmerTransport() {
   const navigate = useNavigate();

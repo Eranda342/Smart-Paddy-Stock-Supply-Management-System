@@ -3,8 +3,9 @@ import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
+import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const API = "http://localhost:5000/api";
+const API = API_BASE_URL;
 
 export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState([]);
@@ -32,7 +33,7 @@ export default function NotificationDropdown() {
   useEffect(() => {
     fetchNotifications();
 
-    const socket = io("http://localhost:5000");
+    const socket = io(SOCKET_URL);
     const token = localStorage.getItem("token");
     let decodedUser = null;
     

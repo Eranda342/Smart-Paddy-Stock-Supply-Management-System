@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "@/api/api";
 
 export default function ListingDetails() {
 
@@ -13,7 +14,7 @@ export default function ListingDetails() {
 
     try {
 
-      const res = await fetch(`http://localhost:5000/api/listings/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/listings/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

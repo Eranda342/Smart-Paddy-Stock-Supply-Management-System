@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import logo from "@/assets/navbar.svg";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 
@@ -6,7 +7,7 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "../lib/schemas";
-import { API } from "../../api/api";
+import { API } from "@/api/api";
 import { resolveUserDestination } from "../lib/resolveUserDestination";
 
 export default function AccountInfoPage() {
@@ -156,7 +157,7 @@ export default function AccountInfoPage() {
             {/* Logo */}
             <div className="flex justify-center mb-8">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <img src="/logo.png" alt="AgroBridge" className="h-10 w-auto" />
+                <img src={logo} alt="AgroBridge" className="h-10 w-auto" />
               </Link>
             </div>
 

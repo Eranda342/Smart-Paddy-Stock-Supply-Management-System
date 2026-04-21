@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, User, Package, Loader2 } from "lucide-react";
+import { MapPin, User, Package, Loader2, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { Button } from "../../components/ui/button";
+import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
-const BASE_URL = "http://localhost:5000";
+
 
 export default function BrowseListings() {
 
@@ -21,6 +22,16 @@ export default function BrowseListings() {
   const [maxPrice, setMaxPrice] = useState("");
   const [sortPrice, setSortPrice] = useState("none");
   const [negotiatingId, setNegotiatingId] = useState(null);
+  const [expandedIds, setExpandedIds] = useState(new Set());
+
+  const toggleExpanded = (id) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -29,7 +40,7 @@ export default function BrowseListings() {
 
     try {
 
-      const res = await fetch("http://localhost:5000/api/listings/marketplace", {
+      const res = await fetch(`${API_BASE_URL}/listings/marketplace`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -60,7 +71,7 @@ export default function BrowseListings() {
   const handleNegotiate = async (listing) => {
     setNegotiatingId(listing._id);
     try {
-      const res = await fetch("http://localhost:5000/api/negotiations", {
+      const res = await fetch(`${API_BASE_URL}/negotiations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -299,13 +310,39 @@ export default function BrowseListings() {
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center gap-3 text-sm text-white/70 bg-[#0A1120]/50 p-3 rounded-xl border border-white/5">
                       <MapPin className="w-4 h-4 text-white/40 shrink-0" />
-                      <span className="font-medium text-white/90">{listing.location?.district}</span>
+                      <span className="font-medium text-white/90 truncate">
+                        {listing.location?.district}
+                        {listing.location?.address ? ` – ${listing.location.address}` : ""}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-white/70 bg-[#0A1120]/50 p-3 rounded-xl border border-white/5">
                       <Package className="w-4 h-4 text-white/40 shrink-0" />
                       <span className="font-medium text-white/90">{listing.paddyType}</span>
                     </div>
+
+                    {/* Description preview */}
+                    {listing.description && (
+                      <div className="bg-[#0A1120]/50 rounded-xl border border-white/5 overflow-hidden">
+                        <div className="flex items-start gap-3 p-3">
+                          <FileText className="w-4 h-4 text-white/40 shrink-0 mt-0.5" />
+                          <p className={`text-xs text-white/50 leading-relaxed flex-1 ${expandedIds.has(listing._id) ? "" : "line-clamp-2"}`}>
+                            {listing.description}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => toggleExpanded(listing._id)}
+                          className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] font-semibold text-white/30 hover:text-white/60 border-t border-white/5 transition-colors"
+                        >
+                          {expandedIds.has(listing._id) ? (
+                            <><ChevronUp className="w-3 h-3" /> Less info</>
+                          ) : (
+                            <><ChevronDown className="w-3 h-3" /> More info</>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
+
 
                   <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
                     <div>

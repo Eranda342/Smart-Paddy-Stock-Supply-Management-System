@@ -8,8 +8,9 @@ import { generateReportPDF } from '../../../utils/pdfGenerator';
 
 import { getRangeDates, filterByDate, computeTrendData, computeDistributions, computeStats, getRangeLabel } from '../../../utils/analyticsEngine';
 
-const API_BASE = 'http://localhost:5000/api/admin/analytics';
-const API_TXN = 'http://localhost:5000/api/admin/transactions';
+import { API_BASE_URL } from '@/api/api';
+const API_BASE = `${API_BASE_URL}/admin/analytics`;
+const API_TXN = `${API_BASE_URL}/admin/transactions`;
 const COLORS = ['#22C55E', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#F43F5E'];
 
 export default function AdminReports() {
@@ -357,7 +358,7 @@ export default function AdminReports() {
       });
 
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/reports/email', {
+      const res = await fetch(`${API_BASE_URL}/reports/email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

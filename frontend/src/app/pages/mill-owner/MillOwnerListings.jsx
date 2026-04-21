@@ -8,8 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput, FormSelect } from "../../components/ui/form-fields";
 import { Button } from "../../components/ui/button";
 import { buyRequestSchema } from "../../lib/schemas";
+import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
 export default function MillOwnerListings() {
 
@@ -41,7 +42,7 @@ export default function MillOwnerListings() {
   // ── Fetch ──
   const fetchListings = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/listings/my", {
+      const res = await fetch(`${API_BASE_URL}/listings/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -96,8 +97,8 @@ export default function MillOwnerListings() {
   const handleSaveListing = async (data) => {
     try {
       const url = editListing
-        ? `http://localhost:5000/api/listings/${editListing._id}`
-        : "http://localhost:5000/api/listings";
+        ? `${API_BASE_URL}/listings/${editListing._id}`
+        : `${API_BASE_URL}/listings`;
       const method = editListing ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -133,7 +134,7 @@ export default function MillOwnerListings() {
   const handleDeleteListing = async () => {
     if (!confirmDeleteId) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/listings/${confirmDeleteId}`, {
+      const res = await fetch(`${API_BASE_URL}/listings/${confirmDeleteId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

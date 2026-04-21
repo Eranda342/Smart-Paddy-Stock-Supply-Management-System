@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
+import logo from "@/assets/navbar.svg";
 import { useState, useEffect } from "react";
 import { Upload, AlertCircle } from "lucide-react";
 
 import toast from "react-hot-toast";
 import { PADDY_TYPES_GROUPED, DISTRICTS as SRI_LANKAN_DISTRICTS } from "../../constants/paddyTypes";
 import { resolveUserDestination } from "../lib/resolveUserDestination";
-import { API } from "../../api/api";
+import { API } from "@/api/api";
 
 export default function BusinessDetailsPage() {
 
@@ -207,13 +208,13 @@ export default function BusinessDetailsPage() {
 
     try {
 
-      let url    = "http://localhost:5000/api/users/register";
+      let url    = API.register;
       let method = "POST";
       const headers = {};
 
       if (oauthToken) {
         // OAuth user completing profile for the first time
-        url    = "http://localhost:5000/api/auth/complete-profile";
+        url    = API.completeProfile;
         method = "PUT";
         headers["Authorization"] = `Bearer ${oauthToken}`;
       }
@@ -290,7 +291,7 @@ export default function BusinessDetailsPage() {
             {/* Minimal Logo */}
             <div className="flex justify-center mb-8">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <img src="/logo.png" alt="AgroBridge" className="h-10 w-auto" />
+                <img src={logo} alt="AgroBridge" className="h-10 w-auto" />
               </Link>
             </div>
 

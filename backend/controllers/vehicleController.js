@@ -65,7 +65,7 @@ exports.updateVehicle = async (req, res) => {
     const vehicle = await Vehicle.findOneAndUpdate(
       { _id: req.params.id, owner: req.user.id },
       req.body,
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!vehicle) {

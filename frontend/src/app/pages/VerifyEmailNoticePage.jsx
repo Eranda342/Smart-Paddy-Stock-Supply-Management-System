@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, ArrowRight, RefreshCw, LogOut } from "lucide-react";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "@/api/api";
 
 export default function VerifyEmailNoticePage() {
   const [loading, setLoading] = useState(false);
@@ -34,7 +35,7 @@ export default function VerifyEmailNoticePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/users/resend-verification", {
+      const res = await fetch(`${API_BASE_URL}/users/resend-verification`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, Truck, RefreshCw, MapPin, CheckCircle, Clock, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API_BASE = 'http://localhost:5000/api';
+import { API_BASE_URL } from '@/api/api';
+const API_BASE = API_BASE_URL;
 
 const TransportBadge = ({ status }) => {
   const map = {

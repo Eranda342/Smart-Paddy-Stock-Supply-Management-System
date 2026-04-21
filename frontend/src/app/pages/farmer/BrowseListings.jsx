@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, User, Package, RefreshCw } from "lucide-react";
 import { io } from "socket.io-client";
 import { Button } from "../../components/ui/button";
+import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 
-const socket = io("http://localhost:5000");
+const socket = io(SOCKET_URL);
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
-const BASE_URL = "http://localhost:5000";
+
 
 export default function BrowseListings() {
 
@@ -35,7 +36,7 @@ export default function BrowseListings() {
     try {
       if (showRefreshAnimation) setIsRefreshing(true);
 
-      const res = await fetch("http://localhost:5000/api/listings/buy-listings", {
+      const res = await fetch(`${API_BASE_URL}/listings/buy-listings`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -122,7 +123,7 @@ export default function BrowseListings() {
 
     try {
 
-      const res = await fetch("http://localhost:5000/api/negotiations", {
+      const res = await fetch(`${API_BASE_URL}/negotiations`, {
 
         method: "POST",
 

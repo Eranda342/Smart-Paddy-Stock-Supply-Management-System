@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
+import logo from "@/assets/navbar.svg";
 import { useState } from "react";
 import { User, Building2, Loader2 } from "lucide-react";
 
 import toast from "react-hot-toast";
-import { API } from "../../api/api";
+import { API } from "@/api/api";
 
 /**
  * RoleSelectionPage  (/register/role)
@@ -121,7 +122,7 @@ export default function RoleSelectionPage() {
             {/* Minimal Logo */}
             <div className="flex justify-center mb-8">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <img src="/logo.png" alt="AgroBridge" className="h-10 w-auto" />
+                <img src={logo} alt="AgroBridge" className="h-10 w-auto" />
               </Link>
             </div>
 

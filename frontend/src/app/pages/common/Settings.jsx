@@ -3,6 +3,7 @@ import { Key, Bell, Trash2, LogOut, ShieldAlert, AlertTriangle } from "lucide-re
 import toast from "react-hot-toast";
 import { Button } from "../../components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "@/api/api";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -29,7 +30,7 @@ export default function Settings() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/users/forgot-password", {
+      const res = await fetch(`${API_BASE_URL}/users/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email }),
@@ -61,7 +62,7 @@ export default function Settings() {
     }
     setDeleting(true);
     try {
-      const res = await fetch("http://localhost:5000/api/users/me", {
+      const res = await fetch(`${API_BASE_URL}/users/me`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

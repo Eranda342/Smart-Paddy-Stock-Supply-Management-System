@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/navbar.svg";
 import { useEffect } from "react";
 import { CheckCircle2, Clock } from "lucide-react";
 
@@ -53,7 +54,7 @@ export default function RegistrationSuccessPage() {
             {/* Minimal Logo */}
             <div className="flex justify-center mb-10">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <img src="/logo.png" alt="AgroBridge" className="h-10 w-auto" />
+                <img src={logo} alt="AgroBridge" className="h-10 w-auto" />
               </Link>
             </div>
 
