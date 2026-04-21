@@ -19,14 +19,14 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: "http://localhost:5173/login?error=oauth_failed",
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=oauth_failed`,
   }),
   (req, res) => {
     try {
       const user = req.user;
 
       if (!user) {
-        return res.redirect("http://localhost:5173/login?error=oauth_no_user");
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_no_user`);
       }
 
       // ── Generate JWT using same payload shape as existing loginUser ──
@@ -38,11 +38,11 @@ router.get(
 
       // ── Redirect to frontend with token ──
       return res.redirect(
-        `http://localhost:5173/oauth-success?token=${token}`
+        `${process.env.FRONTEND_URL}/oauth-success?token=${token}`
       );
     } catch (err) {
       console.error("GOOGLE CALLBACK ERROR:", err);
-      return res.redirect("http://localhost:5173/login?error=oauth_server_error");
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_server_error`);
     }
   }
 );

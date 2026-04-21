@@ -99,7 +99,7 @@ const getVerificationEmailTemplate = (verifyUrl, fullName) => {
 };
 
 const sendVerificationEmail = async (user, token) => {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL;
   const verifyUrl = `${frontendUrl}/verify-email/${token}`;
   
   await sendEmail({

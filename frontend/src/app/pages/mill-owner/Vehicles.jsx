@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../components/ui/button';
 import { FormInput, FormSelect } from '../../components/ui/form-fields';
 import { vehicleSchema } from '../../lib/schemas';
+import { API_BASE_URL } from '@/api/api';
 
 export default function MillOwnerVehicles() {
   const [vehicles, setVehicles] = useState([]);
@@ -17,7 +18,7 @@ export default function MillOwnerVehicles() {
   const fetchVehicles = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/vehicles", {
+      const res = await fetch(`${API_BASE_URL}/vehicles`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -38,7 +39,7 @@ export default function MillOwnerVehicles() {
   // ================= ADD =================
   const addVehicle = async (newVehicle) => {
     try {
-      const res = await fetch("http://localhost:5000/api/vehicles", {
+      const res = await fetch(`${API_BASE_URL}/vehicles`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -58,7 +59,7 @@ export default function MillOwnerVehicles() {
   // ================= DELETE =================
   const deleteVehicle = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/vehicles/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/vehicles/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

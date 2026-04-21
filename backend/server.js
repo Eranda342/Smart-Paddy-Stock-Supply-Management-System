@@ -38,8 +38,20 @@ const server = http.createServer(app);
 connectDB();
 
 // ================= MIDDLEWARE =================
+// Comma-separated list of allowed origins, e.g. "https://agrobridge.com,https://www.agrobridge.com"
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? process.env.ALLOWED_ORIGIN.split(",").map(o => o.trim())
+  : [];
+
 app.use(cors({
-  origin: "http://localhost:5173", // 🔥 IMPORTANT (your frontend)
+  origin: (origin, callback) => {
+    // Allow server-to-server requests (no origin header) and listed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }
+  },
   credentials: true
 }));
 
@@ -86,7 +98,7 @@ app.use("/api/disputes", disputeRoutes);
 // ================= SOCKET.IO =================
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"]
   }
 });

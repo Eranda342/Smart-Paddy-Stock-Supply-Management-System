@@ -208,13 +208,13 @@ export default function BusinessDetailsPage() {
 
     try {
 
-      let url    = "http://localhost:5000/api/users/register";
+      let url    = API.register;
       let method = "POST";
       const headers = {};
 
       if (oauthToken) {
         // OAuth user completing profile for the first time
-        url    = "http://localhost:5000/api/auth/complete-profile";
+        url    = API.completeProfile;
         method = "PUT";
         headers["Authorization"] = `Bearer ${oauthToken}`;
       }

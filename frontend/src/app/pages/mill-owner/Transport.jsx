@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Truck, Package, Loader2, CheckCircle2, MapPin, Route, Phone, Clock, Circle } from "lucide-react";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "@/api/api";
 
-const API = "http://localhost:5000/api";
+const API = API_BASE_URL;
 
 export default function MillOwnerTransport() {
   const navigate = useNavigate();
