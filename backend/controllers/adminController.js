@@ -118,14 +118,36 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// Delete a user
+// Delete a user (soft delete — preserves all data)
 const deleteUser = async (req, res) => {
   try {
     if (req.params.id === String(req.user._id)) {
       return res.status(403).json({ message: "You cannot delete your own account" });
     }
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Archive their listings
+    await Listing.updateMany(
+      { owner: user._id, status: "ACTIVE" },
+      { $set: { status: "INACTIVE" } }
+    );
+
+    // SAFETY FALLBACK — close stale open negotiations.
+    // Deletion is not blocked here (admin force-delete), so this
+    // ensures no orphaned OPEN/AGREED negotiations remain.
+    await Negotiation.updateMany(
+      {
+        $or: [{ farmer: user._id }, { millOwner: user._id }],
+        status: { $in: ["OPEN", "AGREED"] }
+      },
+      { $set: { status: "CANCELLED", closedReason: "user_deleted" } }
+    );
+
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    await user.save({ validateBeforeSave: false });
+
     res.status(200).json({ message: "User deleted" });
   } catch (error) {
     res.status(500).json({ message: error.message });

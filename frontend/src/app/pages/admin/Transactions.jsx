@@ -140,11 +140,11 @@ export default function AdminTransactions() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm font-medium">{txn.millOwner?.fullName || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{txn.millOwner?.email}</div>
+                      <div className="text-xs text-muted-foreground">{txn.millOwner?.email || null}</div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm font-medium">{txn.farmer?.fullName || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{txn.farmer?.email}</div>
+                      <div className="text-xs text-muted-foreground">{txn.farmer?.email || null}</div>
                     </td>
                     <td className="px-4 py-4 text-sm font-medium">{txn.listing?.paddyType || '—'}</td>
                     <td className="px-4 py-4 text-sm font-semibold text-[#22C55E]">
@@ -193,14 +193,14 @@ export default function AdminTransactions() {
                 <span className="text-muted-foreground">Buyer (Mill Owner)</span>
                 <span className="font-medium text-right">
                   {selectedTransaction.millOwner?.fullName || '—'}<br/>
-                  <span className="text-xs text-muted-foreground">{selectedTransaction.millOwner?.email}</span>
+                  <span className="text-xs text-muted-foreground">{selectedTransaction.millOwner?.email || null}</span>
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Seller (Farmer)</span>
                 <span className="font-medium text-right">
                   {selectedTransaction.farmer?.fullName || '—'}<br/>
-                  <span className="text-xs text-muted-foreground">{selectedTransaction.farmer?.email}</span>
+                  <span className="text-xs text-muted-foreground">{selectedTransaction.farmer?.email || null}</span>
                 </span>
               </div>
               <div className="flex items-center justify-between">

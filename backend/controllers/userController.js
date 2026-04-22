@@ -4,6 +4,10 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 const { generateEmailToken, sendVerificationEmail } = require("../utils/authUtils");
+const Negotiation = require("../models/Negotiation");
+const Transaction = require("../models/Transaction");
+const Listing = require("../models/Listing");
+const Dispute = require("../models/Dispute");
 
 // ================= REGISTER USER =================
 const registerUser = async (req, res) => {
@@ -128,6 +132,11 @@ const loginUser = async (req, res) => {
 
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Reject deleted accounts at login
+    if (user.isDeleted) {
+      return res.status(401).json({ message: "This account has been deleted" });
     }
 
     if (user.role !== "ADMIN") {
@@ -688,13 +697,73 @@ const resendVerification = async (req, res) => {
 };
 
 
-// ================= DELETE ACCOUNT =================
+// ================= DELETE ACCOUNT (SOFT DELETE) =================
 const deleteAccount = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    await User.findByIdAndDelete(req.user.id);
+    // ── STEP 1: Check active dependencies ─────────────────────────────────────
+    const userId = user._id;
+
+    // Active negotiations: OPEN or AGREED (not ACCEPTED/REJECTED/CANCELLED)
+    const activeNegotiations = await Negotiation.countDocuments({
+      $or: [{ farmer: userId }, { millOwner: userId }],
+      status: { $in: ["OPEN", "AGREED"] }
+    });
+
+    // Pending or in-progress transactions
+    const activeTransactions = await Transaction.countDocuments({
+      $or: [{ farmer: userId }, { millOwner: userId }],
+      status: { $in: ["ORDER_CREATED", "PAYMENT_COMPLETED", "DELIVERY_IN_PROGRESS"] }
+    });
+
+    // Ongoing transport (transport assigned but not delivered)
+    const activeTransport = await Transaction.countDocuments({
+      $or: [{ farmer: userId }, { millOwner: userId }],
+      transportStatus: { $in: ["PENDING", "IN_PROGRESS"] }
+    });
+
+    // Open disputes
+    const openDisputes = await Dispute.countDocuments({
+      $or: [{ raisedBy: userId }, { againstUser: userId }],
+      status: "OPEN"
+    });
+
+    if (activeNegotiations > 0 || activeTransactions > 0 || activeTransport > 0 || openDisputes > 0) {
+      return res.status(400).json({
+        message: "You cannot delete your account while you have active activities",
+        details: {
+          activeNegotiations,
+          activeTransactions,
+          activeTransport,
+          openDisputes
+        }
+      });
+    }
+
+    // ── STEP 2: Archive listings (hide from marketplace) ─────────────────────
+    await Listing.updateMany(
+      { owner: userId, status: "ACTIVE" },
+      { $set: { status: "INACTIVE" } }
+    );
+
+    // ── STEP 3: SAFETY FALLBACK — close any stale open negotiations ─────────
+    // NOTE: This block should never find anything to update in normal operation
+    // because the active-dependency check above (STEP 1) already blocks deletion
+    // if OPEN or AGREED negotiations exist. This is a defensive net only.
+    await Negotiation.updateMany(
+      {
+        $or: [{ farmer: userId }, { millOwner: userId }],
+        status: { $in: ["OPEN", "AGREED"] }
+      },
+      { $set: { status: "CANCELLED", closedReason: "user_deleted" } }
+    );
+
+    // ── STEP 4: Soft-delete the user ──────────────────────────────────────────
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    await user.save({ validateBeforeSave: false });
 
     res.status(200).json({ message: "Account deleted successfully" });
   } catch (error) {

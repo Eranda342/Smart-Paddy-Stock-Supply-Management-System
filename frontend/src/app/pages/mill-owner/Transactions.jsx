@@ -5,8 +5,6 @@ import { AlertTriangle } from "lucide-react";
 import RaiseDisputeModal from "../../components/RaiseDisputeModal";
 import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io(SOCKET_URL);
-
 export default function MillOwnerTransactions() {
 
   const [transactions, setTransactions] = useState([]);
@@ -32,15 +30,13 @@ export default function MillOwnerTransactions() {
       const data = await res.json();
 
       if (!res.ok) {
-        console.error("Failed:", data.message);
         setTransactions([]);
         return;
       }
 
       setTransactions(data.transactions || []);
 
-    } catch (error) {
-      console.error("Fetch error:", error);
+    } catch {
       setTransactions([]);
     } finally {
       setLoading(false);
@@ -51,10 +47,12 @@ export default function MillOwnerTransactions() {
   useEffect(() => {
     fetchTransactions();
 
+    const socket = io(SOCKET_URL);
     socket.on("dashboard_update", fetchTransactions);
 
     return () => {
       socket.off("dashboard_update", fetchTransactions);
+      socket.disconnect();
     };
   }, []);
 

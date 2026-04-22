@@ -4,8 +4,6 @@ import toast from 'react-hot-toast';
 import { io } from "socket.io-client";
 import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io(SOCKET_URL);
-
 const API_BASE = API_BASE_URL;
 
 const StatusBadge = ({ status }) => {
@@ -59,9 +57,13 @@ export default function AdminListings() {
   }, [search, districtFilter, statusFilter]);
 
   useEffect(() => { 
-    fetchListings(); 
+    fetchListings();
+    const socket = io(SOCKET_URL);
     socket.on("dashboard_update", fetchListings);
-    return () => socket.off("dashboard_update", fetchListings);
+    return () => {
+      socket.off("dashboard_update", fetchListings);
+      socket.disconnect();
+    };
   }, [fetchListings]);
 
   const handleDelete = async () => {
@@ -186,7 +188,7 @@ export default function AdminListings() {
                   <tr key={listing._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-4">
                       <div className="font-medium text-sm">{listing.owner?.fullName || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{listing.owner?.email}</div>
+                      <div className="text-xs text-muted-foreground">{listing.owner?.email || null}</div>
                     </td>
                     <td className="px-4 py-4 text-sm font-medium">{listing.paddyType || '—'}</td>
                     <td className="px-4 py-4 text-sm">{listing.quantityKg?.toLocaleString() || '—'}</td>

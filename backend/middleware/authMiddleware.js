@@ -17,6 +17,9 @@ const protect = async (req, res, next) => {
       if (user.isBlocked) {
         return res.status(403).json({ message: "Your account has been suspended. Please contact support." });
       }
+      if (user.isDeleted) {
+        return res.status(401).json({ message: "This account has been deleted." });
+      }
 
       req.user = user; // attach full user object (not just decoded JWT payload)
       return next();

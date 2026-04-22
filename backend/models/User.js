@@ -60,6 +60,17 @@ const userSchema = new mongoose.Schema(
     default: false
   },
 
+  // ── Soft delete — user is hidden from all active views but data is preserved ──
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+
+  deletedAt: {
+    type: Date,
+    default: null
+  },
+
   profileImage: {
     type: String,
     default: null

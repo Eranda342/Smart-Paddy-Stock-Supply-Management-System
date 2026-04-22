@@ -126,11 +126,11 @@ export default function AdminNegotiations() {
                   <tr key={neg._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-4">
                       <div className="font-medium text-sm">{neg.millOwner?.fullName || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{neg.millOwner?.email}</div>
+                      <div className="text-xs text-muted-foreground">{neg.millOwner?.email || null}</div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="font-medium text-sm">{neg.farmer?.fullName || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{neg.farmer?.email}</div>
+                      <div className="text-xs text-muted-foreground">{neg.farmer?.email || null}</div>
                     </td>
                     <td className="px-4 py-4 text-sm font-medium">{neg.listing?.paddyType || '—'}</td>
                     <td className="px-4 py-4 text-sm font-semibold text-[#22C55E]">

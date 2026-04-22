@@ -102,12 +102,15 @@ const getMyListings = async (req, res, next) => {
 const getAllListings = async (req, res, next) => {
   try {
 
-    const listings = await Listing.find({
+    const allListings = await Listing.find({
       listingType: "SELL",
       status: "ACTIVE"
     })
-      .populate("owner", "fullName email profileImage")
+      .populate("owner", "fullName email profileImage isDeleted")
       .sort({ createdAt: -1 });
+
+    // Exclude listings from soft-deleted users
+    const listings = allListings.filter(l => !l.owner?.isDeleted);
 
     res.status(200).json({
       count: listings.length,

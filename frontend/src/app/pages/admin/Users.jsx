@@ -27,6 +27,14 @@ const getVerificationStatus = (user) => {
 
 // ─── Badges ─────────────────────────────────────────────────────────────
 function StatusBadge({ user }) {
+  if (user.isDeleted) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border text-red-400 bg-red-400/10 border-red-400/25">
+        <Trash2 className="w-3 h-3" /> Deleted
+      </span>
+    );
+  }
+
   if (user.isBlocked) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border text-gray-400 bg-gray-400/10 border-gray-400/25">
@@ -446,8 +454,8 @@ export default function AdminUsers() {
       const verificationStatus = getVerificationStatus(user);
 
       const matchSearch =
-        user.fullName.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase());
+        (user.fullName?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (user.email?.toLowerCase() || '').includes(search.toLowerCase());
 
       const matchRole =
         selectedRole === "ALL" || user.role === selectedRole;
@@ -583,7 +591,7 @@ export default function AdminUsers() {
                   const vstatus = getVerificationStatus(user);
                   
                   return (
-                    <tr key={user._id} className={`border-b border-border last:border-0 hover:bg-muted/30 transition-colors group ${user.isBlocked ? 'opacity-50 bg-muted/10' : ''}`}>
+                    <tr key={user._id} className={`border-b border-border last:border-0 hover:bg-muted/30 transition-colors group ${user.isDeleted ? 'opacity-40 bg-red-500/5' : user.isBlocked ? 'opacity-50 bg-muted/10' : ''}`}>
                       <td className="px-5 py-4">
                         <div className="font-medium text-sm">{user.fullName}</div>
                         {user.businessDetails?.businessName && (

@@ -544,9 +544,7 @@ export function ActionBar({
 export function DealCard({ neg, decodedUser, token, fetchNegotiations, defaultExpanded, isActive, roleName }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const [editingMsg, setEditingMsg] = useState(null);
   const bottomRef = useRef(null);
-  const actionBarRef = useRef(null);
 
   const st = statusConfig(neg.status);
   const otherParticipantId = String(decodedUser?.id) === String(neg.farmer?._id || neg.farmer)
@@ -656,10 +654,7 @@ export function DealCard({ neg, decodedUser, token, fetchNegotiations, defaultEx
               messages={neg.messages || []}
               decodedUser={decodedUser}
               onDelete={deleteMessage}
-              onEdit={(msg) => {
-                setEditingMsg(msg);
-                // pass down to ActionBar via re-render
-              }}
+              onEdit={() => {}}
               otherUserTyping={otherUserTyping}
               roleName={roleName}
               bottomRef={bottomRef}
@@ -674,7 +669,6 @@ export function DealCard({ neg, decodedUser, token, fetchNegotiations, defaultEx
               token={token}
               fetchNegotiations={fetchNegotiations}
               roleName={roleName}
-              ref={actionBarRef}
             />
           ) : (
             <div className={`px-4 py-3 text-xs text-center border-t border-border/40 text-muted-foreground/60 italic`}>

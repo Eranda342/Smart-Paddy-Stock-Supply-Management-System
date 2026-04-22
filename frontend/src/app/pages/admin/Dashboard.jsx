@@ -270,7 +270,6 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(data);
-      console.log("Dashboard stats:", data);
 
       const resSales = await axios.get(`${API_BASE_URL}/analytics/monthly-sales`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -407,8 +406,8 @@ export default function AdminDashboard() {
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-4 gap-5 mb-8">
-        {kpis.map((kpi, i) => (
-          <KpiCard key={i} {...kpi} loading={loading} />
+        {kpis.map((kpi) => (
+          <KpiCard key={kpi.label} {...kpi} loading={loading} />
         ))}
       </div>
 
