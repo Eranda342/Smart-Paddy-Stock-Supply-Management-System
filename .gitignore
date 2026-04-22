@@ -20,3 +20,5 @@ frontend/dist
 Thumbs.db
 
 uploads/
+
+docs/images/*.png

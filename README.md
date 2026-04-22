@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./frontend/public/screenshots/navbar.svg" alt="AgroBridge Logo" width="120" />
+  <img src="./docs/images/navbar.svg" alt="AgroBridge Logo" width="120" />
 
   # AgroBridge
   **"Connecting Farmers & Mill Owners Seamlessly"**
@@ -62,32 +62,32 @@ AgroBridge is a full-stack digital platform designed to connect farmers and mill
 ## 4. Screenshots
 
 ### 🌐 Landing Page
-<img src="./frontend/public/screenshots/landing.png" width="800"/>
+<img src="./docs/images/landing.png" alt="Landing Page" width="800"/>
 
 <br/><br/>
 
 ### 👨‍🌾 Farmer Dashboard
-<img src="./frontend/public/screenshots/farmer-dashboard.png" width="800"/>
+<img src="./docs/images/farmer-dashboard.png" alt="Farmer Dashboard" width="800"/>
 
 <br/><br/>
 
 ### 🏭 Mill Owner Dashboard
-<img src="./frontend/public/screenshots/mill-owner-dashboard.png" width="800"/>
+<img src="./docs/images/mill-owner-dashboard.png" alt="Mill Owner Dashboard" width="800"/>
 
 <br/><br/>
 
 ### 🛠 Admin Dashboard
-<img src="./frontend/public/screenshots/admin-dashboard.png" width="800"/>
+<img src="./docs/images/admin-dashboard.png" alt="Admin Dashboard" width="800"/>
 
 <br/><br/>
 
 ### 🌾 Paddy Types
-<img src="./frontend/public/screenshots/paddy-types.png" width="800"/>
+<img src="./docs/images/paddy-types.png" alt="Paddy Types" width="800"/>
 
 <br/><br/>
 
 ### 💬 Negotiations
-<img src="./frontend/public/screenshots/negotiations.png" width="800"/>
+<img src="./docs/images/negotiations.png" alt="Negotiations" width="800"/>
 
 ---
 
