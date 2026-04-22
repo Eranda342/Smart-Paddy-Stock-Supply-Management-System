@@ -8,7 +8,7 @@
   [![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](#16-version)
   [![Status](https://img.shields.io/badge/status-stable-success.svg)](#)
   [![Stack](https://img.shields.io/badge/stack-MERN-informational.svg)](#3-tech-stack)
-  [![License](https://img.shields.io/badge/license-MIT-orange.svg)](#15-license)
+  [![License](https://img.shields.io/badge/license-Non--Commercial-red.svg)](#15-license)
 
   [View Repository](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System) &nbsp;|&nbsp; [Report an Issue](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/issues)
 </div>
@@ -431,10 +431,36 @@ Undergraduate, Computer Science
 
 ## 15. License
 
-MIT License — see [LICENSE](./LICENSE) for details.
+**Custom License — Non-Commercial Use Only**
 
-This project was developed for academic purposes and public demonstration.
-_Inspired by real-world agricultural supply chain challenges in Sri Lanka._
+Copyright (c) 2026 Eranda Buddhika
+
+This project is provided for **educational and portfolio purposes only**.
+
+### Permissions
+
+You are allowed to:
+
+- View and study the source code
+- Fork and modify the project for **personal or academic use**
+- Use parts of the code for learning or reference (with attribution)
+
+### Restrictions
+
+You are **NOT allowed to**:
+
+- Use this project for **commercial purposes**
+- Sell, resell, or monetize this project
+- Host, deploy, or distribute this project as a **product or service**
+- Use this system in a business environment without explicit written permission
+
+### Commercial Use
+
+If you wish to use this project commercially, you must obtain **written permission** from the author.
+
+Contact: erandabuddhika007@gmail.com
+
+This project is intended to showcase full-stack development skills and real-world system design based on Sri Lanka's agricultural supply chain.
 
 ---
 
