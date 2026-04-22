@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/images/navbar.svg" alt="AgroBridge Logo" width="120" />
+  <img src="docs/images/navbar.svg" alt="AgroBridge Logo" width="120" />
 
   # AgroBridge
 
@@ -218,31 +218,31 @@ Smart-Paddy-Stock-Supply-Management-System/
 
 ### Landing Page
 
-<img src="./docs/images/landing.png" alt="Landing Page" width="800"/>
+<img src="docs/images/landing.png" alt="Landing Page" width="800"/>
 
 <br/>
 
 ### Farmer Dashboard
 
-<img src="./docs/images/farmer-dashboard.png" alt="Farmer Dashboard" width="800"/>
+<img src="docs/images/farmer-dashboard.png" alt="Farmer Dashboard" width="800"/>
 
 <br/>
 
 ### Mill Owner Dashboard
 
-<img src="./docs/images/mill-owner-dashboard.png" alt="Mill Owner Dashboard" width="800"/>
+<img src="docs/images/mill-owner-dashboard.png" alt="Mill Owner Dashboard" width="800"/>
 
 <br/>
 
 ### Admin Dashboard
 
-<img src="./docs/images/admin-dashboard.png" alt="Admin Dashboard" width="800"/>
+<img src="docs/images/admin-dashboard.png" alt="Admin Dashboard" width="800"/>
 
 <br/>
 
 ### Negotiations
 
-<img src="./docs/images/negotiations.png" alt="Negotiations" width="800"/>
+<img src="docs/images/negotiations.png" alt="Negotiations" width="800"/>
 
 ---
 
