@@ -1102,12 +1102,9 @@ const getAnalyticsRevenue = async (req, res) => {
       }
     }
     
-    // Debug logging for prompt validation
-    console.log(`[getAnalyticsRevenue] Filter applied: isDaily=${isDaily}, dataPoints=${monthlyRevenue.length}, totalRevenueCount=${revenueAgg.length}`);
-    
+    // ── No debug logging in production ──
     res.status(200).json(monthlyRevenue);
   } catch (error) { 
-    console.error(error);
     res.status(500).json({ message: error.message }); 
   }
 };

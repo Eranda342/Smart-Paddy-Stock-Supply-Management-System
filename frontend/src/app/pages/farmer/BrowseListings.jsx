@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, User, Package, RefreshCw } from "lucide-react";
 import { io } from "socket.io-client";
 import { Button } from "../../components/ui/button";
+import toast from "react-hot-toast";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
-
-const socket = io(SOCKET_URL);
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
 
@@ -62,6 +61,7 @@ export default function BrowseListings() {
     document.title = "Browse Listings | AgroBridge";
     fetchListings();
 
+    const socket = io(SOCKET_URL);
     socket.on("connect", () => setIsLive(true));
     socket.on("disconnect", () => setIsLive(false));
     socket.on("dashboard_update", () => fetchListings());
@@ -76,6 +76,7 @@ export default function BrowseListings() {
       socket.off("dashboard_update");
       socket.off("listing_created");
       socket.off("listing_deleted");
+      socket.disconnect();
     };
   }, [fetchListings]);
 
@@ -147,10 +148,8 @@ export default function BrowseListings() {
 
   navigate(`/farmer/negotiations/${data.negotiation._id}`);
 
-} else {
-
-        console.log(data.message);
-
+      } else {
+        toast.error(data.message || "Failed to start negotiation");
       }
 
     } catch (error) {

@@ -142,16 +142,6 @@ export function computeTrendData(transactions, startDate, endDate, range, custom
 
   const daily = _isDaily(range, customRange, start, end);
 
-  // ── DEBUG ─────────────────────────────────────────────────────────────────
-  if (process.env.NODE_ENV !== 'production') {
-    const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    console.log(`[analyticsEngine] range=${range} customRange=${!!customRange} diffDays=${diffDays} daily=${daily} txns=${transactions.length}`);
-    if (transactions.length > 0) {
-      console.log('[analyticsEngine] Sample:', transactions.slice(0, 3).map(t => ({ id: t._id, date: t.createdAt, amount: _getAmount(t) })));
-    }
-  }
-  // ─────────────────────────────────────────────────────────────────────────
-
   if (daily) {
     // ── DAILY PATH ───────────────────────────────────────────────────────
     // 1. Build ordered list of local date keys & zero-map

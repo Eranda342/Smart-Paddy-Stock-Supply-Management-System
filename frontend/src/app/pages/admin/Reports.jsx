@@ -124,9 +124,6 @@ export default function AdminReports() {
     const { startDate, endDate } = getRangeDates(range, appliedCustomRange);
     const filteredTxns = filterByDate(rawTransactionsAll, startDate, endDate);
 
-    console.log('[Admin Analytics] startDate:', startDate, 'endDate:', endDate);
-    console.log('[Admin Analytics] Filtered count:', filteredTxns.length);
-
     const computedStats = computeStats(filteredTxns, []);
 
     // Use cache for expensive trend computation
@@ -141,8 +138,6 @@ export default function AdminReports() {
     }
 
     const { paddyData: computedPaddy, districtData: computedDistrict } = computeDistributions(filteredTxns);
-
-    console.log('[Admin Analytics] Trend data points:', salesDataArray.length);
 
     setOverview(prev => ({
       ...prev,
