@@ -731,10 +731,10 @@ export default function MillOwnerDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {[
-          { icon: ShoppingCart, color: '#22C55E', label: 'Active Purchases',      value: computedStats.activeListings, growth: 8,  prefix: '',     suffix: '' },
-          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Negotiations',  value: computedStats.ongoingTransactions, growth: 12, prefix: '',     suffix: '' },
-          { icon: Package,      color: '#A855F7', label: 'Monthly Procurement',   value: computedStats.completedDeliveries, growth: 15, prefix: '',     suffix: '' },
-          { icon: DollarSign,   color: '#F59E0B', label: 'Total Spend',           value: computedStats.totalRevenue, growth: growth, prefix: 'Rs ', suffix: '' },
+          { icon: ShoppingCart, color: '#22C55E', label: 'Active Purchases',      value: computedStats.activeListings,       growth: null,   prefix: '',     suffix: '' },
+          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Negotiations',  value: computedStats.ongoingTransactions,   growth: null,   prefix: '',     suffix: '' },
+          { icon: Package,      color: '#A855F7', label: 'Monthly Procurement',   value: computedStats.completedDeliveries,   growth: null,   prefix: '',     suffix: '' },
+          { icon: DollarSign,   color: '#F59E0B', label: 'Total Spend',           value: computedStats.totalRevenue,          growth: growth, prefix: 'Rs ', suffix: '' },
         ].map(({ icon: Icon, color, label, value, growth, prefix, suffix }, i) => (
           <div key={i}
             className="relative overflow-hidden rounded-2xl p-6 border cursor-default group transition-all duration-300"
@@ -752,11 +752,13 @@ export default function MillOwnerDashboard() {
                 style={{ background: `linear-gradient(135deg, ${color}30, ${color}10)`, border: `1px solid ${color}25` }}>
                 <Icon className="w-5 h-5" style={{ color }} />
               </div>
-              <div className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: growth >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: growth >= 0 ? '#22C55E' : '#EF4444' }}>
-                {growth >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {Math.abs(growth).toFixed(1)}%
-              </div>
+              {growth !== null && growth !== undefined && (
+                <div className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: growth >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: growth >= 0 ? '#22C55E' : '#EF4444' }}>
+                  {growth >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {Math.abs(growth).toFixed(1)}%
+                </div>
+              )}
             </div>
 
             <div className="text-3xl font-bold mb-1.5 tabular-nums tracking-tight text-white">

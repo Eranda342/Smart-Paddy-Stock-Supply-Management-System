@@ -105,10 +105,12 @@ function Sparkline({ data, color, width = 88, height = 32 }) {
         {/* last point dot */}
         <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="2.5" fill={color} />
       </svg>
-      <span className="text-[10px] font-medium flex items-center gap-0.5" style={{ color }}>
-        {trend ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-        {trend ? '+' : ''}{((values[values.length - 1] - values[0]) / (values[0] || 1) * 100).toFixed(0)}%
-      </span>
+      {values[0] !== 0 && (
+        <span className="text-[10px] font-medium flex items-center gap-0.5" style={{ color }}>
+          {trend ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+          {trend ? '+' : ''}{((values[values.length - 1] - values[0]) / values[0] * 100).toFixed(0)}%
+        </span>
+      )}
     </div>
   );
 }
@@ -334,7 +336,6 @@ export default function AdminDashboard() {
       iconColor: '#22C55E',
       value: stats?.totalUsers ?? 0,
       label: 'Total Users',
-      badge: '+15%',
       badgeColor: '#22C55E',
       sparkData: SPARK.users,
     },

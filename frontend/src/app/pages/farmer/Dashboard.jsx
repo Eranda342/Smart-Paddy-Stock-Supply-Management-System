@@ -752,10 +752,10 @@ export default function FarmerDashboard() {
       {/* â”€â”€ KPI Cards â”€â”€ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {[
-          { icon: Package,      color: '#22C55E', label: 'Active Listings',  value: computedStats.activeListings, growth: 12, prefix: '' },
-          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Orders',   value: computedStats.ongoingTransactions, growth: 5,  prefix: '' },
-          { icon: Receipt,      color: '#A855F7', label: 'Completed Sales',  value: computedStats.completedDeliveries,growth: 18, prefix: '' },
-          { icon: DollarSign,   color: '#F59E0B', label: 'Total Revenue',    value: computedStats.totalRevenue, growth: growth, prefix: 'Rs ' },
+          { icon: Package,      color: '#22C55E', label: 'Active Listings',  value: computedStats.activeListings,      growth: null,   prefix: '' },
+          { icon: MessageSquare,color: '#3B82F6', label: 'Ongoing Orders',   value: computedStats.ongoingTransactions,  growth: null,   prefix: '' },
+          { icon: Receipt,      color: '#A855F7', label: 'Completed Sales',  value: computedStats.completedDeliveries,  growth: null,   prefix: '' },
+          { icon: DollarSign,   color: '#F59E0B', label: 'Total Revenue',    value: computedStats.totalRevenue,         growth: growth, prefix: 'Rs ' },
         ].map(({ icon: Icon, color, label, value, growth, prefix }, i) => (
           <div key={i}
             className="relative overflow-hidden rounded-2xl p-6 border cursor-default group transition-all duration-300"
@@ -776,11 +776,13 @@ export default function FarmerDashboard() {
                 <Icon className="w-5 h-5" style={{ color }} />
               </div>
               <div className="text-right">
-                <div className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full`}
-                  style={{ background: growth >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: growth >= 0 ? '#22C55E' : '#EF4444' }}>
-                  {growth >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {Math.abs(growth).toFixed(1)}%
-                </div>
+                {growth !== null && growth !== undefined && (
+                  <div className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full`}
+                    style={{ background: growth >= 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: growth >= 0 ? '#22C55E' : '#EF4444' }}>
+                    {growth >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {Math.abs(growth).toFixed(1)}%
+                  </div>
+                )}
               </div>
             </div>
 

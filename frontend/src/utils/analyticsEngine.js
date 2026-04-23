@@ -311,7 +311,6 @@ export function computeGrowth(allTransactions, rangeMode, customStart, customEnd
   });
 
   if (prevRev > 0) return ((currRev - prevRev) / prevRev) * 100;
-  if (currRev > 0) return 100;
   return 0;
 }
 
