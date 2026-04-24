@@ -208,7 +208,7 @@ const getAllListings = async (req, res) => {
     }
 
     const listings = await Listing.find(filter)
-      .populate("owner", "fullName email farmDetails")
+      .populate("owner", "fullName email role farmDetails businessDetails")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ count: listings.length, listings });
@@ -256,8 +256,8 @@ const getAllNegotiations = async (req, res) => {
     if (status) filter.status = status;
 
     let negotiations = await Negotiation.find(filter)
-      .populate("farmer", "fullName email")
-      .populate("millOwner", "fullName email")
+      .populate("farmer",   "fullName email role businessDetails")
+      .populate("millOwner", "fullName email role businessDetails")
       .populate("listing", "paddyType pricePerKg quantityKg")
       .sort({ updatedAt: -1 });
 
@@ -318,8 +318,8 @@ const getAllTransactions = async (req, res) => {
     }
 
     let transactions = await Transaction.find(filter)
-      .populate("farmer", "fullName email")
-      .populate("millOwner", "fullName email")
+      .populate("farmer",   "fullName email role businessDetails")
+      .populate("millOwner", "fullName email role businessDetails")
       .populate("listing", "paddyType location")
       .populate("vehicle")
       .sort({ createdAt: -1 });
@@ -362,8 +362,8 @@ const getAllTransport = async (req, res) => {
     if (transportStatus) filter.transportStatus = transportStatus;
 
     let transactions = await Transaction.find(filter)
-      .populate("farmer", "fullName email")
-      .populate("millOwner", "fullName email")
+      .populate("farmer",   "fullName email role businessDetails")
+      .populate("millOwner", "fullName email role businessDetails")
       .populate("listing", "paddyType")
       .populate("vehicle")
       .sort({ updatedAt: -1 });

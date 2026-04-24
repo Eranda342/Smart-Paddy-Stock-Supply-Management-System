@@ -67,6 +67,7 @@ import AdminTransport from "./pages/admin/Transport";
 import AdminDisputes from "./pages/admin/Disputes";
 import AdminNotificationsCenter from "./pages/admin/NotificationsCenter";
 import AdminSystemSettings from "./pages/admin/SystemSettings";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 // ================= SHARED =================
 import TransactionDetails from "./pages/common/TransactionDetails";
@@ -263,6 +264,7 @@ export const router = createBrowserRouter([
 
       // Configuration
       { path: "settings", element: <AdminSystemSettings /> },
+      { path: "profile",  element: <AdminProfile /> },
 
       { path: "*", element: <AdminDashboard /> }
     ],

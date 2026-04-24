@@ -3,6 +3,7 @@ import { Search, Trash2, CheckCircle, Package, RefreshCw, Eye, Ban, X, AlertTria
 import toast from 'react-hot-toast';
 import { io } from "socket.io-client";
 import { API_BASE_URL, SOCKET_URL } from "@/api/api";
+import { getDisplayName } from "@/utils/userDisplay";
 
 const API_BASE = API_BASE_URL;
 
@@ -178,7 +179,7 @@ export default function AdminListings() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  {['Farmer', 'Paddy Type', 'Quantity (kg)', 'Price / kg', 'District', 'Status', 'Posted', 'Actions'].map(h => (
+                  {['User', 'Paddy Type', 'Quantity (kg)', 'Price / kg', 'District', 'Status', 'Posted', 'Actions'].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -186,9 +187,29 @@ export default function AdminListings() {
               <tbody>
                 {listings.map(listing => (
                   <tr key={listing._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="font-medium text-sm">{listing.owner?.fullName || '—'}</div>
-                      <div className="text-xs text-muted-foreground">{listing.owner?.email || null}</div>
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const u = listing.user || listing.farmer || listing.owner || {};
+                        const role = (u.role || '').toLowerCase();
+                        const isMill = role === 'mill_owner';
+                        const roleLabel = isMill ? 'Mill Owner' : role === 'farmer' ? 'Farmer' : null;
+                        const roleClass = isMill
+                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          : 'bg-green-500/10 text-green-400 border border-green-500/20';
+                        return (
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">{getDisplayName(u)}</span>
+                            <div className="flex items-center gap-2 text-xs mt-0.5">
+                              {roleLabel && (
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${roleClass}`}>
+                                  {roleLabel}
+                                </span>
+                              )}
+                              <span className="text-muted-foreground">{u.email || '—'}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-4 text-sm font-medium">{listing.paddyType || '—'}</td>
                     <td className="px-4 py-4 text-sm">{listing.quantityKg?.toLocaleString() || '—'}</td>
@@ -252,8 +273,15 @@ export default function AdminListings() {
                 <span className="font-medium">{selectedListing._id}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Farmer Name</span>
-                <span className="font-medium">{selectedListing.owner?.fullName || '—'}</span>
+                <span className="text-muted-foreground">Owner</span>
+                <div className="flex items-center gap-2">
+                  {selectedListing.owner?.role === 'FARMER' ? (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-green-400 bg-green-400/10 border border-green-400/20">Farmer</span>
+                  ) : selectedListing.owner?.role === 'MILL_OWNER' ? (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-blue-400 bg-blue-400/10 border border-blue-400/20">Mill Owner</span>
+                  ) : null}
+                  <span className="font-medium">{selectedListing.owner?.fullName || '—'}</span>
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Paddy Type</span>

@@ -3,6 +3,7 @@ import { Search, Truck, RefreshCw, MapPin, CheckCircle, Clock, Package } from 'l
 import toast from 'react-hot-toast';
 
 import { API_BASE_URL } from '@/api/api';
+import { getDisplayName } from '@/utils/userDisplay';
 const API_BASE = API_BASE_URL;
 
 const TransportBadge = ({ status }) => {
@@ -152,10 +153,10 @@ export default function AdminTransport() {
                       <span className="font-mono text-xs text-muted-foreground">#{txn._id?.slice(-8)}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm font-medium">{txn.farmer?.fullName || '—'}</div>
+                      <div className="text-sm font-medium">{getDisplayName(txn.farmer)}</div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm font-medium">{txn.millOwner?.fullName || '—'}</div>
+                      <div className="text-sm font-medium">{getDisplayName(txn.millOwner)}</div>
                     </td>
                     <td className="px-4 py-4 text-sm">{txn.listing?.paddyType || '—'}</td>
                     <td className="px-4 py-4 text-sm">{txn.quantityKg ? `${txn.quantityKg} kg` : '—'}</td>

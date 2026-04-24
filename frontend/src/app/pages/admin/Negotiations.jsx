@@ -3,6 +3,7 @@ import { Search, MessageSquare, RefreshCw, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { API_BASE_URL } from '@/api/api';
+import { getDisplayName } from '@/utils/userDisplay';
 const API_BASE = API_BASE_URL;
 
 const StatusBadge = ({ status }) => {
@@ -125,11 +126,11 @@ export default function AdminNegotiations() {
                 {negotiations.map(neg => (
                   <tr key={neg._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-4">
-                      <div className="font-medium text-sm">{neg.millOwner?.fullName || '—'}</div>
+                      <div className="font-medium text-sm">{getDisplayName(neg.millOwner)}</div>
                       <div className="text-xs text-muted-foreground">{neg.millOwner?.email || null}</div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="font-medium text-sm">{neg.farmer?.fullName || '—'}</div>
+                      <div className="font-medium text-sm">{getDisplayName(neg.farmer)}</div>
                       <div className="text-xs text-muted-foreground">{neg.farmer?.email || null}</div>
                     </td>
                     <td className="px-4 py-4 text-sm font-medium">{neg.listing?.paddyType || '—'}</td>
@@ -180,11 +181,11 @@ export default function AdminNegotiations() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground block mb-1">Buyer (Mill Owner)</span>
-                  <span className="font-medium">{selectedNegotiation.millOwner?.fullName || '—'}</span>
+                  <span className="font-medium">{getDisplayName(selectedNegotiation.millOwner)}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block mb-1">Seller (Farmer)</span>
-                  <span className="font-medium">{selectedNegotiation.farmer?.fullName || '—'}</span>
+                  <span className="font-medium">{getDisplayName(selectedNegotiation.farmer)}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block mb-1">Listing</span>

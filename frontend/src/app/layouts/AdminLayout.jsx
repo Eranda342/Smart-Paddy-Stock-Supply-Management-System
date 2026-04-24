@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sprout, LayoutDashboard, ShieldCheck, Users, FileText, LogOut,
   Search, Bell, Package, MessageSquare, Receipt, Truck,
-  AlertCircle, Settings, CheckCheck, X, RefreshCw, Info, ChevronDown
+  AlertCircle, Settings, CheckCheck, X, RefreshCw, Info, ChevronDown, User
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import GlobalSearchBar from '../components/GlobalSearchBar';
@@ -399,6 +399,9 @@ export default function AdminLayout() {
                       </button>
                       <button onClick={() => { setDropdownOpen(false); navigate('/admin/settings'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors">
                         <Settings className="w-4 h-4 mr-3" /> System Settings
+                      </button>
+                      <button onClick={() => { setDropdownOpen(false); navigate('/admin/profile'); }} className="w-full flex items-center px-4 py-2 text-sm hover:bg-muted/50 transition-colors">
+                        <User className="w-4 h-4 mr-3" /> Profile
                       </button>
                     </div>
 
