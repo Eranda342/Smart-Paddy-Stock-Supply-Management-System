@@ -8,6 +8,7 @@ import {
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { getFileUrl } from '../../../utils/fileUtils';
 
 export default function MillOwnerNegotiations() {
   const [allNegotiations, setAllNegotiations] = useState([]);
@@ -171,7 +172,7 @@ export default function MillOwnerNegotiations() {
                     <img
                       src={
                         selectedGroup.user?.profileImage
-                          ? `${BASE_URL}/uploads/${selectedGroup.user.profileImage}`
+                          ? getFileUrl(selectedGroup.user.profileImage)
                           : defaultAvatar
                       }
                       onError={(e) => { e.target.src = defaultAvatar; }}

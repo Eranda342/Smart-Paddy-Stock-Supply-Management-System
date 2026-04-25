@@ -84,31 +84,45 @@ const getTransactionById = async (req, res) => {
 const markAsPaid = async (req, res) => {
   try {
 
-    const transaction = await Transaction.findById(req.params.id);
+    console.log(`[PAYMENT ATTEMPT] User ${req.user.id} attempting to pay for transaction ${req.params.id}`);
 
-    if (!transaction) {
+    const transactionCheck = await Transaction.findById(req.params.id);
+
+    if (!transactionCheck) {
       return res.status(404).json({
         message: "Transaction not found"
       });
     }
 
     // Only mill owner (buyer) can pay
-    if (req.user.id !== transaction.millOwner.toString()) {
+    if (req.user.id !== transactionCheck.millOwner.toString()) {
       return res.status(403).json({
         message: "Only buyer can make payment"
       });
     }
 
-    if (transaction.paymentStatus === "PAID") {
+    if (transactionCheck.paymentStatus === "PAID") {
+      console.log(`[PAYMENT DUPLICATE] Transaction ${req.params.id} already paid.`);
       return res.status(400).json({
         message: "Already paid"
       });
     }
 
-    transaction.paymentStatus = "PAID";
-    transaction.status = "PAYMENT_COMPLETED";
+    // Atomic update to prevent race conditions
+    const transaction = await Transaction.findOneAndUpdate(
+      { _id: req.params.id, paymentStatus: "PENDING" },
+      { $set: { paymentStatus: "PAID", status: "PAYMENT_COMPLETED" } },
+      { new: true }
+    );
 
-    await transaction.save();
+    if (!transaction) {
+       console.log(`[PAYMENT CONFLICT] Race condition avoided for transaction ${req.params.id}.`);
+       return res.status(400).json({
+         message: "Payment already processed or state changed"
+       });
+    }
+
+    console.log(`[PAYMENT SUCCESS] Order ${transaction.orderNumber} successfully paid by user ${req.user.id}`);
     if (global.io) {
       global.io.emit("dashboard_update");
     }

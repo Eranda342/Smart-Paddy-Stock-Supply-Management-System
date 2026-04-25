@@ -9,6 +9,7 @@ import { Button } from "../../components/ui/button";
 import { FormInput } from "../../components/ui/form-fields";
 
 import { SOCKET_URL, BASE_URL } from "@/api/api";
+import { getFileUrl } from '../../../utils/fileUtils';
 const PHONE_REGEX = /^(\+94|0)[0-9]{9}$/;
 
 export default function MillOwnerProfile() {
@@ -238,7 +239,7 @@ export default function MillOwnerProfile() {
   };
 
   // ================= AVATAR URL =================
-  const avatarSrc = avatarPreview || (user?.profileImage ? `${BASE_URL}/uploads/${user.profileImage}` : null);
+  const avatarSrc = avatarPreview || (user?.profileImage ? getFileUrl(user.profileImage) : null);
 
   // ================= LOADING / ERROR STATES =================
   if (loading) return (
@@ -466,7 +467,7 @@ export default function MillOwnerProfile() {
                     <Button 
                       variant="secondary" 
                       size="sm" 
-                      onClick={() => window.open(`${BASE_URL}/uploads/${user.businessDetails.businessDocument}`, "_blank")}
+                      onClick={() => window.open(getFileUrl(user.businessDetails.businessDocument), "_blank")}
                       className="gap-2"
                     >
                       <Eye className="w-4 h-4" /> View

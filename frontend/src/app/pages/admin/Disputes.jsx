@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from '@/api/api';
+import { getFileUrl } from '../../../utils/fileUtils';
 const API_BASE   = API_BASE_URL;
 
 const STATUS_CONFIG = {
@@ -452,7 +453,7 @@ export default function AdminDisputes() {
                           <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Evidence ({selectedDispute.attachments.length})</p>
                           <div className="space-y-2">
                             {selectedDispute.attachments.map(att => (
-                              <a key={att._id || att.fileName} href={`${BASE_URL}${att.fileUrl}`} target="_blank" rel="noopener noreferrer"
+                              <a key={att._id || att.fileName} href={getFileUrl(att.fileUrl)} target="_blank" rel="noopener noreferrer"
                                 className="flex items-center justify-between p-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/8 rounded-lg transition-colors group text-sm">
                                 <span className="flex items-center gap-2 text-white/60 group-hover:text-white"><Paperclip className="w-3.5 h-3.5 text-[#22C55E]" />{att.fileName}</span>
                                 <ArrowUpRight className="w-3.5 h-3.5 text-white/30 group-hover:text-[#22C55E]" />

@@ -86,8 +86,10 @@ export default function FarmerDashboard() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        // Always fetch full details - filtering runs LOCALLY
-        let url = `${API_BASE_URL}/dashboard/farmer?range=all`;
+        let url = `${API_BASE_URL}/dashboard/farmer?range=${range}`;
+        if (appliedCustomRange) {
+          url += `&startDate=${appliedCustomRange.startDate}&endDate=${appliedCustomRange.endDate}`;
+        }
         
         const res = await fetch(url, {
           headers: {
@@ -107,7 +109,7 @@ export default function FarmerDashboard() {
       }
     };
     fetchDashboard();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, range, appliedCustomRange]);
 
   // ── Stable cache for trend computation ────────────────────────────────────────────────
   const trendCache = useRef(new Map());
@@ -127,10 +129,14 @@ export default function FarmerDashboard() {
   );
 
   // Memo: KPI cards — O(n)
-  const computedStats = useMemo(
-    () => computeStats(filteredData, data?.allListings),
-    [filteredData, data?.allListings]
-  );
+  const computedStats = useMemo(() => {
+    return {
+      activeListings: data?.stats?.activeListings || 0,
+      ongoingTransactions: data?.stats?.ongoingTransactions || 0,
+      completedDeliveries: data?.stats?.completedTransactions || 0,
+      totalRevenue: data?.stats?.monthlyRevenue || 0
+    };
+  }, [data]);
 
   // Memo: growth % vs prior period
   const growth = useMemo(
@@ -152,10 +158,12 @@ export default function FarmerDashboard() {
   }, [filteredData, startDate, endDate, range, appliedCustomRange]);
 
   // Memo: distribution charts — O(n)
-  const { paddyData: paddyDistribution } = useMemo(
-    () => computeDistributions(filteredData),
-    [filteredData]
-  );
+  const paddyDistribution = useMemo(() => {
+    if (!data?.distribution) return [];
+    return Object.entries(data.distribution)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [data]);
 
   // Add colors to paddyDistribution
   const colors = ['#22C55E', '#3B82F6', '#F59E0B', '#8B5CF6', '#EF4444', '#14B8A6'];

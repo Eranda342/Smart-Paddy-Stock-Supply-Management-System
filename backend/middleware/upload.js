@@ -1,18 +1,14 @@
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 
-// Always resolve to backend/uploads/ regardless of working directory
-const UPLOADS_DIR = path.resolve(__dirname, "../uploads");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, UPLOADS_DIR);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "agrobridge",
+    // Allowed formats include images and documents
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "pdf"],
   },
-
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + path.extname(file.originalname);
-    cb(null, uniqueName);
-  }
 });
 
 const upload = multer({

@@ -26,6 +26,7 @@ import GlobalSearchBar from "../components/GlobalSearchBar";
 import { Button } from "../components/ui/button";
 import { Logo } from "../components/ui/Logo";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { getFileUrl } from '../../utils/fileUtils';
 
 
 export default function FarmerLayout() {
@@ -215,7 +216,7 @@ export default function FarmerLayout() {
                 <div className="relative">
                   <div className="w-10 h-10 bg-[#22C55E] rounded-full flex items-center justify-center font-medium text-[#0F1115] overflow-hidden">
                     {user?.profileImage ? (
-                       <img src={`${BASE_URL}/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Profile" />
+                       <img src={getFileUrl(user.profileImage)} className="w-full h-full object-cover" alt="Profile" />
                     ) : (
                        user ? getInitials(user.fullName) : "??"
                     )}

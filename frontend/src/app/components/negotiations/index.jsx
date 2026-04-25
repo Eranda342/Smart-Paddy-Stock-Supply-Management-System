@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { getFileUrl } from '../../../utils/fileUtils';
 
 export const socket = io(SOCKET_URL);
 
@@ -76,7 +77,7 @@ export const ConversationItem = memo(function ConversationItem({ grp, isSelected
           <img
             src={
               grp.user?.profileImage
-                ? `${BASE_URL}/uploads/${grp.user.profileImage}`
+                ? getFileUrl(grp.user.profileImage)
                 : defaultAvatar
             }
             onError={(e) => { e.target.src = defaultAvatar; }}

@@ -1,9 +1,23 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-export const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-export const BASE_URL =
-  import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+const isProd = import.meta.env.PROD;
+
+const API_URL = import.meta.env.VITE_API_URL;
+const SOCKET_URL_ENV = import.meta.env.VITE_SOCKET_URL;
+const BASE_URL_ENV = import.meta.env.VITE_BASE_URL;
+
+// API URL
+export const API_BASE_URL = API_URL || (!isProd ? "http://localhost:5000/api" : (() => {
+  throw new Error("VITE_API_URL is required in production");
+})());
+
+// Socket URL
+export const SOCKET_URL = SOCKET_URL_ENV || (!isProd ? "http://localhost:5000" : (() => {
+  throw new Error("VITE_SOCKET_URL is required in production");
+})());
+
+// Base URL
+export const BASE_URL = BASE_URL_ENV || (!isProd ? "http://localhost:5000" : (() => {
+  throw new Error("VITE_BASE_URL is required in production");
+})());
 
 export const API = {
   login: `${API_BASE_URL}/users/login`,

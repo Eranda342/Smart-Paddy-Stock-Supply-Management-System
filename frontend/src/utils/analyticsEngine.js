@@ -157,10 +157,12 @@ export function computeTrendData(transactions, startDate, endDate, range, custom
 
     // 2. Aggregate transactions into the map using local date keys
     transactions.forEach(t => {
-      const d   = new Date(t.createdAt || t.date || t.timestamp);
-      const key = _localDateKey(d);
-      if (map[key] !== undefined) {
-        map[key] += _getAmount(t);
+      if (t.paymentStatus === 'PAID') {
+        const d   = new Date(t.createdAt || t.date || t.timestamp);
+        const key = _localDateKey(d);
+        if (map[key] !== undefined) {
+          map[key] += _getAmount(t);
+        }
       }
     });
 
@@ -188,10 +190,12 @@ export function computeTrendData(transactions, startDate, endDate, range, custom
 
     // 2. Aggregate transactions
     transactions.forEach(t => {
-      const d   = new Date(t.createdAt || t.date || t.timestamp);
-      const key = _localMonthKey(d);
-      if (map[key] !== undefined) {
-        map[key] += _getAmount(t);
+      if (t.paymentStatus === 'PAID') {
+        const d   = new Date(t.createdAt || t.date || t.timestamp);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (map[key] !== undefined) {
+          map[key] += _getAmount(t);
+        }
       }
     });
 
@@ -225,7 +229,8 @@ export function computeDistributions(transactions) {
   const district = {};
 
   transactions.forEach(t => {
-    // ── Paddy type ──────────────────────────────────────────────────────────
+    if (t.status === 'COMPLETED' || t.status === 'DELIVERED') {
+      // ── Paddy type ──────────────────────────────────────────────────────────
     const type = t.listing?.paddyType || t.paddyType || 'Other';
     paddy[type] = (paddy[type] || 0) + (t.quantityKg || 0);
 
@@ -240,6 +245,7 @@ export function computeDistributions(transactions) {
 
     if (dist) {
       district[dist] = (district[dist] || 0) + (t.quantityKg || 1);
+    }
     }
   });
 
@@ -268,7 +274,8 @@ export function computeStats(transactions, listings = []) {
   const completed = transactions.filter(
     t => t.status === 'COMPLETED' || t.status === 'DELIVERED'
   );
-  const revenue = completed.reduce((sum, t) => sum + _getAmount(t), 0);
+  const paid = transactions.filter(t => t.paymentStatus === 'PAID');
+  const revenue = paid.reduce((sum, t) => sum + _getAmount(t), 0);
 
   return {
     totalTransactions:   transactions.length,

@@ -5,7 +5,7 @@ const getMonthlySales = async (req, res) => {
     const data = await Transaction.aggregate([
       {
         $match: {
-          status: "COMPLETED", // only paid/completed transactions
+          paymentStatus: "PAID", // revenue tracks paid transactions
         },
       },
       {

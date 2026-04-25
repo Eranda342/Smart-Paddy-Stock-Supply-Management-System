@@ -21,6 +21,7 @@
   "homepage": "https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
@@ -29,6 +30,7 @@
     "jspdf-autotable": "^5.0.7",
     "mongoose": "^9.2.1",
     "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.4",
     "passport": "^0.7.0",

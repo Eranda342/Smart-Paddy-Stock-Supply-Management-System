@@ -50,14 +50,18 @@ const getFarmerDashboard = async (req, res) => {
     const activeListings = listings.filter(l => l.status === "ACTIVE").length || listings.length;
 
     const completedTransactions = transactions.filter(
-      t => t.status === "COMPLETED"
+      t => t.status === "COMPLETED" || t.status === "DELIVERED"
+    );
+
+    const paidTransactions = transactions.filter(
+      t => t.paymentStatus === "PAID"
     );
 
     const ongoingTransactions = transactions.filter(
       t => t.status !== "COMPLETED"
     );
 
-    const monthlyRevenue = completedTransactions.reduce(
+    const monthlyRevenue = paidTransactions.reduce(
       (sum, t) => sum + (t.totalAmount || 0),
       0
     );
@@ -66,10 +70,10 @@ const getFarmerDashboard = async (req, res) => {
     let growth = 0;
     if (!isCustomRange && range !== "all") {
       const current = allTransactions.filter(
-        t => t.status === "COMPLETED" && new Date(t.createdAt).getTime() >= currentStart
+        t => t.paymentStatus === "PAID" && new Date(t.createdAt).getTime() >= currentStart
       );
       const previous = allTransactions.filter(
-        t => t.status === "COMPLETED" && 
+        t => t.paymentStatus === "PAID" && 
         new Date(t.createdAt).getTime() >= previousStart && 
         new Date(t.createdAt).getTime() < currentStart
       );
@@ -98,7 +102,7 @@ const getFarmerDashboard = async (req, res) => {
 
     const distribution = {};
 
-    transactions.forEach(t => {
+    completedTransactions.forEach(t => {
       const type = t.listing?.paddyType || "Other";
       distribution[type] = (distribution[type] || 0) + (t.quantityKg || 0);
     });
@@ -122,7 +126,7 @@ const getFarmerDashboard = async (req, res) => {
 
     const monthly = {};
 
-    completedTransactions.forEach(t => {
+    paidTransactions.forEach(t => {
       const month = new Date(t.createdAt).toLocaleString("default", {
         month: "short"
       });
@@ -204,12 +208,16 @@ const getMillOwnerDashboard = async (req, res) => {
       t => t.status === "COMPLETED" || t.status === "DELIVERED"
     );
 
+    const paidTransactions = transactions.filter(
+      t => t.paymentStatus === "PAID"
+    );
+
     const monthlyProcurementKg = completedTransactions.reduce(
       (sum, t) => sum + (t.quantityKg || 0),
       0
     );
 
-    const totalSpend = completedTransactions.reduce(
+    const totalSpend = paidTransactions.reduce(
       (sum, t) => sum + (t.totalAmount || 0),
       0
     );
@@ -217,10 +225,10 @@ const getMillOwnerDashboard = async (req, res) => {
     let growth = 0;
     if (!isCustomRange && range !== "all") {
       const current = allTransactions.filter(
-        t => (t.status === "COMPLETED" || t.status === "DELIVERED") && new Date(t.createdAt).getTime() >= currentStart
+        t => t.paymentStatus === "PAID" && new Date(t.createdAt).getTime() >= currentStart
       );
       const previous = allTransactions.filter(
-        t => (t.status === "COMPLETED" || t.status === "DELIVERED") && 
+        t => t.paymentStatus === "PAID" && 
         new Date(t.createdAt).getTime() >= previousStart && 
         new Date(t.createdAt).getTime() < currentStart
       );
@@ -255,7 +263,7 @@ const getMillOwnerDashboard = async (req, res) => {
     });
 
     const monthly = {};
-    completedTransactions.forEach(t => {
+    paidTransactions.forEach(t => {
       const month = new Date(t.createdAt).toLocaleString("default", {
         month: "short"
       });

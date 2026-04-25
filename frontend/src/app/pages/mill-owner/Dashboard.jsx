@@ -86,8 +86,10 @@ export default function MillOwnerDashboard() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        // Always fetch full details - filtering runs LOCALLY
-        let url = `${API_BASE_URL}/dashboard/millOwner?range=all`;
+        let url = `${API_BASE_URL}/dashboard/millOwner?range=${range}`;
+        if (appliedCustomRange) {
+          url += `&startDate=${appliedCustomRange.startDate}&endDate=${appliedCustomRange.endDate}`;
+        }
         const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -106,7 +108,7 @@ export default function MillOwnerDashboard() {
       }
     };
     fetchDashboard();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, range, appliedCustomRange]);
 
   // ── Stable cache for trend computation ────────────────────────────────────────────────
   const trendCache = useRef(new Map());
@@ -123,10 +125,14 @@ export default function MillOwnerDashboard() {
     [rawTransactions, startDate, endDate]
   );
 
-  const computedStats = useMemo(
-    () => computeStats(filteredData, data?.allListings),
-    [filteredData, data?.allListings]
-  );
+  const computedStats = useMemo(() => {
+    return {
+      activeListings: data?.stats?.activePurchases || 0,
+      ongoingTransactions: data?.stats?.ongoingNegotiations || 0,
+      completedDeliveries: data?.stats?.monthlyProcurementKg || 0,
+      totalRevenue: data?.stats?.totalSpend || 0
+    };
+  }, [data]);
 
   const growth = useMemo(
     () => computeGrowth(rawTransactions, range, appliedCustomRange?.startDate, appliedCustomRange?.endDate),
@@ -142,10 +148,12 @@ export default function MillOwnerDashboard() {
     return result;
   }, [filteredData, startDate, endDate, range, appliedCustomRange]);
 
-  const { paddyData: paddyDistribution } = useMemo(
-    () => computeDistributions(filteredData),
-    [filteredData]
-  );
+  const paddyDistribution = useMemo(() => {
+    if (!data?.distribution) return [];
+    return Object.entries(data.distribution)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [data]);
 
   const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#22C55E', '#F59E0B', '#ef4444'];
   const formattedPaddyDist = useMemo(

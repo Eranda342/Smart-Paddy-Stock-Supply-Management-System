@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 import { Button } from "../../components/ui/button";
 import toast from "react-hot-toast";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { getFileUrl } from '../../../utils/fileUtils';
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
 
@@ -358,7 +359,7 @@ export default function BrowseListings() {
                       <img
                         src={
                           listing.owner?.profileImage
-                            ? `${BASE_URL}/uploads/${listing.owner.profileImage}`
+                            ? getFileUrl(listing.owner.profileImage)
                             : defaultAvatar
                         }
                         onError={(e) => {

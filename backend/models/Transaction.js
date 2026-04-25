@@ -131,8 +131,9 @@ const transactionSchema = new mongoose.Schema(
 // ================= GENERATE ORDER NUMBER =================
 transactionSchema.pre("save", function () {
   if (!this.orderNumber) {
-    const timestamp = Date.now().toString().slice(-6);
-    this.orderNumber = `AGB-${timestamp}`;
+    const timestamp = Date.now().toString().slice(-5);
+    const randomStr = Math.random().toString(36).slice(2, 6).toUpperCase();
+    this.orderNumber = `AGB-${timestamp}-${randomStr}`;
   }
 });
 

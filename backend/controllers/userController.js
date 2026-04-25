@@ -79,7 +79,7 @@ const registerUser = async (req, res) => {
         landSize: Number(landSize),
         paddyTypesCultivated: parsedPaddyTypes,
         estimatedMonthlyStock: Number(estimatedMonthlyStock),
-        landDocument: req.file ? req.file.filename : null,
+        landDocument: req.file ? req.file.path : null,
         verificationStatus: "PENDING"
       };
     }
@@ -90,7 +90,7 @@ const registerUser = async (req, res) => {
         businessName,
         businessRegistrationNumber,
         millLocation,
-        businessDocument: req.file ? req.file.filename : null,
+        businessDocument: req.file ? req.file.path : null,
         verificationStatus: "PENDING"
       };
     }
@@ -288,12 +288,12 @@ const uploadAvatar = async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.profileImage = req.file.filename;
+    user.profileImage = req.file.path;
     await user.save();
 
     res.status(200).json({
       message: "Avatar uploaded successfully",
-      profileImage: req.file.filename
+      profileImage: req.file.path
     });
   } catch (error) {
     console.error("UPLOAD AVATAR ERROR:", error);
@@ -602,7 +602,7 @@ const resubmit = async (req, res) => {
         message: "Document is required for resubmission"
       });
     }
-    const newDocFilename = req.file.filename;
+    const newDocFilename = req.file.path;
 
     // ─── Reset verification status and clear rejection reason ───────────────
     if (isFarmer) {

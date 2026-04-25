@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/button';
 import { FormTextarea } from '../../components/ui/form-fields';
 
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from '@/api/api';
+import { getFileUrl } from '../../../utils/fileUtils';
 const API = `${API_BASE_URL}/admin`;
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -56,8 +57,8 @@ function DocModal({ user, onClose }) {
   const details  = isFarmer ? user.farmDetails : user.businessDetails;
   const docPath  = isFarmer ? details?.landDocument : details?.businessDocument;
   // Strip any accidental leading path segments; the server serves files under /uploads/*
-  const bareFilename = docPath ? docPath.replace(/^.*[\\/]/, '') : null;
-  const docUrl   = bareFilename ? `${BASE_URL}/uploads/${bareFilename}` : null;
+  const bareFilename = docPath ? docPath : null;
+  const docUrl   = bareFilename ? getFileUrl(bareFilename) : null;
   const isImage  = docUrl && /\.(png|jpg|jpeg|webp|gif)$/i.test(docUrl);
   const isPdf    = docUrl && /\.pdf$/i.test(docUrl);
 

@@ -722,7 +722,7 @@ const getDashboardStats = async (req, res) => {
 
     // ── Platform Revenue ─────────────────────────────────────────
     const revenueResult = await Transaction.aggregate([
-      { $match: { status: "COMPLETED" } }, // adjust if your status differs
+      { $match: { paymentStatus: "PAID" } }, // adjust if your status differs
       {
         $group: {
           _id: null,
@@ -778,7 +778,7 @@ const getDashboardStats = async (req, res) => {
 
     // ── Monthly Revenue (revenue summed per month) ──────
     const revenueAgg = await Transaction.aggregate([
-      { $match: { status: "COMPLETED", createdAt: { $gte: windowStart } } },
+      { $match: { paymentStatus: "PAID", createdAt: { $gte: windowStart } } },
       {
         $group: {
           _id: {

@@ -89,7 +89,7 @@ const createDispute = async (req, res) => {
 
     const attachments = (req.files || []).map(f => ({
       fileName: f.originalname,
-      fileUrl:  `/uploads/${f.filename}`,
+      fileUrl: f.path,
     }));
 
     const dispute = await new Dispute({

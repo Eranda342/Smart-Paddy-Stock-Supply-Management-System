@@ -76,7 +76,7 @@ const completeProfile = async (req, res) => {
     }
 
     // ── Uploaded document filename (from multer) ──
-    const documentFilename = req.file ? req.file.filename : null;
+    const documentFilename = req.file ? req.file.path : null;
 
     // ── Role-specific details ──
     if (normalizedRole === "FARMER") {

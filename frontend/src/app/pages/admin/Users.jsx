@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/button';
 import { FormTextarea } from '../../components/ui/form-fields';
 
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from '@/api/api';
+import { getFileUrl } from '../../../utils/fileUtils';
 const API = `${API_BASE_URL}/admin`;
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -306,7 +307,7 @@ function UserModal({ user, onClose, onAction, actionLoading, onBlockPrompt }) {
                   <DetailRow icon={FileText} label="Monthly Stock (est.)" value={details.estimatedMonthlyStock ? `${details.estimatedMonthlyStock} kg` : null} />
                   {details.landDocument && (
                     <DetailRow icon={Download} label="Land Document"      value={
-                      <a href={`${BASE_URL}/uploads/${details.landDocument}`} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                      <a href={getFileUrl(details.landDocument)} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline">
                         View Document PDF
                       </a>
                     } />
@@ -323,7 +324,7 @@ function UserModal({ user, onClose, onAction, actionLoading, onBlockPrompt }) {
                   <DetailRow icon={Phone}     label="Business Phone"  value={details.businessPhone} />
                   {details.businessDocument && (
                     <DetailRow icon={Download} label="Business Document" value={
-                      <a href={`${BASE_URL}/uploads/${details.businessDocument}`} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                      <a href={getFileUrl(details.businessDocument)} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline">
                         View Document PDF
                       </a>
                     } />
