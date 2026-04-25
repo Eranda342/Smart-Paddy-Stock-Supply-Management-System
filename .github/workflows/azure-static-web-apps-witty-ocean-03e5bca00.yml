@@ -23,16 +23,20 @@ jobs:
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          # 🔥 IMPORTANT: DO NOT CHANGE THIS NAME
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
 
-          # ✅ YOUR PROJECT STRUCTURE (CORRECT)
+          # PROJECT STRUCTURE
           app_location: "frontend"
           api_location: ""
           output_location: "dist"
+
+        # 🔥 THIS IS THE CRITICAL FIX
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_BASE_URL: ${{ secrets.VITE_BASE_URL }}
+          VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
