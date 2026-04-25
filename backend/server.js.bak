@@ -44,20 +44,18 @@ const server = http.createServer(app);
 connectDB();
 
 // ================= MIDDLEWARE =================
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://witty-ocean-03e5bca00.7.azurestaticapps.net"
-];
+// Comma-separated list of allowed origins, e.g. "https://agrobridge.com,https://www.agrobridge.com"
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? process.env.ALLOWED_ORIGIN.split(",").map(o => o.trim())
+  : [];
+
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps / curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+  origin: (origin, callback) => {
+    // Allow server-to-server requests (no origin header) and listed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
     } else {
-      console.warn("Blocked by CORS:", origin);
-      return callback(new Error("Not allowed by CORS"));
+      callback(new Error(`CORS blocked: ${origin}`));
     }
   },
   credentials: true
@@ -104,14 +102,10 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/disputes", disputeRoutes);
 
 // ================= SOCKET.IO =================
-const io = require("socket.io")(server, {
+const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      "https://witty-ocean-03e5bca00.7.azurestaticapps.net"
-    ],
-    methods: ["GET", "POST"],
-    credentials: true
+    origin: allowedOrigins,
+    methods: ["GET", "POST"]
   }
 });
 
