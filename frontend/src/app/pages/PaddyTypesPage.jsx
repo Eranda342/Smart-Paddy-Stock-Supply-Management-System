@@ -10,12 +10,12 @@ import { PADDY_TYPES_GROUPED } from "../../constants/paddyTypes";
 import sambaImg from "../../assets/paddy/samba.jpg";
 import naduImg from "../../assets/paddy/nadu.jpg";
 import keeriSambaImg from "../../assets/paddy/keeri-samba.jpg";
-import suwandelImg from "../../assets/paddy/Suwandel.webp";
+import suwandelImg from "../../assets/paddy/suwandel.webp";
 import pachchaperumalImg from "../../assets/paddy/pachchaperumal.jpg";
 import madathawaluImg from "../../assets/paddy/madathawalu.jpg";
 
 import kuruluthudaImg from "../../assets/paddy/Kuruluthuda.webp";
-import kakuluImg from "../../assets/paddy/Kekulu.webp";
+import kakuluImg from "../../assets/paddy/kekulu.webp";
 import bg352Img from "../../assets/paddy/bg 352.jpg";
 import bg360Img from "../../assets/paddy/bg 360.jpg";
 import bg358Img from "../../assets/paddy/Bg 358.jpg";
@@ -29,7 +29,7 @@ import ldImg from "../../assets/paddy/ld.jpg";
 import bwImg from "../../assets/paddy/bw.jpg";
 import h4Img from "../../assets/paddy/H4.jpg";
 import redRiceImg from "../../assets/paddy/Red Rice.jpg";
-import whiteRiceImg from "../../assets/paddy/Kekulu.webp";
+import whiteRiceImg from "../../assets/paddy/kekulu.webp";
 /* ─────────────────────────────────────────────
    DATA
 ───────────────────────────────────────────── */
