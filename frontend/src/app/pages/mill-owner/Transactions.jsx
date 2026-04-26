@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import { AlertTriangle } from "lucide-react";
 import RaiseDisputeModal from "../../components/RaiseDisputeModal";
-import { API_BASE_URL, SOCKET_URL } from "@/api/api";
+import { API_BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 
 export default function MillOwnerTransactions() {
 
@@ -47,18 +47,10 @@ export default function MillOwnerTransactions() {
   useEffect(() => {
     fetchTransactions();
 
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
     socket.on("dashboard_update", fetchTransactions);
 
     return () => {
       socket.off("dashboard_update", fetchTransactions);
-      socket.disconnect();
     };
   }, []);
 

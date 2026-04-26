@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const { isCloudinaryUrl } = require("../utils/validators");
 
 /**
  * PUT /api/auth/complete-profile
@@ -76,7 +77,11 @@ const completeProfile = async (req, res) => {
     }
 
     // ── Uploaded document filename (from multer) ──
-    const documentFilename = req.file ? req.file.path : null;
+    let documentFilename = req.file ? req.file.path : null;
+    if (documentFilename && !isCloudinaryUrl(documentFilename)) {
+      console.warn("[IMAGE VALIDATION FAILED]", { value: documentFilename, route: req.originalUrl, user: req.user?._id || "unknown" });
+      documentFilename = null;
+    }
 
     // ── Role-specific details ──
     if (normalizedRole === "FARMER") {

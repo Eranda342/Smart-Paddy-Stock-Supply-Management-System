@@ -19,13 +19,13 @@ import {
   PlusCircle
 } from "lucide-react";
 
-import { io } from "socket.io-client";
 import toast from "react-hot-toast";
 import NotificationDropdown from "../components/NotificationDropdown";
 import GlobalSearchBar from "../components/GlobalSearchBar";
 import { Button } from "../components/ui/button";
 import { Logo } from "../components/ui/Logo";
-import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { API_BASE_URL, BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 import { getFileUrl } from '../../utils/fileUtils';
 
 
@@ -49,14 +49,6 @@ export default function FarmerLayout() {
   }, []);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-
     const token = localStorage.getItem("token");
     let decodedUser = null;
     try {
@@ -67,9 +59,8 @@ export default function FarmerLayout() {
 
     if (decodedUser?.id) {
       socket.emit("registerUser", decodedUser.id);
+      socket.emit("join", decodedUser.id);
     }
-
-    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {

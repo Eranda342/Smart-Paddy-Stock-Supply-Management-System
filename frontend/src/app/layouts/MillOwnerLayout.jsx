@@ -1,14 +1,14 @@
 import { List } from "lucide-react";
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Sprout, LayoutDashboard, Search as SearchIcon, MessageSquare, Receipt, Truck, TruckIcon, User, LogOut, Search, Bell, HelpCircle, ChevronDown, Settings, ShieldCheck, ShieldAlert, Clock, PlusCircle } from 'lucide-react';
-import { io } from "socket.io-client";
 import { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 import NotificationDropdown from "../components/NotificationDropdown";
 import GlobalSearchBar from "../components/GlobalSearchBar";
 import { Button } from "../components/ui/button";
 import { Logo } from "../components/ui/Logo";
-import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { API_BASE_URL, BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 import { getFileUrl } from '../../utils/fileUtils';
 
 
@@ -55,14 +55,6 @@ export default function MillOwnerLayout() {
   }, []);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-
     const token = localStorage.getItem("token");
     let decodedUser = null;
     try {
@@ -73,9 +65,8 @@ export default function MillOwnerLayout() {
 
     if (decodedUser?.id) {
       socket.emit("registerUser", decodedUser.id);
+      socket.emit("join", decodedUser.id);
     }
-
-    return () => socket.disconnect();
   }, []);
 
   const getInitials = (name) => {

@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bell, Send, Users, BellOff, CheckCircle, Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { io } from 'socket.io-client';
 import { Button } from '../../components/ui/button';
 import { FormInput, FormTextarea } from '../../components/ui/form-fields';
 
-import { API_BASE_URL, SOCKET_URL } from '@/api/api';
+import { API_BASE_URL } from '@/api/api';
+import { socket } from "@/socket";
 const API_BASE = API_BASE_URL;
 
 const TARGETS = [
@@ -39,18 +39,14 @@ export default function AdminNotifications() {
   useEffect(() => {
     fetchAnnouncements();
 
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-    socket.on('newNotification', () => {
+    const handleNewNotification = () => {
       fetchAnnouncements();
-    });
+    };
+    socket.on('newNotification', handleNewNotification);
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off('newNotification', handleNewNotification);
+    };
   }, [fetchAnnouncements]);
 
   const handleSend = async () => {

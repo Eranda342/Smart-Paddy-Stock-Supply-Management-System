@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, User, Package, RefreshCw } from "lucide-react";
-import { io } from "socket.io-client";
 import { Button } from "../../components/ui/button";
 import toast from "react-hot-toast";
-import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { API_BASE_URL, BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 import { getFileUrl } from '../../../utils/fileUtils';
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
@@ -62,28 +62,24 @@ export default function BrowseListings() {
     document.title = "Browse Listings | AgroBridge";
     fetchListings();
 
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-    socket.on("connect", () => setIsLive(true));
-    socket.on("disconnect", () => setIsLive(false));
-    socket.on("dashboard_update", () => fetchListings());
-    socket.on("listing_created", () => fetchListings());
-    socket.on("listing_deleted", () => fetchListings());
+    const handleConnect = () => setIsLive(true);
+    const handleDisconnect = () => setIsLive(false);
+    const handleUpdate = () => fetchListings();
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("dashboard_update", handleUpdate);
+    socket.on("listing_created", handleUpdate);
+    socket.on("listing_deleted", handleUpdate);
 
     if (socket.connected) setIsLive(true);
 
     return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("dashboard_update");
-      socket.off("listing_created");
-      socket.off("listing_deleted");
-      socket.disconnect();
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("dashboard_update", handleUpdate);
+      socket.off("listing_created", handleUpdate);
+      socket.off("listing_deleted", handleUpdate);
     };
   }, [fetchListings]);
 

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import toast from "react-hot-toast";
-import { API_BASE_URL, SOCKET_URL } from "@/api/api";
+import { API_BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 
 const API = API_BASE_URL;
 
@@ -33,33 +33,19 @@ export default function NotificationDropdown() {
   useEffect(() => {
     fetchNotifications();
 
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-
     if (typeof window !== "undefined") {
       window.socket = socket;
     }
 
-    if (socket) {
-      console.log("🔍 Checking socket...");
-      socket.on("connect", () => {
-        console.log("✅ SOCKET CONNECTED:", socket.id);
-      });
-      socket.on("disconnect", (reason) => {
-        console.log("❌ SOCKET DISCONNECTED:", reason);
-      });
-      socket.on("connect_error", (err) => {
-        console.log("🚨 SOCKET ERROR:", err.message);
-      });
-      socket.on("reconnect_attempt", () => {
-        console.log("🔄 Reconnecting...");
-      });
-    }
+    const handleConnect = () => console.log("✅ SOCKET CONNECTED:", socket.id);
+    const handleDisconnect = (reason) => console.log("❌ SOCKET DISCONNECTED:", reason);
+    const handleConnectError = (err) => console.log("🚨 SOCKET ERROR:", err.message);
+    const handleReconnectAttempt = () => console.log("🔄 Reconnecting...");
+    
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
+    socket.on("reconnect_attempt", handleReconnectAttempt);
 
     const token = localStorage.getItem("token");
     let decodedUser = null;
@@ -74,20 +60,33 @@ export default function NotificationDropdown() {
       socket.emit("joinUserRoom", decodedUser.id);
     }
 
-    socket.on("newNotification", (notification) => {
-      // Re-fetch from the server so we always have well-shaped DB documents
-      // (the socket payload is a minimal object without _id / read / createdAt)
+    const handleNewNotification = (notification) => {
       fetchNotifications();
       const msg = notification?.message || notification?.body || "New notification received";
       toast.success(`Admin Update: ${msg}`);
-    });
+    };
+
+    const handleNotification = (data) => {
+      console.log("🔔 New notification:", data);
+      fetchNotifications();
+      const msg = data?.message || data?.body || data?.data?.message || "New notification";
+      toast.success(msg);
+    };
+
+    socket.on("newNotification", handleNewNotification);
+    socket.on("notification", handleNotification);
 
     const interval = setInterval(() => {
       fetchNotifications();
     }, 5000);
 
     return () => {
-      socket.disconnect();
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
+      socket.off("reconnect_attempt", handleReconnectAttempt);
+      socket.off("newNotification", handleNewNotification);
+      socket.off("notification", handleNotification);
       clearInterval(interval);
     };
   }, []);

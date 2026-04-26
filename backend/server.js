@@ -113,6 +113,8 @@ app.use("/api/reports", reportRoutes);
 
 app.use("/api/disputes", disputeRoutes);
 
+
+
 // ================= SOCKET.IO =================
 const io = require("socket.io")(server, {
   cors: {
@@ -138,6 +140,12 @@ app.set("onlineUsers", onlineUsers);
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
+  socket.on("join", (userId) => {
+    if (!userId) return;
+    socket.join(userId);
+    console.log(`👤 User joined room: ${userId}`);
+  });
+
   socket.on("registerUser", (userId) => {
     onlineUsers[userId] = socket.id;
     socket.join(userId);
@@ -157,13 +165,23 @@ io.on("connection", (socket) => {
   socket.on("joinDispute", (disputeId) => socket.join(disputeId));
   socket.on("joinNegotiation", (negotiationId) => {
     socket.join(negotiationId);
+    socket.join(`negotiation_${negotiationId}`); // STEP 5: Room per negotiation
   });
 
-  socket.on("sendMessage", ({ negotiationId, message }) => {
+  socket.on("sendMessage", ({ negotiationId, message, receiverId }) => {
+    // Legacy / current API
     io.to(negotiationId).emit("receiveMessage", {
       negotiationId,
       message
     });
+    
+    // STEP 4: Live updates to receiver room
+    if (receiverId) {
+      io.to(receiverId).emit("new_message", message);
+    }
+
+    // STEP 5: Emit to negotiation room
+    io.to(`negotiation_${negotiationId}`).emit("update", message);
   });
 
   socket.on("markAsRead", ({ negotiationId, userId }) => {

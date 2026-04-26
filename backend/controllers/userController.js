@@ -8,6 +8,7 @@ const Negotiation = require("../models/Negotiation");
 const Transaction = require("../models/Transaction");
 const Listing = require("../models/Listing");
 const Dispute = require("../models/Dispute");
+const { isCloudinaryUrl } = require("../utils/validators");
 
 // ================= REGISTER USER =================
 const registerUser = async (req, res) => {
@@ -61,6 +62,12 @@ const registerUser = async (req, res) => {
     userData.emailVerificationToken = hashedToken;
     userData.emailVerificationExpire = expire;
 
+    let image = req.file ? req.file.path : null;
+    if (image && !isCloudinaryUrl(image)) {
+      console.warn("[IMAGE VALIDATION FAILED]", { value: image, route: req.originalUrl, user: req.user?._id || "unknown" });
+      image = null;
+    }
+
     // ================= FARMER =================
     if (normalizedRole === "FARMER") {
 
@@ -79,7 +86,7 @@ const registerUser = async (req, res) => {
         landSize: Number(landSize),
         paddyTypesCultivated: parsedPaddyTypes,
         estimatedMonthlyStock: Number(estimatedMonthlyStock),
-        landDocument: req.file ? req.file.path : null,
+        landDocument: image,
         verificationStatus: "PENDING"
       };
     }
@@ -90,7 +97,7 @@ const registerUser = async (req, res) => {
         businessName,
         businessRegistrationNumber,
         millLocation,
-        businessDocument: req.file ? req.file.path : null,
+        businessDocument: image,
         verificationStatus: "PENDING"
       };
     }
@@ -288,12 +295,18 @@ const uploadAvatar = async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.profileImage = req.file.path;
+    let image = req.file.path;
+    if (image && !isCloudinaryUrl(image)) {
+      console.warn("[IMAGE VALIDATION FAILED]", { value: image, route: req.originalUrl, user: req.user?._id || "unknown" });
+      image = null;
+    }
+
+    user.profileImage = image;
     await user.save();
 
     res.status(200).json({
       message: "Avatar uploaded successfully",
-      profileImage: req.file.path
+      profileImage: image
     });
   } catch (error) {
     console.error("UPLOAD AVATAR ERROR:", error);
@@ -602,7 +615,11 @@ const resubmit = async (req, res) => {
         message: "Document is required for resubmission"
       });
     }
-    const newDocFilename = req.file.path;
+    let newDocFilename = req.file.path;
+    if (newDocFilename && !isCloudinaryUrl(newDocFilename)) {
+      console.warn("[IMAGE VALIDATION FAILED]", { value: newDocFilename, route: req.originalUrl, user: req.user?._id || "unknown" });
+      newDocFilename = null;
+    }
 
     // ─── Reset verification status and clear rejection reason ───────────────
     if (isFarmer) {

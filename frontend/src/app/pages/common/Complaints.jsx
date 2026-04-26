@@ -5,9 +5,9 @@ import {
   FileText, Package, DollarSign, Calendar, Info, ChevronRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { io } from 'socket.io-client';
+import { socket } from "@/socket";
 
-import { API_BASE_URL, SOCKET_URL, BASE_URL } from '@/api/api';
+import { API_BASE_URL, BASE_URL } from '@/api/api';
 import { getFileUrl } from '../../../utils/fileUtils';
 const API_BASE   = API_BASE_URL;
 
@@ -72,22 +72,24 @@ export default function Complaints() {
 
   // ── Socket setup ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    const sock = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-    socketRef.current = sock;
-    sock.on('disputeUpdated', () => fetchDisputesRef.current?.());
-    sock.on('disputeMessage', (msg) => {
+    socketRef.current = socket;
+    
+    const handleUpdate = () => fetchDisputesRef.current?.();
+    const handleMessage = (msg) => {
       // Append to selected dispute's messages array
       setSelectedDispute(prev => prev ? { ...prev, messages: [...(prev.messages || []), msg] } : prev);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    });
+    };
+
+    socket.on('disputeUpdated', handleUpdate);
+    socket.on('disputeMessage', handleMessage);
+    
     const poll = setInterval(() => fetchDisputesRef.current?.(), 15000);
-    return () => { sock.disconnect(); clearInterval(poll); };
+    return () => {
+      socket.off('disputeUpdated', handleUpdate);
+      socket.off('disputeMessage', handleMessage);
+      clearInterval(poll);
+    };
   }, []);
 
   // ── Fetch disputes ────────────────────────────────────────────────────────────

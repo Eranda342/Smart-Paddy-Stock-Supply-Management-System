@@ -1,13 +1,11 @@
 import { BASE_URL } from "../api/api";
 
 export const getFileUrl = (value) => {
-  if (!value) return '';
+  if (!value) return "/placeholder.png";
 
-  if (value.startsWith('http')) return value;
-
-  if (value.startsWith('/uploads/')) {
-    return `${BASE_URL}${value}`;
+  if (value.startsWith("http")) {
+    return value;
   }
 
-  return `${BASE_URL}/uploads/${value}`;
+  return "/placeholder.png";
 };

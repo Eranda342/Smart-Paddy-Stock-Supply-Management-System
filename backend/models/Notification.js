@@ -16,5 +16,13 @@ const notificationSchema = new mongoose.Schema({
     default: false
   }
 }, { timestamps: true });
+notificationSchema.post('save', function(doc) {
+  if (global.io) {
+    global.io.to(doc.user.toString()).emit('notification', {
+      message: doc.message || "New notification",
+      data: doc
+    });
+  }
+});
 
 module.exports = mongoose.model("Notification", notificationSchema);

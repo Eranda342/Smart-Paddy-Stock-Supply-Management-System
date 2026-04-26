@@ -90,7 +90,16 @@ const disputeSchema = new mongoose.Schema(
     attachments: [
       {
         fileName: String,
-        fileUrl: String,
+        fileUrl: {
+          type: String,
+          validate: {
+            validator: function (v) {
+              if (!v) return true;
+              return v.includes("res.cloudinary.com");
+            },
+            message: "[IMAGE VALIDATION FAILED] attachment fileUrl must be a Cloudinary URL"
+          }
+        },
         uploadedAt: { type: Date, default: Date.now },
       },
     ],

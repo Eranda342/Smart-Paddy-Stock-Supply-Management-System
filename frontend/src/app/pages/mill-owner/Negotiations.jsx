@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 import {
-  socket,
+
   ConversationItem,
   DealCard,
 } from "../../components/negotiations/index.jsx";
+import { socket } from "@/socket";
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
@@ -51,7 +52,7 @@ export default function MillOwnerNegotiations() {
 
     // All real-time events that should refresh the list
     const refresh = () => fetchNegotiations();
-    ["dashboard_update", "receiveMessage", "receiveStatusUpdate", "messagesRead", "messageDeleted", "messageEdited"]
+    ["dashboard_update", "receiveMessage", "receiveStatusUpdate", "messagesRead", "messageDeleted", "messageEdited", "new_message", "update"]
       .forEach(ev => socket.on(ev, refresh));
 
     fetchNegotiations();
@@ -59,7 +60,7 @@ export default function MillOwnerNegotiations() {
     return () => {
       socket.off("connect", register);
       socket.off("userOnline"); socket.off("userOffline");
-      ["dashboard_update", "receiveMessage", "receiveStatusUpdate", "messagesRead", "messageDeleted", "messageEdited"]
+      ["dashboard_update", "receiveMessage", "receiveStatusUpdate", "messagesRead", "messageDeleted", "messageEdited", "new_message", "update"]
         .forEach(ev => socket.off(ev, refresh));
     };
   }, []);

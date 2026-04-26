@@ -8,19 +8,10 @@ import {
   Ban, Pencil, ChevronDown, ChevronUp, TrendingUp, Clock, Flame,
   MessageSquare, Package, X
 } from "lucide-react";
-import { Button } from "../ui/button";
-import { io } from "socket.io-client";
-import toast from "react-hot-toast";
-import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
+import { Button } from "../../components/ui/button";
+import { API_BASE_URL, BASE_URL } from "@/api/api";
 import { getFileUrl } from '../../../utils/fileUtils';
-
-export const socket = io(SOCKET_URL, {
-  transports: ["websocket"], // 🔥 force websocket
-  withCredentials: true,
-  secure: true,
-  reconnection: true,
-  reconnectionAttempts: 5,
-});
+import { socket } from "@/socket";
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
 

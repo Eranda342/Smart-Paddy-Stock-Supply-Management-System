@@ -1,23 +1,16 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Eye, X, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import { PADDY_TYPES, DISTRICTS } from "../../../constants/paddyTypes";
 import toast from "react-hot-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput, FormSelect, FormTextarea } from "../../components/ui/form-fields";
 import { Button } from "../../components/ui/button";
+import { z } from "zod";
 import { listingSchema } from "../../lib/schemas";
-import { API_BASE_URL, SOCKET_URL } from "@/api/api";
-
-const socket = io(SOCKET_URL, {
-  transports: ["websocket"], // 🔥 force websocket
-  withCredentials: true,
-  secure: true,
-  reconnection: true,
-  reconnectionAttempts: 5,
-});
+import { API_BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 
 export default function FarmerListings() {
 

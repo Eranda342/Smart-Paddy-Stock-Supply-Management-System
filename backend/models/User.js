@@ -73,7 +73,14 @@ const userSchema = new mongoose.Schema(
 
   profileImage: {
     type: String,
-    default: null
+    default: null,
+    validate: {
+      validator: function (v) {
+        if (!v) return true;
+        return v.includes("res.cloudinary.com");
+      },
+      message: "[IMAGE VALIDATION FAILED] profileImage must be a Cloudinary URL"
+    }
   },
 
   resetPasswordToken: String,
@@ -102,7 +109,14 @@ const userSchema = new mongoose.Schema(
     },
 
     landDocument: {
-      type: String
+      type: String,
+      validate: {
+        validator: function (v) {
+          if (!v) return true;
+          return v.includes("res.cloudinary.com");
+        },
+        message: "[IMAGE VALIDATION FAILED] landDocument must be a Cloudinary URL"
+      }
     },
 
     verificationStatus: {
@@ -143,7 +157,14 @@ const userSchema = new mongoose.Schema(
     },
 
     businessDocument: {
-      type: String
+      type: String,
+      validate: {
+        validator: function (v) {
+          if (!v) return true;
+          return v.includes("res.cloudinary.com");
+        },
+        message: "[IMAGE VALIDATION FAILED] businessDocument must be a Cloudinary URL"
+      }
     },
 
     verificationStatus: {

@@ -11,8 +11,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
 } from 'recharts';
-import { io } from 'socket.io-client';
-import { API_BASE_URL, SOCKET_URL } from '@/api/api';
+import { API_BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 
 // ─────────────────────────────────────────────────────────────────
 // Shared status color system (consistent across admin panel)
@@ -260,6 +260,7 @@ export default function AdminDashboard() {
   const [lastUpdated, setLastUpdated] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [chartsVisible, setChartsVisible] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   // Chart series toggle
   const [hiddenSeries, setHiddenSeries] = useState({});
   const animatedRevenue = useCountUp(loading ? null : Number(stats?.totalRevenue ?? 0), 1200);
@@ -296,20 +297,17 @@ export default function AdminDashboard() {
     document.title = "Admin Dashboard | AgroBridge";
     fetchStats();
     
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
+    const handleUpdate = () => {
+      setRefreshTrigger(prev => prev + 1);
+      fetchStats();
+    };
     
     // Listen for dashboard update events
-    socket.on("dashboard_update", () => {
-      fetchStats();
-    });
-    
-    return () => socket.disconnect();
+    socket.on("dashboard_update", handleUpdate);
+
+    return () => {
+      socket.off("dashboard_update", handleUpdate);
+    };
   }, [fetchStats]);
 
   // Delay chart animation until after first render

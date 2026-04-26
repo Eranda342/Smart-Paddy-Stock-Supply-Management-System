@@ -2,17 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle2, Truck, CreditCard, Package, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
-import { io } from "socket.io-client";
 import RaiseDisputeModal from "../../components/RaiseDisputeModal";
-import { API_BASE_URL, SOCKET_URL } from "@/api/api";
-
-const socket = io(SOCKET_URL, {
-  transports: ["websocket"], // 🔥 force websocket
-  withCredentials: true,
-  secure: true,
-  reconnection: true,
-  reconnectionAttempts: 5,
-});
+import { API_BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 
 export default function TransactionDetails() {
   const { id } = useParams();

@@ -11,7 +11,8 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import logoUrl from "../../../assets/navbar.svg";
-import { API_BASE_URL, SOCKET_URL } from "@/api/api";
+import { API_BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 
 const getLogoBase64 = () => {
   return new Promise((resolve) => {
@@ -65,19 +66,14 @@ export default function MillOwnerDashboard() {
 
   useEffect(() => {
     document.title = "Dashboard | AgroBridge";
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-
-    socket.on("dashboard_update", () => {
+    const handleUpdate = () => {
       setRefreshTrigger(prev => prev + 1);
-    });
+    };
+    socket.on("dashboard_update", handleUpdate);
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("dashboard_update", handleUpdate);
+    };
   }, []);
 
   useEffect(() => {

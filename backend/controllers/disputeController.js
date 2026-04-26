@@ -3,6 +3,7 @@ const Transaction = require('../models/Transaction');
 const SystemSetting = require('../models/SystemSetting');
 const Notification = require('../models/Notification');
 const sendEmail  = require('../utils/sendEmail');
+const { isCloudinaryUrl } = require('../utils/validators');
 
 // ── Email templates ──────────────────────────────────────────────────────────
 const emailTemplate = (title, bodyLines) => `
@@ -87,10 +88,17 @@ const createDispute = async (req, res) => {
     const orderRef    = txn.orderNumber || txn._id.toString().slice(-6).toUpperCase();
     const title       = `${typeLabel} — Order #${orderRef}`;
 
-    const attachments = (req.files || []).map(f => ({
-      fileName: f.originalname,
-      fileUrl: f.path,
-    }));
+    const attachments = (req.files || []).map(f => {
+      let fileUrl = f.path;
+      if (fileUrl && !isCloudinaryUrl(fileUrl)) {
+        console.warn("[IMAGE VALIDATION FAILED]", { value: fileUrl, route: req.originalUrl, user: req.user?._id || "unknown" });
+        fileUrl = null;
+      }
+      return {
+        fileName: f.originalname,
+        fileUrl: fileUrl,
+      };
+    }).filter(a => a.fileUrl !== null);
 
     const dispute = await new Dispute({
       title,

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Trash2, CheckCircle, Package, RefreshCw, Eye, Ban, X, AlertTriangle } from 'lucide-react';
+import { Eye, Edit, Trash2, Shield, Search, X, Package, RefreshCw, CheckCircle, Ban, AlertTriangle } from "lucide-react";
 import toast from 'react-hot-toast';
-import { io } from "socket.io-client";
-import { API_BASE_URL, SOCKET_URL } from "@/api/api";
+import { socket } from "@/socket";
+import { API_BASE_URL } from "@/api/api";
 import { getDisplayName } from "@/utils/userDisplay";
 
 const API_BASE = API_BASE_URL;
@@ -59,17 +59,9 @@ export default function AdminListings() {
 
   useEffect(() => { 
     fetchListings();
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
     socket.on("dashboard_update", fetchListings);
     return () => {
       socket.off("dashboard_update", fetchListings);
-      socket.disconnect();
     };
   }, [fetchListings]);
 

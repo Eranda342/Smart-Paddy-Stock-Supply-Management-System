@@ -6,9 +6,9 @@ import {
   Calendar, ThumbsUp, ThumbsDown, Info, Activity, Download, Truck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { io } from 'socket.io-client';
+import { socket } from "@/socket";
 
-import { API_BASE_URL, SOCKET_URL, BASE_URL } from '@/api/api';
+import { API_BASE_URL, BASE_URL } from '@/api/api';
 import { getFileUrl } from '../../../utils/fileUtils';
 const API_BASE   = API_BASE_URL;
 
@@ -80,24 +80,31 @@ export default function AdminDisputes() {
 
   // ── Socket ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const sock = io(SOCKET_URL, {
-      transports: ["websocket"], // 🔥 force websocket
-      withCredentials: true,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-    });
-    socketRef.current = sock;
-    sock.on('connect',    () => setSocketConnected(true));
-    sock.on('disconnect', () => setSocketConnected(false));
-    if (sock.connected) setSocketConnected(true);
-    sock.on('disputeUpdated', () => fetchDisputesRef.current?.());
-    sock.on('disputeMessage', (msg) => {
+    socketRef.current = socket;
+    
+    const handleConnect = () => setSocketConnected(true);
+    const handleDisconnect = () => setSocketConnected(false);
+    const handleUpdate = () => fetchDisputesRef.current?.();
+    const handleMessage = (msg) => {
       setSelectedDispute(prev => prev ? { ...prev, messages: [...(prev.messages || []), msg] } : prev);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    });
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('disputeUpdated', handleUpdate);
+    socket.on('disputeMessage', handleMessage);
+
+    if (socket.connected) setSocketConnected(true);
+
     const poll = setInterval(() => fetchDisputesRef.current?.(), 20000);
-    return () => { sock.disconnect(); clearInterval(poll); };
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('disputeUpdated', handleUpdate);
+      socket.off('disputeMessage', handleMessage);
+      clearInterval(poll);
+    };
   }, []);
 
   // ── Fetch disputes ─────────────────────────────────────────────────────────
