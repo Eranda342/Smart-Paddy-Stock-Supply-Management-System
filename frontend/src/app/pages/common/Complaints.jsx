@@ -72,7 +72,13 @@ export default function Complaints() {
 
   // ── Socket setup ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    const sock = io(SOCKET_URL);
+    const sock = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
     socketRef.current = sock;
     sock.on('disputeUpdated', () => fetchDisputesRef.current?.());
     sock.on('disputeMessage', (msg) => {

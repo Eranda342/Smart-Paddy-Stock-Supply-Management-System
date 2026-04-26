@@ -38,6 +38,8 @@ const maintenanceMode = require("./middleware/maintenanceMode");
 
 // ================= APP INIT =================
 const app = express();
+// 🔥 REQUIRED FOR AZURE (reverse proxy fix)
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 
 // ================= CONNECT DB =================
@@ -86,6 +88,14 @@ app.get("/", (req, res) => {
 // Applies globally, but middleware internally skips /admin and /auth
 app.use(maintenanceMode);
 
+app.use((req, res, next) => {
+  // Azure fix for websocket upgrade
+  if (req.headers["x-forwarded-proto"] === "https") {
+    req.secure = true;
+  }
+  next();
+});
+
 // ================= API ROUTES =================
 app.use("/api/users", userRoutes);                          // existing user routes
 app.use("/api/auth", userRoutes);                           // alias: register + login via /api/auth
@@ -112,7 +122,11 @@ const io = require("socket.io")(server, {
     ],
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  // 🔥 FORCE WEBSOCKET FIRST
+  transports: ["websocket", "polling"],
+  // 🔥 REQUIRED FOR AZURE STABILITY
+  allowEIO3: true,
 });
 
 const onlineUsers = {};
@@ -122,8 +136,7 @@ global.io = io;
 app.set("onlineUsers", onlineUsers);
 
 io.on("connection", (socket) => {
-
-  console.log("🟢 User connected:", socket.id);
+  console.log("🟢 Socket connected:", socket.id);
 
   socket.on("registerUser", (userId) => {
     onlineUsers[userId] = socket.id;
@@ -186,8 +199,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
-    console.log("🔴 User disconnected:", socket.id);
+  socket.on("disconnect", (reason) => {
+    console.log("🔴 Socket disconnected:", reason);
 
     for (let userId in onlineUsers) {
       if (onlineUsers[userId] === socket.id) {

@@ -47,7 +47,13 @@ export default function FarmerTransactions() {
     document.title = "Transactions | AgroBridge";
     fetchTransactions();
 
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
     socket.on("dashboard_update", fetchTransactions);
 
     return () => {

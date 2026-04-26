@@ -14,7 +14,13 @@ import toast from "react-hot-toast";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 import { getFileUrl } from '../../../utils/fileUtils';
 
-export const socket = io(SOCKET_URL);
+export const socket = io(SOCKET_URL, {
+  transports: ["websocket"], // 🔥 force websocket
+  withCredentials: true,
+  secure: true,
+  reconnection: true,
+  reconnectionAttempts: 5,
+});
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
 

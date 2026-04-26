@@ -59,7 +59,13 @@ export default function AdminListings() {
 
   useEffect(() => { 
     fetchListings();
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
     socket.on("dashboard_update", fetchListings);
     return () => {
       socket.off("dashboard_update", fetchListings);

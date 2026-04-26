@@ -296,7 +296,13 @@ export default function AdminDashboard() {
     document.title = "Admin Dashboard | AgroBridge";
     fetchStats();
     
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
     
     // Listen for dashboard update events
     socket.on("dashboard_update", () => {

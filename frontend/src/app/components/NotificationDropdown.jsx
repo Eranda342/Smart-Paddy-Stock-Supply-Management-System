@@ -33,7 +33,34 @@ export default function NotificationDropdown() {
   useEffect(() => {
     fetchNotifications();
 
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
+
+    if (typeof window !== "undefined") {
+      window.socket = socket;
+    }
+
+    if (socket) {
+      console.log("🔍 Checking socket...");
+      socket.on("connect", () => {
+        console.log("✅ SOCKET CONNECTED:", socket.id);
+      });
+      socket.on("disconnect", (reason) => {
+        console.log("❌ SOCKET DISCONNECTED:", reason);
+      });
+      socket.on("connect_error", (err) => {
+        console.log("🚨 SOCKET ERROR:", err.message);
+      });
+      socket.on("reconnect_attempt", () => {
+        console.log("🔄 Reconnecting...");
+      });
+    }
+
     const token = localStorage.getItem("token");
     let decodedUser = null;
     

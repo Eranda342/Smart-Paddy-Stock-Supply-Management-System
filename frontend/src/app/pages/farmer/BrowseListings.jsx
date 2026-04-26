@@ -62,7 +62,13 @@ export default function BrowseListings() {
     document.title = "Browse Listings | AgroBridge";
     fetchListings();
 
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
     socket.on("connect", () => setIsLive(true));
     socket.on("disconnect", () => setIsLive(false));
     socket.on("dashboard_update", () => fetchListings());

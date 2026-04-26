@@ -55,7 +55,13 @@ export default function MillOwnerLayout() {
   }, []);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
 
     const token = localStorage.getItem("token");
     let decodedUser = null;

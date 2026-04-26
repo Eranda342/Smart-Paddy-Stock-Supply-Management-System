@@ -65,7 +65,13 @@ export default function FarmerDashboard() {
 
   useEffect(() => {
     document.title = "Dashboard | AgroBridge";
-    const socket = io(SOCKET_URL);
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
 
     socket.on("dashboard_update", () => {
       setRefreshTrigger(prev => prev + 1);

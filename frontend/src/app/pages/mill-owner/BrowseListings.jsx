@@ -7,7 +7,13 @@ import { Button } from "../../components/ui/button";
 import { API_BASE_URL, SOCKET_URL, BASE_URL } from "@/api/api";
 import { getFileUrl } from '../../../utils/fileUtils';
 
-const socket = io(SOCKET_URL);
+const socket = io(SOCKET_URL, {
+  transports: ["websocket"], // 🔥 force websocket
+  withCredentials: true,
+  secure: true,
+  reconnection: true,
+  reconnectionAttempts: 5,
+});
 
 const defaultAvatar = "https://ui-avatars.com/api/?name=User&background=22C55E&color=fff";
 

@@ -80,7 +80,13 @@ export default function AdminDisputes() {
 
   // ── Socket ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const sock = io(SOCKET_URL);
+    const sock = io(SOCKET_URL, {
+      transports: ["websocket"], // 🔥 force websocket
+      withCredentials: true,
+      secure: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
     socketRef.current = sock;
     sock.on('connect',    () => setSocketConnected(true));
     sock.on('disconnect', () => setSocketConnected(false));

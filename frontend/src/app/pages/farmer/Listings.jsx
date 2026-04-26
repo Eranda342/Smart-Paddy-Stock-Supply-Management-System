@@ -11,7 +11,13 @@ import { Button } from "../../components/ui/button";
 import { listingSchema } from "../../lib/schemas";
 import { API_BASE_URL, SOCKET_URL } from "@/api/api";
 
-const socket = io(SOCKET_URL);
+const socket = io(SOCKET_URL, {
+  transports: ["websocket"], // 🔥 force websocket
+  withCredentials: true,
+  secure: true,
+  reconnection: true,
+  reconnectionAttempts: 5,
+});
 
 export default function FarmerListings() {
 
