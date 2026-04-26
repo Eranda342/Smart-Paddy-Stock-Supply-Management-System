@@ -20,14 +20,17 @@ const {
 
 const { protect, checkApproved } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
+const asyncHandler = require("../utils/asyncHandler"); // Phase 4 pilot
 
 
 // ================= REGISTER =================
-router.post("/register", upload.single("document"), registerUser);
+// asyncHandler pilot: unhandled errors forward to global errorHandler
+router.post("/register", upload.single("document"), asyncHandler(registerUser));
 
 
 // ================= LOGIN =================
-router.post("/login", loginUser);
+// asyncHandler pilot: unhandled errors forward to global errorHandler
+router.post("/login", asyncHandler(loginUser));
 
 
 // ================= EMAIL VERIFICATION =================

@@ -9,6 +9,7 @@ const Transaction = require("../models/Transaction");
 const Listing = require("../models/Listing");
 const Dispute = require("../models/Dispute");
 const { isCloudinaryUrl } = require("../utils/validators");
+const logger = require("../utils/logger"); // Phase 4 structured logging
 
 // ================= REGISTER USER =================
 const registerUser = async (req, res) => {
@@ -64,7 +65,7 @@ const registerUser = async (req, res) => {
 
     let image = req.file ? req.file.path : null;
     if (image && !isCloudinaryUrl(image)) {
-      console.warn("[IMAGE VALIDATION FAILED]", { value: image, route: req.originalUrl, user: req.user?._id || "unknown" });
+      logger.warn("IMAGE VALIDATION FAILED", { value: image, route: req.originalUrl, user: req.user?._id || "unknown" });
       image = null;
     }
 
@@ -297,7 +298,7 @@ const uploadAvatar = async (req, res) => {
 
     let image = req.file.path;
     if (image && !isCloudinaryUrl(image)) {
-      console.warn("[IMAGE VALIDATION FAILED]", { value: image, route: req.originalUrl, user: req.user?._id || "unknown" });
+      logger.warn("IMAGE VALIDATION FAILED", { value: image, route: req.originalUrl, user: req.user?._id || "unknown" });
       image = null;
     }
 

@@ -103,6 +103,9 @@ export default function MillOwnerLayout() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    socket.disconnect();
     navigate('/login');
   };
 

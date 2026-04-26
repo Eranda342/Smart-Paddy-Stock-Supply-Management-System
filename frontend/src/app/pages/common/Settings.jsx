@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { Button } from "../../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/api/api";
+import { socket } from "@/socket";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -52,6 +53,7 @@ export default function Settings() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    socket.disconnect();
     navigate("/login");
   };
 

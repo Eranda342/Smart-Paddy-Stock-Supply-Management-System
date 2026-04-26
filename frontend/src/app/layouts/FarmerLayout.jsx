@@ -130,6 +130,8 @@ export default function FarmerLayout() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    socket.disconnect();
     navigate("/login");
   };
 

@@ -6,6 +6,8 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const http = require("http");
 const path = require("path");
 const { Server } = require("socket.io");
@@ -41,6 +43,24 @@ const app = express();
 // 🔥 REQUIRED FOR AZURE (reverse proxy fix)
 app.set("trust proxy", 1);
 const server = http.createServer(app);
+
+// ================= SECURITY HEADERS (Helmet) =================
+// crossOriginResourcePolicy: cross-origin keeps Cloudinary images loadable
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
+// ================= RATE LIMITER =================
+// Applied ONLY to /api — does NOT touch socket.io or static files
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,                  // max 100 requests per IP per window
+  standardHeaders: true,     // Return rate limit info in RateLimit-* headers
+  legacyHeaders: false,      // Disable the X-RateLimit-* legacy headers
+  message: { message: "Too many requests, please try again later." },
+});
 
 // ================= CONNECT DB =================
 connectDB();
@@ -97,6 +117,8 @@ app.use((req, res, next) => {
 });
 
 // ================= API ROUTES =================
+// Apply rate limiter only to /api (not socket.io / uploads / health)
+app.use("/api", apiLimiter);
 app.use("/api/users", userRoutes);                          // existing user routes
 app.use("/api/auth", userRoutes);                           // alias: register + login via /api/auth
 app.use("/api/auth", require("./routes/authGoogle"));       // Google OAuth routes
@@ -137,22 +159,65 @@ app.set("io", io);
 global.io = io;
 app.set("onlineUsers", onlineUsers);
 
+// ================= SOCKET AUTH MIDDLEWARE =================
+// Verifies JWT from handshake.auth.token.
+// Falls back safely — no token = connected but unauthenticated (no crash).
+const jwt = require("jsonwebtoken");
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      console.warn("⚠️  Socket connected without token (unauthenticated)");
+      return next(); // allow connection — room guards enforce restrictions
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = decoded; // attach decoded payload (has .id, .role, etc.)
+    next();
+  } catch (err) {
+    console.warn("❌ Socket auth: invalid token —", err.message);
+    next(); // do NOT block connection; room guards handle the restriction
+  }
+});
+
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
   socket.on("join", (userId) => {
     if (!userId) return;
+    // 🔒 Require authenticated socket
+    if (!socket.user) {
+      console.warn("❌ Unauthorized join attempt (no token):", userId);
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
+    // 🔒 Prevent joining another user's room
+    if (socket.user.id !== userId) {
+      console.warn("❌ join: user ID mismatch:", socket.user.id, "≠", userId);
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
     socket.join(userId);
-    console.log(`👤 User joined room: ${userId}`);
+    console.log(`👤 Secure join: ${userId}`);
   });
 
   socket.on("registerUser", (userId) => {
+    if (!userId) return;
+    // 🔒 Only allow registering own socket
+    if (!socket.user || socket.user.id !== userId) {
+      console.warn("❌ registerUser: unauthorized or ID mismatch:", userId);
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
     onlineUsers[userId] = socket.id;
     socket.join(userId);
     io.emit("userOnline", userId);
   });
 
   socket.on("joinUserRoom", (userId) => {
+    if (!socket.user || socket.user.id !== userId) {
+      console.warn("❌ joinUserRoom: unauthorized or ID mismatch:", userId);
+      return;
+    }
     socket.join(userId);
   });
 
@@ -169,6 +234,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", ({ negotiationId, message, receiverId }) => {
+    // 🔒 Only authenticated sockets may send messages
+    if (!socket.user) {
+      console.warn("❌ Unauthorized message attempt (no token)");
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
+
     // Legacy / current API
     io.to(negotiationId).emit("receiveMessage", {
       negotiationId,
@@ -206,8 +278,27 @@ io.on("connection", (socket) => {
     });
   });
 
+  // ── Typing indicator relay ────────────────────────────────────────
+  // Frontend emits: "typing" { negotiationId, userId, isTyping }
+  // Backend relays: "userTyping" { userId, isTyping } → negotiation room
   socket.on("typing", ({ negotiationId, userId, isTyping }) => {
-    socket.to(negotiationId).emit("userTyping", { userId, isTyping });
+    // 🔒 Only authenticated sockets may broadcast typing state
+    if (!socket.user) return;
+
+    // Relay to the negotiation room (excluding sender)
+    socket.to(`negotiation_${negotiationId}`).emit("userTyping", {
+      negotiationId,
+      userId: socket.user.id, // always use verified server-side id
+      isTyping,
+    });
+
+    // Track active typing rooms so we can auto-clear on disconnect
+    if (isTyping) {
+      socket._typingRooms = socket._typingRooms || new Set();
+      socket._typingRooms.add(negotiationId);
+    } else if (socket._typingRooms) {
+      socket._typingRooms.delete(negotiationId);
+    }
   });
 
   socket.on("sendNotification", ({ userId, notification }) => {
@@ -219,6 +310,17 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", (reason) => {
     console.log("🔴 Socket disconnected:", reason);
+
+    // Auto-clear any active typing indicators for this socket
+    if (socket.user && socket._typingRooms?.size > 0) {
+      socket._typingRooms.forEach((negotiationId) => {
+        socket.to(`negotiation_${negotiationId}`).emit("userTyping", {
+          negotiationId,
+          userId: socket.user.id,
+          isTyping: false,
+        });
+      });
+    }
 
     for (let userId in onlineUsers) {
       if (onlineUsers[userId] === socket.id) {
@@ -277,6 +379,12 @@ cron.schedule("0 * * * *", async () => {
     console.error("Cron Error:", err);
   }
 });
+
+// ================= GLOBAL ERROR HANDLER =================
+// Must be the LAST app.use() — catches any error forwarded via next(err).
+// Existing try/catch blocks that respond manually are unaffected.
+const errorHandler = require("./middleware/errorHandler");
+app.use(errorHandler);
 
 // ================= START SERVER =================
 const PORT = process.env.PORT || 5000;
