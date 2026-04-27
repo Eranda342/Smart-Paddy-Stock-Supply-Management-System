@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "@/assets/navbar.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Building2, Loader2 } from "lucide-react";
 
 import toast from "react-hot-toast";
@@ -29,6 +29,20 @@ export default function RoleSelectionPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(null); // tracks which button is loading
 
+  // ── Guard: redirect logged-in email/password users away from register flow ──
+  // Runs once on mount — prevents already-approved users from re-registering.
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("user"));
+      // Only redirect fully authenticated email/password users
+      if (stored && !stored.googleId && localStorage.getItem("token")) {
+        navigate("/", { replace: true });
+      }
+    } catch {
+      // Corrupt localStorage — let the page load normally
+    }
+  }, [navigate]);
+
   const handleRoleSelect = async (role) => {
     setLoading(role);
 
@@ -39,23 +53,14 @@ export default function RoleSelectionPage() {
     let storedUser = null;
     try {
       storedUser = JSON.parse(localStorage.getItem("user"));
-    } catch (e) {
+    } catch {
       storedUser = null;
     }
 
-    // ── Safety: clear any stale email/password token on this page ────────────
-    // Prevents old sessions from misrouting new registrations through OAuth's
-    // /set-role path, which would return 403 "Role is fixed for email/password".
-    if (localStorage.getItem("token") && !storedUser?.googleId) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      storedUser = null;
-    }
-
-    // oauthToken is only truthy for REAL Google OAuth users
-    const oauthToken = storedUser?.googleId
-      ? localStorage.getItem("token")
-      : null;
+    // Only treat as OAuth if the stored user has a real googleId.
+    // Do NOT clear the token — just ignore it for routing purposes.
+    const isOAuthUser = !!storedUser?.googleId;
+    const oauthToken = isOAuthUser ? localStorage.getItem("token") : null;
 
     if (oauthToken) {
       // ── GOOGLE OAuth user: persist role to DB ─────────────────────────────
@@ -99,6 +104,7 @@ export default function RoleSelectionPage() {
       setLoading(null);
     }
   };
+
 
   return (
     <div className="min-h-screen flex bg-[#020617] text-white overflow-hidden relative">
