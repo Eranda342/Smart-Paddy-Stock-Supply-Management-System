@@ -1,0 +1,14 @@
+{
+  "routes": [
+    {
+      "route": "/verify-email/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    }
+  ]
+}
