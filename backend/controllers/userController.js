@@ -465,7 +465,7 @@ const resetPassword = async (req, res) => {
 
     const user = await User.findOne({
       resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() }
+      resetPasswordExpire: { $gt: new Date() }  // fix: Date vs Date (was Number vs Date)
     });
 
     if (!user) {
@@ -660,7 +660,7 @@ const verifyEmail = async (req, res) => {
 
     const user = await User.findOne({
       emailVerificationToken: hashedToken,
-      emailVerificationExpire: { $gt: Date.now() }
+      emailVerificationExpire: { $gt: new Date() }
     });
 
     if (!user) {
