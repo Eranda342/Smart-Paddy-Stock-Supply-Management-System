@@ -655,6 +655,9 @@ const resubmit = async (req, res) => {
 // ================= VERIFY EMAIL =================
 const verifyEmail = async (req, res) => {
   try {
+    // TEMP: confirm request reaches this controller on Azure
+    console.log("🚀 AZURE VERIFY HIT — token:", req.params.token);
+
     const { token } = req.params;
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 

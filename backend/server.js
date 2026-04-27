@@ -60,6 +60,14 @@ const apiLimiter = rateLimit({
   standardHeaders: true,     // Return rate limit info in RateLimit-* headers
   legacyHeaders: false,      // Disable the X-RateLimit-* legacy headers
   message: { message: "Too many requests, please try again later." },
+  // Fix: Azure forwards the real client IP in X-Forwarded-For.
+  // Without this, all traffic appears from the same proxy IP and the
+  // limiter fires after 100 total requests instead of 100 per user.
+  keyGenerator: (req) => {
+    const forwarded = req.headers["x-forwarded-for"];
+    const ip = forwarded ? forwarded.split(",")[0].trim() : req.ip;
+    return ip;
+  },
 });
 
 // ================= CONNECT DB =================
