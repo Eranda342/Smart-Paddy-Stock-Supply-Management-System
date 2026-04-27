@@ -8,6 +8,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const { ipKeyGenerator } = require("express-rate-limit");
 const http = require("http");
 const path = require("path");
 const { Server } = require("socket.io");
@@ -59,15 +60,7 @@ const apiLimiter = rateLimit({
   max: 100,                  // max 100 requests per IP per window
   standardHeaders: true,     // Return rate limit info in RateLimit-* headers
   legacyHeaders: false,      // Disable the X-RateLimit-* legacy headers
-  message: { message: "Too many requests, please try again later." },
-  // Fix: Azure forwards the real client IP in X-Forwarded-For.
-  // Without this, all traffic appears from the same proxy IP and the
-  // limiter fires after 100 total requests instead of 100 per user.
-  keyGenerator: (req) => {
-    const forwarded = req.headers["x-forwarded-for"];
-    const ip = forwarded ? forwarded.split(",")[0].trim() : req.ip;
-    return ip;
-  },
+  keyGenerator: (req) => ipKeyGenerator(req), // ✅ IPv4 + IPv6 safe
 });
 
 // ================= CONNECT DB =================
