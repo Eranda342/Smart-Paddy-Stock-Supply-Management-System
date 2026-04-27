@@ -35,7 +35,27 @@ export default function RoleSelectionPage() {
     // Clear any stale registration data from a previous attempt
     localStorage.removeItem("accountInfo");
 
-    const oauthToken = localStorage.getItem("token");
+    // ── Safely read stored user (guard against invalid JSON) ─────────────────
+    let storedUser = null;
+    try {
+      storedUser = JSON.parse(localStorage.getItem("user"));
+    } catch (e) {
+      storedUser = null;
+    }
+
+    // ── Safety: clear any stale email/password token on this page ────────────
+    // Prevents old sessions from misrouting new registrations through OAuth's
+    // /set-role path, which would return 403 "Role is fixed for email/password".
+    if (localStorage.getItem("token") && !storedUser?.googleId) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      storedUser = null;
+    }
+
+    // oauthToken is only truthy for REAL Google OAuth users
+    const oauthToken = storedUser?.googleId
+      ? localStorage.getItem("token")
+      : null;
 
     if (oauthToken) {
       // ── GOOGLE OAuth user: persist role to DB ─────────────────────────────
