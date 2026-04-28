@@ -3,40 +3,26 @@
 
   # AgroBridge
 
+  A production-ready full-stack MERN platform with real-time negotiation, secure authentication, and end-to-end agricultural trading workflow.
+
+  **Real-time negotiation • Secure authentication • End-to-end supply chain workflow**
+
+  🚀 Built and deployed with production-grade backend security on cloud infrastructure
+
+  🌐 **Live Demo**: https://witty-ocean-03e5bca00.7.azurestaticapps.net  
+  🔗 **Backend API**: https://agrobridge-backend-a5egezhqeag5brgs.southeastasia-01.azurewebsites.net
+
   **End-to-end paddy trading — from listing to delivery — on a single platform**
 
-  [![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](#16-version)
+  [![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](#19-version)
   [![Status](https://img.shields.io/badge/status-stable-success.svg)](#)
-  [![Stack](https://img.shields.io/badge/stack-MERN-informational.svg)](#3-tech-stack)
-  [![License](https://img.shields.io/badge/license-Non--Commercial-red.svg)](#15-license)
+  [![Stack](https://img.shields.io/badge/stack-MERN-informational.svg)](#5-tech-stack)
+  [![Last Commit](https://img.shields.io/github/last-commit/Eranda342/Smart-Paddy-Stock-Supply-Management-System.svg)](#)
+  [![Repo Size](https://img.shields.io/github/repo-size/Eranda342/Smart-Paddy-Stock-Supply-Management-System.svg)](#)
+  [![License](https://img.shields.io/badge/license-Non--Commercial-red.svg)](#18-license)
 
   [View Repository](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System) &nbsp;|&nbsp; [Report an Issue](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/issues)
 </div>
-
----
-
-## Quick Start
-
-```bash
-# 1. Clone
-git clone https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System.git
-cd Smart-Paddy-Stock-Supply-Management-System
-
-# 2. Configure environment variables
-cp backend/.env.example backend/.env   # fill in your values
-# create frontend/.env — see Section 7
-
-# 3. Install dependencies
-cd backend && npm install
-cd ../frontend && npm install
-
-# 4. Seed admin account (first run only)
-cd ../backend && node seedAdmin.js
-
-# 5. Start development servers (run in separate terminals)
-cd backend  && npm run dev   # http://localhost:5000
-cd frontend && npm run dev   # http://localhost:5173
-```
 
 ---
 
@@ -66,7 +52,64 @@ AgroBridge digitises Sri Lanka's paddy supply chain by providing a structured, t
 
 ---
 
-## 2. Features
+## 2. Why AgroBridge / Project Impact
+
+AgroBridge demonstrates the design and implementation of a production-ready full-stack system with real-time capabilities, secure authentication, and scalable cloud deployment.
+
+This project demonstrates:
+- End-to-end system architecture design
+- Real-time communication using WebSockets (Socket.IO)
+- Secure authentication flows (JWT + Google OAuth)
+- Cloud-based media handling using Cloudinary
+- Production-grade backend security (rate limiting, CORS, validation)
+
+Agricultural supply chains often suffer from fragmentation, lack of transparency, and reliance on middlemen, leading to unfair pricing for farmers and logistical inefficiencies for buyers. AgroBridge was built to solve this real-world problem by providing a transparent and reliable trading platform.
+
+**Why this system matters:**
+- **Real-time Communication:** Eliminates delays in price negotiation and issue resolution through persistent WebSocket connections.
+- **Secure Authentication:** Multi-layered security using JWT for session management, Google OAuth 2.0 for seamless onboarding, and mandatory email verification to ensure trusted actors.
+- **Scalable Deployment:** Built on a decoupled MERN architecture with Cloudinary for decentralized asset management, making it cloud-ready for high traffic.
+- **Data Integrity:** A rigorous soft-delete model guarantees that critical historical trade data is never lost, maintaining a perfect audit trail even if users leave the platform.
+
+---
+
+## 3. Architecture Overview
+
+AgroBridge uses a standard client-server architecture with a persistent real-time layer and cloud-native asset management.
+
+```mermaid
+graph TD
+    Client[React 18 Frontend]
+    
+    subgraph Backend API [Express Node.js Server]
+        Auth[Auth & Guard Middleware]
+        REST[REST Controllers]
+        WS[Socket.IO Server]
+    end
+    
+    DB[(MongoDB)]
+    Cloud[Cloudinary]
+    
+    Client -- "HTTPS / REST" --> Auth
+    Auth -- "Validated Req" --> REST
+    Client -- "WebSocket (WSS)" --> WS
+    REST -- "Mongoose" --> DB
+    WS -- "Real-time Sync" --> DB
+    
+    Client -- "Upload Media" --> REST
+    REST -- "Stream API" --> Cloud
+    Cloud -. "Image URL" .-> DB
+```
+
+- **Frontend** — React 18 SPA bundled with Vite. All API calls are made via Axios to the Express REST API. A persistent Socket.IO WebSocket connection is established on login for real-time event delivery.
+- **Backend** — Node.js/Express 5 server exposing a structured REST API organised by resource (users, listings, negotiations, transactions, transport, disputes, analytics, notifications). Handles authentication middleware, remote file uploads (Cloudinary), scheduled background jobs (node-cron), and Socket.IO event emission.
+- **Database** — MongoDB accessed via Mongoose ODM. Active schemas: `User`, `Listing`, `Negotiation`, `Transaction`, `Transport`, `Vehicle`, `Dispute`, `DisputeChat`, `Notification`, `Announcement`, `SystemSetting`.
+- **Real-time layer** — Socket.IO rooms are used to scope events to the relevant participants. Events emitted include: negotiation offer/counter/accept/reject, in-app notification delivery, and dispute chat messages.
+- **UI/UX** — Dark-themed glassmorphism design system implemented with Tailwind CSS utility classes. Animated transitions and micro-interactions delivered via Framer Motion.
+
+---
+
+## 4. Features
 
 ### Farmer
 
@@ -106,7 +149,7 @@ AgroBridge digitises Sri Lanka's paddy supply chain by providing a structured, t
 
 ---
 
-## 3. Tech Stack
+## 5. Tech Stack
 
 | Layer | Technologies |
 | :--- | :--- |
@@ -116,27 +159,31 @@ AgroBridge digitises Sri Lanka's paddy supply chain by providing a structured, t
 | **Authentication** | JSON Web Tokens (JWT), Passport.js, Google OAuth 2.0, bcryptjs |
 | **HTTP / Config** | Axios (client), cors, dotenv |
 | **Email** | Nodemailer (Gmail App Password) |
-| **File Uploads** | Multer |
+| **Media Storage** | Cloudinary |
 | **Scheduling** | node-cron |
 | **Reports** | jsPDF, jspdf-autotable, ExcelJS |
 | **UI / Design** | Glassmorphism design system, dark SaaS theme, Framer Motion animations |
-| **API Docs** | Swagger UI (development only) |
+
+> Built with a focus on scalability, security, and real-time performance in a production-like environment.
 
 ---
 
-## 4. Architecture Overview
+## 6. API Overview
 
-AgroBridge uses a standard client-server architecture with a persistent real-time layer:
+The backend exposes a RESTful API structured by resource:
 
-- **Frontend** — React 18 SPA bundled with Vite. All API calls are made via Axios to the Express REST API. A persistent Socket.IO WebSocket connection is established on login for real-time event delivery.
-- **Backend** — Node.js/Express 5 server exposing a structured REST API organised by resource (users, listings, negotiations, transactions, transport, disputes, analytics, notifications). Handles authentication middleware, file uploads (Multer), scheduled background jobs (node-cron), and Socket.IO event emission.
-- **Database** — MongoDB accessed via Mongoose ODM. Active schemas: `User`, `Listing`, `Negotiation`, `Transaction`, `Transport`, `Vehicle`, `Dispute`, `DisputeChat`, `Notification`, `Announcement`, `SystemSetting`.
-- **Real-time layer** — Socket.IO rooms are used to scope events to the relevant participants. Events emitted include: negotiation offer/counter/accept/reject, in-app notification delivery, and dispute chat messages.
-- **UI/UX** — Dark-themed glassmorphism design system implemented with Tailwind CSS utility classes. Animated transitions and micro-interactions delivered via Framer Motion.
+- `/api/users` — authentication, profile, email verification
+- `/api/listings` — paddy listings management
+- `/api/negotiations` — real-time offer and counter-offer system
+- `/api/transactions` — finalized agreements
+- `/api/transport` — logistics and delivery tracking
+- `/api/disputes` — dispute resolution and chat system
+
+All protected routes require JWT authentication and role-based authorization.
 
 ---
 
-## 4a. System Flow
+## 7. System Flow
 
 The core platform workflow progresses through five ordered stages:
 
@@ -154,7 +201,7 @@ Listing  →  Negotiation  →  Transaction  →  Transport  →  Delivery
 
 ---
 
-## 4b. Real-Time System
+## 8. Real-Time System
 
 Socket.IO is integrated throughout the platform to eliminate polling and provide an interactive experience:
 
@@ -165,7 +212,7 @@ Socket.IO is integrated throughout the platform to eliminate polling and provide
 
 ---
 
-## 4c. Data Integrity & Soft-Delete
+## 9. Data Integrity & Soft-Delete
 
 AgroBridge implements a non-destructive account deletion model:
 
@@ -177,7 +224,7 @@ AgroBridge implements a non-destructive account deletion model:
 
 ---
 
-## 5. Folder Structure
+## 10. Folder Structure
 
 ```
 Smart-Paddy-Stock-Supply-Management-System/
@@ -188,8 +235,7 @@ Smart-Paddy-Stock-Supply-Management-System/
 │   ├── models/          # Mongoose schemas
 │   ├── routes/          # Express route definitions
 │   ├── jobs/            # node-cron scheduled tasks
-│   ├── utils/           # Shared helpers (email, tokens, etc.)
-│   ├── uploads/         # Multer upload destination
+│   ├── utils/           # Shared helpers (email, tokens, Cloudinary etc.)
 │   ├── docs/            # Swagger API specification
 │   ├── server.js        # Entry point
 │   └── .env.example     # Environment variable template
@@ -214,7 +260,7 @@ Smart-Paddy-Stock-Supply-Management-System/
 
 ---
 
-## 6. Screenshots
+## 11. Screenshots
 
 ### Landing Page
 
@@ -246,10 +292,37 @@ Smart-Paddy-Stock-Supply-Management-System/
 
 ---
 
-## 7. Environment Variables
+## 12. Installation & Setup
 
-### Backend — `backend/.env`
+### Prerequisites
 
+- Node.js 18+
+- npm 9+
+- MongoDB (local instance or MongoDB Atlas URI)
+- Cloudinary Account (for media uploads)
+
+### Step-by-Step Setup
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System.git
+cd Smart-Paddy-Stock-Supply-Management-System
+```
+
+**2. Install dependencies**
+
+```bash
+# Install backend dependencies
+cd backend && npm install
+
+# Install frontend dependencies
+cd ../frontend && npm install
+```
+
+**3. Configure Environment Variables**
+
+**Backend (`backend/.env`):**  
 Copy `backend/.env.example` to `backend/.env` and supply the values below.
 
 ```env
@@ -271,6 +344,11 @@ FROM_NAME=AgroBridge
 # Google OAuth 2.0
 GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Cloudinary (Media Storage)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 > Generate a cryptographically strong JWT secret:
@@ -278,7 +356,8 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 > node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 > ```
 
-### Frontend — `frontend/.env`
+**Frontend (`frontend/.env`):**  
+Create a `.env` file in the `frontend/` directory.
 
 ```env
 VITE_API_URL=http://localhost:5000/api
@@ -286,55 +365,14 @@ VITE_SOCKET_URL=http://localhost:5000
 VITE_BASE_URL=http://localhost:5000
 ```
 
----
-
-## 8. Installation & Setup
-
-### Prerequisites
-
-- Node.js 18+
-- npm 9+
-- MongoDB (local instance or MongoDB Atlas URI)
-
-### Steps
-
-**1. Clone the repository**
-
-```bash
-git clone https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System.git
-cd Smart-Paddy-Stock-Supply-Management-System
-```
-
-**2. Configure environment variables**
-
-```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env with your values
-# Create frontend/.env using the variables listed in Section 7
-```
-
-**3. Install backend dependencies**
-
-```bash
-cd backend
-npm install
-```
-
-**4. Install frontend dependencies**
-
-```bash
-cd ../frontend
-npm install
-```
-
-**5. Seed the admin account** _(first run only)_
+**4. Seed the admin account** _(first run only)_
 
 ```bash
 cd ../backend
 node seedAdmin.js
 ```
 
-**6. Start development servers** _(run in separate terminals)_
+**5. Start development servers** _(run in separate terminals)_
 
 ```bash
 # Terminal 1 — backend
@@ -346,9 +384,25 @@ cd frontend && npm run dev      # http://localhost:5173
 
 ---
 
-## 9. Production Build
+## 13. Security & Reliability
 
-**Frontend**
+AgroBridge implements rigorous security controls to ensure production-grade safety for both user data and system operations:
+
+- **JWT Authentication** — Stateless, short-lived access tokens validated on every protected route.
+- **Google OAuth 2.0** — Secure passport-google-oauth20 strategy providing a seamless, verified alternative to password authentication.
+- **Email Verification** — Strict gating mechanism; accounts are blocked from platform actions until their email is explicitly confirmed via Nodemailer.
+- **Role-Based Access Control (RBAC)** — Dedicated middleware guards for `FARMER`, `MILL_OWNER`, and `ADMIN`, strictly enforced independently on both the React client and Express API.
+- **Rate Limiting** — Global and route-specific API rate limiting (fully IPv6-safe) to prevent brute-force and DDoS attacks.
+- **CORS Origin Whitelisting** — Explicit Cross-Origin Resource Sharing policy blocking unauthorized domains, correctly mapped to production domains.
+- **Socket.IO Security** — WebSocket connections mandate authentication handshakes, and event emissions are locked strictly to validated user rooms to prevent data leakage.
+- **Input Validation & Error Handling** — Centralized error handlers and schema validations catch malformed requests before state mutations occur.
+- **Soft-Delete System** — User deletions are non-destructive; related transactions, negotiations, and disputes are preserved to maintain platform audit trails.
+
+---
+
+## 14. Production Build & Deployment
+
+**Frontend Build**
 
 ```bash
 cd frontend
@@ -357,7 +411,7 @@ npm run build
 
 Optimised output is placed in `frontend/dist/`. Serve it with Vercel, Nginx, or Azure Static Web Apps.
 
-**Backend**
+**Backend Start**
 
 ```bash
 cd backend
@@ -366,15 +420,12 @@ npm start
 
 Runs `node server.js` without file-watching.
 
----
-
-## 10. Deployment
-
 | Component | Recommended Option |
 | :--- | :--- |
 | **Database** | MongoDB Atlas (M0 free tier or above) |
 | **Backend** | Azure App Service, Railway, or Render |
 | **Frontend** | Vercel or Azure Static Web Apps |
+| **Media** | Cloudinary |
 
 **Checklist before going live:**
 
@@ -385,21 +436,7 @@ Runs `node server.js` without file-watching.
 
 ---
 
-## 11. Security & Reliability
-
-- **JWT Authentication** — stateless, short-lived access tokens validated on every protected route
-- **Role-Based Access Control** — middleware guards for `FARMER`, `MILL_OWNER`, and `ADMIN`; enforced independently on both client and server
-- **Google OAuth 2.0** — passport-google-oauth20 strategy with secure callback and token exchange
-- **Email Verification** — accounts are blocked from all actions until the email address is confirmed
-- **Soft-Delete System** — user deletions are non-destructive; all related transactions, negotiations, and disputes are preserved
-- **Input Validation** — server-side validation on all state-mutating endpoints
-- **CORS Protection** — explicit origin whitelist via the `cors` middleware
-- **File Upload Restrictions** — Multer enforces file type and size limits
-- **Password Security** — bcryptjs hashing with appropriate salt rounds
-
----
-
-## 12. Known Limitations
+## 15. Known Limitations
 
 - **No server-side pagination** — list endpoints return full datasets; performance degrades with large collections
 - **Large frontend bundle** — the main JS chunk exceeds 500 kB (surfaced during `vite build`); code-splitting is a planned improvement
@@ -408,7 +445,7 @@ Runs `node server.js` without file-watching.
 
 ---
 
-## 13. Future Improvements
+## 16. Future Improvements
 
 - Server-side pagination and cursor-based infinite scroll
 - Frontend code-splitting and lazy loading for bundle size reduction
@@ -420,16 +457,16 @@ Runs `node server.js` without file-watching.
 
 ---
 
-## 14. Author
+## 17. Author
 
-**Eranda Buddhika**
+**Eranda Buddhika**  
 Undergraduate, Computer Science
 
 [github.com/Eranda342](https://github.com/Eranda342) &nbsp;|&nbsp; [Project Repository](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System)
 
 ---
 
-## 15. License
+## 18. License
 
 **Custom License — Non-Commercial Use Only**
 
@@ -464,8 +501,8 @@ This project is intended to showcase full-stack development skills and real-worl
 
 ---
 
-## 16. Version
+## 19. Version
 
 | Release | Date | Notes |
 | :--- | :--- | :--- |
-| **v1.0.0** | April 2026 | First stable release — full trading lifecycle, real-time negotiation, three-role dashboards, dispute system, analytics export |
+| **v1.0.0** | April 2026 | First stable release — full trading lifecycle, real-time negotiation, three-role dashboards, dispute system, analytics export, Cloudinary migration |
