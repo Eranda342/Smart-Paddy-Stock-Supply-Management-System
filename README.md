@@ -3,6 +3,9 @@
 
   # AgroBridge
 
+  🚫 This project is for educational and portfolio purposes only.  
+  Unauthorized use, reproduction, deployment, or modification is strictly prohibited.
+
   A production-ready full-stack MERN platform with real-time negotiation, secure authentication, and end-to-end agricultural trading workflow.
 
   **Real-time negotiation • Secure authentication • End-to-end supply chain workflow**
@@ -14,12 +17,10 @@
 
   **End-to-end paddy trading — from listing to delivery — on a single platform**
 
-  [![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](#19-version)
+  [![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](#18-version)
   [![Status](https://img.shields.io/badge/status-stable-success.svg)](#)
   [![Stack](https://img.shields.io/badge/stack-MERN-informational.svg)](#5-tech-stack)
-  [![Last Commit](https://img.shields.io/github/last-commit/Eranda342/Smart-Paddy-Stock-Supply-Management-System.svg)](#)
-  [![Repo Size](https://img.shields.io/github/repo-size/Eranda342/Smart-Paddy-Stock-Supply-Management-System.svg)](#)
-  [![License](https://img.shields.io/badge/license-Non--Commercial-red.svg)](#18-license)
+  [![License](https://img.shields.io/badge/license-Closed_Source-red.svg)](#17-license)
 
   [View Repository](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System) &nbsp;|&nbsp; [Report an Issue](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/issues)
 </div>
@@ -292,95 +293,21 @@ Smart-Paddy-Stock-Supply-Management-System/
 
 ---
 
-## 12. Installation & Setup
+## 12. ⚖️ Usage Restrictions
 
-### Prerequisites
+This project is protected and intended strictly for:
+- Academic submission
+- Personal portfolio demonstration
 
-- Node.js 18+
-- npm 9+
-- MongoDB (local instance or MongoDB Atlas URI)
-- Cloudinary Account (for media uploads)
+You are NOT permitted to:
+- Copy, reuse, or redistribute this code
+- Deploy this project publicly or privately
+- Use any part of this system in commercial or non-commercial applications
+- Modify or adapt this project for your own use
 
-### Step-by-Step Setup
+Any unauthorized use may violate intellectual property rights.
 
-**1. Clone the repository**
-
-```bash
-git clone https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System.git
-cd Smart-Paddy-Stock-Supply-Management-System
-```
-
-**2. Install dependencies**
-
-```bash
-# Install backend dependencies
-cd backend && npm install
-
-# Install frontend dependencies
-cd ../frontend && npm install
-```
-
-**3. Configure Environment Variables**
-
-**Backend (`backend/.env`):**  
-Copy `backend/.env.example` to `backend/.env` and supply the values below.
-
-```env
-# Database
-MONGO_URI=mongodb://127.0.0.1:27017/paddy_system
-
-# Server
-PORT=5000
-FRONTEND_URL=http://localhost:5173
-
-# Security
-JWT_SECRET=your_strong_random_secret
-
-# Email (Gmail App Password)
-EMAIL_USER=your_gmail_address@gmail.com
-EMAIL_PASS=your_16_char_gmail_app_password
-FROM_NAME=AgroBridge
-
-# Google OAuth 2.0
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-
-# Cloudinary (Media Storage)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-```
-
-> Generate a cryptographically strong JWT secret:
-> ```bash
-> node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-> ```
-
-**Frontend (`frontend/.env`):**  
-Create a `.env` file in the `frontend/` directory.
-
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_SOCKET_URL=http://localhost:5000
-VITE_BASE_URL=http://localhost:5000
-```
-
-**4. Seed the admin account** _(first run only)_
-
-```bash
-cd ../backend
-node seedAdmin.js
-```
-
-**5. Start development servers** _(run in separate terminals)_
-
-```bash
-# Terminal 1 — backend
-cd backend && npm run dev       # http://localhost:5000
-
-# Terminal 2 — frontend
-cd frontend && npm run dev      # http://localhost:5173
-```
+Environment configuration details are intentionally withheld for security reasons.
 
 ---
 
@@ -400,43 +327,7 @@ AgroBridge implements rigorous security controls to ensure production-grade safe
 
 ---
 
-## 14. Production Build & Deployment
-
-**Frontend Build**
-
-```bash
-cd frontend
-npm run build
-```
-
-Optimised output is placed in `frontend/dist/`. Serve it with Vercel, Nginx, or Azure Static Web Apps.
-
-**Backend Start**
-
-```bash
-cd backend
-npm start
-```
-
-Runs `node server.js` without file-watching.
-
-| Component | Recommended Option |
-| :--- | :--- |
-| **Database** | MongoDB Atlas (M0 free tier or above) |
-| **Backend** | Azure App Service, Railway, or Render |
-| **Frontend** | Vercel or Azure Static Web Apps |
-| **Media** | Cloudinary |
-
-**Checklist before going live:**
-
-1. Set all environment variables in the hosting provider's dashboard — never deploy `.env` files.
-2. Update `FRONTEND_URL` and `VITE_API_URL` to production domain URLs.
-3. Add the production frontend URL to the Google Cloud Console OAuth 2.0 authorised redirect URIs.
-4. Restrict the CORS origin whitelist to the production frontend domain.
-
----
-
-## 15. Known Limitations
+## 14. Known Limitations
 
 - **No server-side pagination** — list endpoints return full datasets; performance degrades with large collections
 - **Large frontend bundle** — the main JS chunk exceeds 500 kB (surfaced during `vite build`); code-splitting is a planned improvement
@@ -445,7 +336,7 @@ Runs `node server.js` without file-watching.
 
 ---
 
-## 16. Future Improvements
+## 15. Future Improvements
 
 - Server-side pagination and cursor-based infinite scroll
 - Frontend code-splitting and lazy loading for bundle size reduction
@@ -457,7 +348,7 @@ Runs `node server.js` without file-watching.
 
 ---
 
-## 17. Author
+## 16. Author
 
 **Eranda Buddhika**  
 Undergraduate, Computer Science
@@ -466,42 +357,17 @@ Undergraduate, Computer Science
 
 ---
 
-## 18. License
+## 17. License
 
-**Custom License — Non-Commercial Use Only**
+This project is NOT open source.
 
-Copyright (c) 2026 Eranda Buddhika
+All rights reserved © Eranda Buddhika
 
-This project is provided for **educational and portfolio purposes only**.
-
-### Permissions
-
-You are allowed to:
-
-- View and study the source code
-- Fork and modify the project for **personal or academic use**
-- Use parts of the code for learning or reference (with attribution)
-
-### Restrictions
-
-You are **NOT allowed to**:
-
-- Use this project for **commercial purposes**
-- Sell, resell, or monetize this project
-- Host, deploy, or distribute this project as a **product or service**
-- Use this system in a business environment without explicit written permission
-
-### Commercial Use
-
-If you wish to use this project commercially, you must obtain **written permission** from the author.
-
-Contact: erandabuddhika007@gmail.com
-
-This project is intended to showcase full-stack development skills and real-world system design based on Sri Lanka's agricultural supply chain.
+No permission is granted to use, copy, modify, or distribute this software in any form without explicit written consent.
 
 ---
 
-## 19. Version
+## 18. Version
 
 | Release | Date | Notes |
 | :--- | :--- | :--- |
