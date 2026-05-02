@@ -87,9 +87,10 @@ export default function ResetPasswordPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">New Password</label>
+                <label htmlFor="reset-password" className="block text-sm font-medium text-white/70 mb-2">New Password</label>
                 <div className="relative">
                   <input
+                    id="reset-password"
                     {...register("password")}
                     type={showPassword ? "text" : "password"}
                     className={`${inputCls(!!errors.password)} pr-12`}
@@ -110,8 +111,9 @@ export default function ResetPasswordPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Confirm New Password</label>
+                <label htmlFor="reset-confirmPassword" className="block text-sm font-medium text-white/70 mb-2">Confirm New Password</label>
                 <input
+                  id="reset-confirmPassword"
                   {...register("confirmPassword")}
                   type={showPassword ? "text" : "password"}
                   className={inputCls(!!errors.confirmPassword)}

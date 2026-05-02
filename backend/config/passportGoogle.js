@@ -22,6 +22,10 @@ passport.use(
         // ── Check if user already exists by email ──
         let user = await User.findOne({ email });
 
+        if (user && (user.isDeleted || user.isBlocked)) {
+          return done(null, false, { message: "User not allowed" });
+        }
+
         if (!user) {
           // ── Create a minimal Google-authenticated user ──
           //

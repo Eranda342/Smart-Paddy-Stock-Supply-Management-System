@@ -8,7 +8,7 @@ import GlobalSearchBar from "../components/GlobalSearchBar";
 import { Button } from "../components/ui/button";
 import { Logo } from "../components/ui/Logo";
 import { API_BASE_URL, BASE_URL } from "@/api/api";
-import { socket } from "@/socket";
+import { socket, disconnectSocket } from "@/socket";
 import { getFileUrl } from '../../utils/fileUtils';
 
 
@@ -105,7 +105,7 @@ export default function MillOwnerLayout() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    socket.disconnect();
+    disconnectSocket();
     navigate('/login');
   };
 

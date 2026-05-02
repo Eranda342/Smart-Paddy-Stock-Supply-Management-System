@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { API } from "@/api/api";
 import { loginSchema } from "../lib/schemas";
 import { Logo } from "../components/ui/Logo";
+import { connectSocket } from "../../socket";
 
 
 export default function LoginPage() {
@@ -50,6 +51,8 @@ export default function LoginPage() {
       if (res.ok) {
         localStorage.setItem("token", json.token);
         localStorage.setItem("user", JSON.stringify(json.user));
+
+        connectSocket(json.token);
 
         const role = json.user.role.toLowerCase();
         if (role === "farmer") navigate("/farmer");
@@ -154,8 +157,9 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">Email Address</label>
+                  <label htmlFor="login-email" className="block text-sm font-medium text-white/70 mb-2">Email Address</label>
                   <input
+                    id="login-email"
                     {...register("email")}
                     type="email"
                     className={inputCls(!!errors.email)}
@@ -170,9 +174,10 @@ export default function LoginPage() {
 
                 {/* Password */}
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
+                  <label htmlFor="login-password" className="block text-sm font-medium text-white/70 mb-2">Password</label>
                   <div className="relative">
                     <input
+                      id="login-password"
                       {...register("password")}
                       type={showPassword ? "text" : "password"}
                       className={`${inputCls(!!errors.password)} pr-12`}

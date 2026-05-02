@@ -165,12 +165,15 @@ app.set("onlineUsers", onlineUsers);
 // Falls back safely — no token = connected but unauthenticated (no crash).
 const jwt = require("jsonwebtoken");
 io.use((socket, next) => {
+  console.log("🔍 Socket handshake auth:", socket.handshake.auth);
+  console.log("🔍 Socket headers:", socket.handshake.headers);
   try {
     const token = socket.handshake.auth?.token;
     if (!token) {
       console.warn("⚠️  Socket connected without token (unauthenticated)");
       return next(); // allow connection — room guards enforce restrictions
     }
+    console.log("🔐 Token received:", token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = decoded; // attach decoded payload (has .id, .role, etc.)
     next();
@@ -185,6 +188,7 @@ io.on("connection", (socket) => {
 
   socket.on("join", (userId) => {
     if (!userId) return;
+    console.log("👤 socket.user:", socket.user);
     // 🔒 Require authenticated socket
     if (!socket.user) {
       console.warn("❌ Unauthorized join attempt (no token):", userId);
@@ -334,13 +338,7 @@ io.on("connection", (socket) => {
 
 });
 
-// ================= ERROR HANDLER (NEW) =================
-app.use((err, req, res, next) => {
-  console.error("SERVER ERROR:", err);
-  res.status(500).json({
-    message: "Internal Server Error"
-  });
-});
+
 
 
 // ================= CRON JOBS =================

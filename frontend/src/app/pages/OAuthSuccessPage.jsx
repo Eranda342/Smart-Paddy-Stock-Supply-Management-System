@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Sprout, AlertCircle } from "lucide-react";
 import { API } from "@/api/api";
 import { resolveUserDestination } from "../lib/resolveUserDestination";
+import { connectSocket } from "../../socket";
 
 /**
  * OAuthSuccessPage
@@ -60,6 +61,8 @@ export default function OAuthSuccessPage() {
       })
       .then(({ user }) => {
         localStorage.setItem("user", JSON.stringify(user));
+
+        connectSocket(token);
 
         // Let the shared resolver decide where to send the user
         const destination = resolveUserDestination(user);

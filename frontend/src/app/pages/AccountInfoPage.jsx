@@ -202,37 +202,38 @@ export default function AccountInfoPage() {
 
                   {/* Full Name */}
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">Full Name</label>
-                    <input {...register("fullName")} className={inputCls(!!errors.fullName)} placeholder="Enter your full name" />
+                    <label htmlFor="register-fullName" className="block mb-2 text-sm font-medium text-white/70">Full Name</label>
+                    <input id="register-fullName" {...register("fullName")} className={inputCls(!!errors.fullName)} placeholder="Enter your full name" />
                     <FieldError error={errors.fullName} />
                   </div>
 
                   {/* NIC */}
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">NIC Number</label>
-                    <input {...register("nic")} className={inputCls(!!errors.nic)} placeholder="e.g., 123456789V" />
+                    <label htmlFor="register-nic" className="block mb-2 text-sm font-medium text-white/70">NIC Number</label>
+                    <input id="register-nic" {...register("nic")} className={inputCls(!!errors.nic)} placeholder="e.g., 123456789V" />
                     <FieldError error={errors.nic} />
                   </div>
 
                   {/* Email */}
                   <div className="sm:col-span-2">
-                    <label className="block mb-2 text-sm font-medium text-white/70">Email Address</label>
-                    <input {...register("email")} type="email" className={inputCls(!!errors.email)} placeholder="your@email.com" />
+                    <label htmlFor="register-email" className="block mb-2 text-sm font-medium text-white/70">Email Address</label>
+                    <input id="register-email" {...register("email")} type="email" className={inputCls(!!errors.email)} placeholder="your@email.com" />
                     <FieldError error={errors.email} />
                   </div>
 
                   {/* Phone */}
                   <div className="sm:col-span-2">
-                    <label className="block mb-2 text-sm font-medium text-white/70">Mobile Number</label>
-                    <input {...register("phone")} className={inputCls(!!errors.phone)} placeholder="+94 XX XXX XXXX" />
+                    <label htmlFor="register-phone" className="block mb-2 text-sm font-medium text-white/70">Mobile Number</label>
+                    <input id="register-phone" {...register("phone")} className={inputCls(!!errors.phone)} placeholder="+94 XX XXX XXXX" />
                     <FieldError error={errors.phone} />
                   </div>
 
                   {/* Password */}
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">Password</label>
+                    <label htmlFor="register-password" className="block mb-2 text-sm font-medium text-white/70">Password</label>
                     <div className="relative">
                       <input
+                        id="register-password"
                         {...register("password")}
                         type={showPassword ? "text" : "password"}
                         className={`${inputCls(!!errors.password)} pr-12`}
@@ -271,9 +272,10 @@ export default function AccountInfoPage() {
 
                   {/* Confirm Password */}
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-white/70">Confirm Password</label>
+                    <label htmlFor="register-confirmPassword" className="block mb-2 text-sm font-medium text-white/70">Confirm Password</label>
                     <div className="relative">
                       <input
+                        id="register-confirmPassword"
                         {...register("confirmPassword")}
                         type={showConfirmPassword ? "text" : "password"}
                         className={`${inputCls(!!errors.confirmPassword)} pr-12`}

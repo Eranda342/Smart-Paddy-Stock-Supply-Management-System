@@ -45,6 +45,10 @@ const registerUser = async (req, res) => {
       });
     }
 
+    if (!password || password.trim().length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -472,6 +476,10 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
+    if (!req.body.password || req.body.password.trim().length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    }
+
     // Hash and set new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(req.body.password, salt);
@@ -561,7 +569,10 @@ const updateBasicInfo = async (req, res) => {
     user.nic   = nic.trim();
     if (fullName && fullName.trim()) user.fullName = fullName.trim();
 
-    if (password && password.trim().length >= 6) {
+    if (password) {
+      if (password.trim().length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
       const bcrypt = require("bcryptjs");
       const salt   = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password.trim(), salt);

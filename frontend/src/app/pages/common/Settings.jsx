@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { Button } from "../../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/api/api";
-import { socket } from "@/socket";
+import { socket, disconnectSocket } from "@/socket";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -53,7 +53,7 @@ export default function Settings() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    socket.disconnect();
+    disconnectSocket();
     navigate("/login");
   };
 
@@ -72,6 +72,7 @@ export default function Settings() {
         toast.success("Account deleted successfully");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        disconnectSocket();
         navigate("/login");
       } else {
         const errorData = await res.json();
