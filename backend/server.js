@@ -70,7 +70,8 @@ connectDB();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  "https://witty-ocean-03e5bca00.7.azurestaticapps.net"
+  "https://www.agrobridge.dev",
+  "https://agrobridge.dev"
 ];
 app.use(cors({
   origin: function (origin, callback) {
@@ -143,7 +144,8 @@ const io = require("socket.io")(server, {
   cors: {
     origin: [
       "http://localhost:5173",
-      "https://witty-ocean-03e5bca00.7.azurestaticapps.net"
+      "https://www.agrobridge.dev",
+      "https://agrobridge.dev"
     ],
     methods: ["GET", "POST"],
     credentials: true
