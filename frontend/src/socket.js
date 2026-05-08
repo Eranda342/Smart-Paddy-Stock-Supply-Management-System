@@ -41,7 +41,9 @@ export const disconnectSocket = () => {
 // Export a proxy so existing imports (import { socket }) don't break
 export const socket = new Proxy({}, {
   get: (target, prop) => {
-    if (!socketInstance) return undefined;
+    if (!socketInstance) {
+      return () => {};
+    }
     const value = socketInstance[prop];
     return typeof value === "function" ? value.bind(socketInstance) : value;
   }
