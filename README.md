@@ -33,6 +33,7 @@
 - **Real-time communication** — Socket.IO powers live negotiation chat, instant in-app notification delivery, and dispute chat without polling
 - **Three-role system** — fully isolated dashboards and route guards for Farmer, Mill Owner, and Admin roles, enforced independently on both client and server
 - **Glassmorphism UI** — dark-themed SaaS interface built with Tailwind CSS and Framer Motion; consistent glassmorphism design language across all role dashboards
+- **Fully Mobile Responsive** — completely optimized for all device sizes, handling safe-area viewports, mobile drawers, and edge-case z-index stacking
 - **Soft-delete architecture** — deleted user accounts are flagged, not removed; all historical transactions, negotiations, and disputes remain intact and queryable
 - **Multi-layer authentication** — email verification (Nodemailer), JWT session management, and Google OAuth 2.0 supported in parallel
 - **Analytics and reporting** — admin analytics dashboard with PDF (jsPDF) and Excel (ExcelJS) export capability
@@ -340,7 +341,6 @@ AgroBridge implements rigorous security controls to ensure production-grade safe
 
 - Server-side pagination and cursor-based infinite scroll
 - Frontend code-splitting and lazy loading for bundle size reduction
-- Improved mobile responsiveness across all role dashboards
 - Live SMS notifications via Twilio or a local Sri Lankan SMS gateway
 - AI-assisted price recommendations derived from historical transaction data
 - Secure payment gateway integration
@@ -371,4 +371,5 @@ No permission is granted to use, copy, modify, or distribute this software in an
 
 | Release | Date | Notes |
 | :--- | :--- | :--- |
+| **v1.1.0** | May 2026 | Comprehensive mobile responsiveness overhaul, WebSocket authentication hardening, frontend caching mitigations, and production security audits |
 | **v1.0.0** | April 2026 | First stable release — full trading lifecycle, real-time negotiation, three-role dashboards, dispute system, analytics export, Cloudinary migration |
