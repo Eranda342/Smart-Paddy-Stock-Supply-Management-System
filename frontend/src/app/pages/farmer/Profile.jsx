@@ -515,7 +515,7 @@ export default function FarmerProfile() {
           {/* 5. RECENT ACTIVITY (Frontend Mock safe) */}
           <div className="bg-card border border-border rounded-3xl p-6">
             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-               <Activity className="w-5 h-5 text-[#22C55E]" /> Recent Activity
+               <Activity className="w-5 h-5 text-[#22C55E]" /> Account Timeline
             </h2>
             <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
               {user?.isVerified && (
