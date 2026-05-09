@@ -317,15 +317,15 @@ export default function FarmerProfile() {
             
             {/* Edit Profile Action */}
             {!isEditing ? (
-              <Button onClick={() => setIsEditing(true)} variant="secondary" className="shrink-0 gap-2">
+              <Button onClick={() => setIsEditing(true)} variant="secondary" className="shrink-0 gap-2 w-full sm:w-auto justify-center">
                 <Edit2 className="w-4 h-4" /> Edit Profile
               </Button>
             ) : (
-              <div className="flex gap-2 shrink-0">
-                <Button onClick={handleCancel} variant="ghost" className="gap-2 border border-border">
+              <div className="flex gap-2 shrink-0 w-full sm:w-auto">
+                <Button onClick={handleCancel} variant="ghost" className="gap-2 border border-border flex-1 sm:flex-none justify-center">
                   <X className="w-4 h-4" /> Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saving} variant="primary" className="gap-2">
+                <Button onClick={handleSave} disabled={saving} variant="primary" className="gap-2 flex-1 sm:flex-none justify-center">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save
                 </Button>
@@ -417,7 +417,7 @@ export default function FarmerProfile() {
             {isEditing && (
               <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
                 <Button onClick={handleCancel} variant="ghost">Cancel</Button>
-                <Button onClick={handleSave} disabled={saving} variant="primary" className="gap-2">
+                <Button onClick={handleSave} disabled={saving} variant="primary" className="gap-2 flex-1 sm:flex-none justify-center">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save All Changes
                 </Button>
@@ -461,20 +461,20 @@ export default function FarmerProfile() {
             <div>
               <h3 className="text-sm font-semibold text-white/60 mb-3 uppercase tracking-wider">Submitted Land Document</h3>
               
-              <div className="flex justify-between items-center bg-black/20 border border-white/5 p-4 rounded-xl">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-black/20 border border-white/5 p-4 rounded-xl w-full">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-10 h-10 bg-[#22C55E]/10 rounded-lg flex items-center justify-center shrink-0">
                     <FileText className="w-5 h-5 text-[#22C55E]" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-white max-w-[150px] sm:max-w-[300px] truncate">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-white truncate">
                       {user?.farmDetails?.landDocument || "No document uploaded"}
                     </p>
                     <p className="text-xs text-muted-foreground">PDF, JPG, PNG</p>
                   </div>
                 </div>
                 
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 w-full sm:w-auto">
                   {user?.farmDetails?.landDocument && (
                     <Button 
                       variant="secondary" 
