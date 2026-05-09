@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Sprout,
   LayoutDashboard,
@@ -12,6 +13,8 @@ import {
   Bell,
   HelpCircle,
   ChevronDown,
+  Menu,
+  X,
   Settings,
   ShieldCheck,
   ShieldAlert,
@@ -36,6 +39,7 @@ export default function FarmerLayout() {
 
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -47,6 +51,11 @@ export default function FarmerLayout() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -135,61 +144,86 @@ export default function FarmerLayout() {
     navigate("/login");
   };
 
+  const SidebarContent = () => (
+    <>
+      <div className="border-b border-sidebar-border relative shrink-0">
+        <Link to="/farmer" className="block px-4 py-4">
+          <Logo layout="sidebar" />
+        </Link>
+        <button 
+          onClick={() => setMobileOpen(false)}
+          className="absolute right-4 top-4 lg:hidden p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/5 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <nav className="flex-1 p-4 overflow-y-auto">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-1 group transition-all duration-200 hover:translate-x-1 ${
+                active
+                  ? "bg-[#22C55E]/10 text-foreground border border-[#22c55e]/30 shadow-[0_0_15px_rgba(34,197,94,0.08)]"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent"
+              }`}
+            >
+              <Icon className={`w-5 h-5 transition-colors duration-300 ${active ? 'text-[#22c55e]' : ''}`} />
+              <span className={`font-medium ${active ? 'text-foreground' : ''}`}>{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 border-t border-sidebar-border shrink-0">
+        <Button
+          variant="ghost-danger"
+          onClick={handleLogout}
+          className="w-full justify-start px-4 py-3 group"
+        >
+          <LogOut className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
+          <span>Logout</span>
+        </Button>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex min-h-screen bg-background">
 
-      {/* Sidebar */}
-
-      <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
-
-        <div className="border-b border-sidebar-border">
-          <Link to="/farmer" className="block px-4 py-4">
-            <Logo layout="sidebar" />
-          </Link>
-        </div>
-
-        <nav className="flex-1 p-4">
-
-          {menuItems.map((item) => {
-
-            const Icon = item.icon;
-            const active = isActive(item.path);
-
-            return (
-
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-1 group transition-all duration-200 hover:translate-x-1 ${
-                  active
-                    ? "bg-[#22C55E]/10 text-foreground border border-[#22c55e]/30 shadow-[0_0_15px_rgba(34,197,94,0.08)]"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent"
-                }`}
-              >
-
-                <Icon className={`w-5 h-5 transition-colors duration-300 ${active ? 'text-[#22c55e]' : ''}`} />
-                <span className={`font-medium ${active ? 'text-foreground' : ''}`}>{item.name}</span>
-
-              </Link>
-
-            );
-
-          })}
-
-        </nav>
-
-        <div className="p-4 border-t border-sidebar-border">
-          <Button
-            variant="ghost-danger"
-            onClick={handleLogout}
-            className="w-full justify-start px-4 py-3 group"
-          >
-            <LogOut className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
-            <span>Logout</span>
-          </Button>
-        </div>
-
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex w-[260px] bg-sidebar border-r border-sidebar-border flex-col shrink-0 sticky top-0 h-screen">
+        {SidebarContent()}
       </div>
+
+      {/* Mobile Drawer Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden"
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="fixed inset-y-0 left-0 w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col z-[60] lg:hidden shadow-2xl"
+            >
+              {SidebarContent()}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
 
@@ -200,6 +234,12 @@ export default function FarmerLayout() {
         <div className="h-[72px] border-b border-border bg-card flex items-center justify-between px-8 sticky top-0 z-40">
 
           <div className="flex-1 max-w-md flex items-center pr-4">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden mr-3 p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <GlobalSearchBar rolePath="/farmer" />
           </div>
 

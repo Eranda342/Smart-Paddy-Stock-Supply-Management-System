@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sprout, LayoutDashboard, ShieldCheck, Users, FileText, LogOut,
   Search, Bell, Package, MessageSquare, Receipt, Truck,
-  AlertCircle, Settings, CheckCheck, X, RefreshCw, Info, ChevronDown, User
+  AlertCircle, Settings, CheckCheck, X, RefreshCw, Info, ChevronDown, User, Menu
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import GlobalSearchBar from '../components/GlobalSearchBar';
@@ -208,7 +209,14 @@ export default function AdminLayout() {
   const [pendingKyc, setPendingKyc] = useState(0);
   const [statsLoaded, setStatsLoaded] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const location = useLocation();
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   // Click-outside closes admin profile dropdown
   useEffect(() => {
@@ -262,60 +270,106 @@ export default function AdminLayout() {
 
       <div className="flex min-h-screen bg-background">
 
-        {/* ═══ SIDEBAR ═══ */}
-        <div className="w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 sticky top-0 h-screen">
+        {/* ═══ SIDEBAR CONTENT ═══ */}
+        {(() => {
+          const SidebarContent = () => (
+            <>
+              {/* Logo */}
+              <div className="border-b border-sidebar-border relative shrink-0">
+                <Link to="/admin" className="block px-4 py-4">
+                  <Logo layout="sidebar" />
+                </Link>
+                <button 
+                  onClick={() => setMobileOpen(false)}
+                  className="absolute right-4 top-4 lg:hidden p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Nav */}
+              <nav className="flex-1 p-3 overflow-y-auto">
+                <SidebarSection>
+                  <NavItem path="/admin" icon={LayoutDashboard} label="Dashboard" exact />
+                </SidebarSection>
+
+                <SidebarSection title="Users">
+                  <NavItem path="/admin/users" icon={Users} label="All Users" />
+                  <NavItem path="/admin/verifications" icon={ShieldCheck} label="Pending Verifications" badge={pendingKyc} />
+                </SidebarSection>
+
+                <SidebarSection title="Marketplace">
+                  <NavItem path="/admin/listings" icon={Package} label="Listings" />
+                  <NavItem path="/admin/negotiations" icon={MessageSquare} label="Negotiations" />
+                  <NavItem path="/admin/transactions" icon={Receipt} label="Transactions" />
+                  <NavItem path="/admin/transport" icon={Truck} label="Transport" />
+                </SidebarSection>
+
+                <SidebarSection title="Analytics">
+                  <NavItem path="/admin/reports" icon={FileText} label="Reports & Analytics" />
+                </SidebarSection>
+
+                <SidebarSection title="Support">
+                  <NavItem path="/admin/disputes" icon={AlertCircle} label="Disputes" />
+                  <NavItem path="/admin/notifications-center" icon={Bell} label="Notifications" />
+                </SidebarSection>
+
+                <SidebarSection title="Configuration">
+                  <NavItem path="/admin/settings" icon={Settings} label="System Settings" />
+                </SidebarSection>
+              </nav>
+
+              {/* Logout */}
+              <div className="p-3 border-t border-sidebar-border shrink-0">
+                <Button
+                  variant="ghost-danger"
+                  onClick={handleLogout}
+                  className="w-full justify-start px-4 py-2.5 text-sm group"
+                >
+                  <LogOut className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <span>Logout</span>
+                </Button>
+              </div>
+            </>
+          );
+
+          return (
+            <>
+              {/* Desktop Sidebar */}
+              <div className="hidden lg:flex w-[260px] bg-sidebar border-r border-sidebar-border flex-col shrink-0 sticky top-0 h-screen">
+                {SidebarContent()}
+              </div>
+
+              {/* Mobile Drawer Overlay */}
+              <AnimatePresence>
+                {mobileOpen && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={() => setMobileOpen(false)}
+                      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden"
+                    />
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      animate={{ x: 0 }}
+                      exit={{ x: "-100%" }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="fixed inset-y-0 left-0 w-[260px] bg-sidebar border-r border-sidebar-border flex flex-col z-[60] lg:hidden shadow-2xl"
+                    >
+                      {SidebarContent()}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </>
+          );
+        })()}
+
+        {/* ═══ MAIN CONTENT ═══ */}
           {/* Logo */}
-          <div className="border-b border-sidebar-border">
-            <Link to="/admin" className="block px-4 py-4">
-              <Logo layout="sidebar" />
-            </Link>
-          </div>
-
-          {/* Nav */}
-          <nav className="flex-1 p-3 overflow-y-auto">
-            <SidebarSection>
-              <NavItem path="/admin" icon={LayoutDashboard} label="Dashboard" exact />
-            </SidebarSection>
-
-            <SidebarSection title="Users">
-              <NavItem path="/admin/users" icon={Users} label="All Users" />
-              <NavItem path="/admin/verifications" icon={ShieldCheck} label="Pending Verifications" badge={pendingKyc} />
-            </SidebarSection>
-
-            <SidebarSection title="Marketplace">
-              <NavItem path="/admin/listings" icon={Package} label="Listings" />
-              <NavItem path="/admin/negotiations" icon={MessageSquare} label="Negotiations" />
-              <NavItem path="/admin/transactions" icon={Receipt} label="Transactions" />
-              <NavItem path="/admin/transport" icon={Truck} label="Transport" />
-            </SidebarSection>
-
-            <SidebarSection title="Analytics">
-              <NavItem path="/admin/reports" icon={FileText} label="Reports & Analytics" />
-            </SidebarSection>
-
-            <SidebarSection title="Support">
-              <NavItem path="/admin/disputes" icon={AlertCircle} label="Disputes" />
-              <NavItem path="/admin/notifications-center" icon={Bell} label="Notifications" />
-            </SidebarSection>
-
-            <SidebarSection title="Configuration">
-              <NavItem path="/admin/settings" icon={Settings} label="System Settings" />
-            </SidebarSection>
-          </nav>
-
-          {/* Logout */}
-          <div className="p-3 border-t border-sidebar-border">
-            <Button
-              variant="ghost-danger"
-              onClick={handleLogout}
-              className="w-full justify-start px-4 py-2.5 text-sm group"
-            >
-              <LogOut className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-              <span>Logout</span>
-            </Button>
-          </div>
-        </div>
-
         {/* ═══ MAIN CONTENT ═══ */}
         <div className="flex-1 flex flex-col min-w-0">
 
@@ -324,6 +378,12 @@ export default function AdminLayout() {
 
             {/* Search */}
             <div className="flex-1 max-w-md flex items-center pr-4">
+              <button
+                onClick={() => setMobileOpen(true)}
+                className="lg:hidden mr-3 p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
               <GlobalSearchBar rolePath="/admin" />
             </div>
 
