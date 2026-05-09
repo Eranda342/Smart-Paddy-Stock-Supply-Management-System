@@ -88,13 +88,14 @@ export default function MillOwnerDashboard() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        let url = `${API_BASE_URL}/dashboard/millOwner?range=${range}`;
+        let url = `${API_BASE_URL}/dashboard/millOwner?range=${range}&t=${new Date().getTime()}`;
         if (appliedCustomRange) {
           url += `&startDate=${appliedCustomRange.startDate}&endDate=${appliedCustomRange.endDate}`;
         }
         const res = await fetch(url, {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
           }
         });
         const result = await res.json();

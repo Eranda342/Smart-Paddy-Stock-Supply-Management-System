@@ -166,7 +166,7 @@ const getMillOwnerDashboard = async (req, res) => {
     const Negotiation = require("../models/Negotiation");
     const negotiations = await Negotiation.find({
       millOwner: millOwnerId,
-      status: { $in: ["PENDING", "ACTIVE", "COUNTER_OFFER"] }
+      status: { $in: ["OPEN", "AGREED"] }
     });
 
     const range = req.query.range || "all";
@@ -270,7 +270,7 @@ const getMillOwnerDashboard = async (req, res) => {
       monthly[month] = (monthly[month] || 0) + (t.totalAmount || 0);
     });
 
-    res.json({
+    const responseData = {
       stats: {
         activePurchases,
         ongoingNegotiations,
@@ -284,7 +284,7 @@ const getMillOwnerDashboard = async (req, res) => {
       bestSelling,
       locations,
       rawTransactions: allTransactions
-    });
+    res.json(responseData);
 
   } catch (error) {
     res.status(500).json({ message: error.message });
