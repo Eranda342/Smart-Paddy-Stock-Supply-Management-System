@@ -284,6 +284,7 @@ const getMillOwnerDashboard = async (req, res) => {
       bestSelling,
       locations,
       rawTransactions: allTransactions
+    };
     res.json(responseData);
 
   } catch (error) {
