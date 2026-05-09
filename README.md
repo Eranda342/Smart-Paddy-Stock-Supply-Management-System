@@ -12,12 +12,11 @@
 
   🚀 Built and deployed with production-grade backend security on cloud infrastructure
 
-  🌐 **Live Demo**: https://witty-ocean-03e5bca00.7.azurestaticapps.net  
+  🌐 **Live Demo**: https://www.agrobridge.dev  
   🔗 **Backend API**: https://agrobridge-backend-a5egezhqeag5brgs.southeastasia-01.azurewebsites.net
 
   **End-to-end paddy trading — from listing to delivery — on a single platform**
 
-  [![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](#18-version)
   [![Status](https://img.shields.io/badge/status-stable-success.svg)](#)
   [![Stack](https://img.shields.io/badge/stack-MERN-informational.svg)](#5-tech-stack)
   [![License](https://img.shields.io/badge/license-Closed_Source-red.svg)](#17-license)
@@ -364,12 +363,3 @@ This project is NOT open source.
 All rights reserved © Eranda Buddhika
 
 No permission is granted to use, copy, modify, or distribute this software in any form without explicit written consent.
-
----
-
-## 18. Version
-
-| Release | Date | Notes |
-| :--- | :--- | :--- |
-| **v1.1.0** | May 2026 | Comprehensive mobile responsiveness overhaul, WebSocket authentication hardening, frontend caching mitigations, and production security audits |
-| **v1.0.0** | April 2026 | First stable release — full trading lifecycle, real-time negotiation, three-role dashboards, dispute system, analytics export, Cloudinary migration |
