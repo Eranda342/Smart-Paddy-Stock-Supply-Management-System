@@ -133,7 +133,7 @@ function NotificationDropdown({ onClose, pendingKyc }) {
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-full mt-2 w-[360px] bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden"
+      className="absolute right-0 top-full mt-2 w-[300px] sm:w-[360px] bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden"
       style={{ animation: 'slideDownFade 0.18s ease-out' }}
     >
       {/* Header */}

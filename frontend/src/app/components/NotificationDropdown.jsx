@@ -10,7 +10,18 @@ const API = API_BASE_URL;
 export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const fetchNotifications = async () => {
     try {
@@ -147,7 +158,7 @@ export default function NotificationDropdown() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setOpen(!open)}
         className="w-10 h-10 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center relative transition-colors"
@@ -161,8 +172,8 @@ export default function NotificationDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 md:right-0 left-0 md:left-auto w-full md:w-80 max-h-96 overflow-y-auto bg-card border border-border rounded-2xl shadow-2xl z-50 mt-3">
-          <div className="sticky top-0 bg-card px-5 py-3.5 border-b border-border rounded-t-2xl flex items-center justify-between">
+        <div className="absolute right-0 w-[300px] sm:w-80 max-h-[80vh] sm:max-h-96 overflow-y-auto bg-card border border-border rounded-2xl shadow-2xl z-50 mt-3">
+          <div className="sticky top-0 bg-card px-5 py-3.5 border-b border-border rounded-t-2xl flex items-center justify-between z-10">
             <span className="font-semibold text-sm">Notifications</span>
             {unreadCount > 0 && (
               <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
