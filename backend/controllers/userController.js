@@ -326,8 +326,11 @@ const forgotPassword = async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
 
+    // Always return the same response regardless of whether the email exists.
+    // This prevents user enumeration — attackers cannot distinguish registered
+    // from unregistered addresses by observing the HTTP status or message.
     if (!user) {
-      return res.status(404).json({ message: "There is no user with that email" });
+      return res.status(200).json({ message: "If that email is registered, a reset link has been sent." });
     }
 
     // Generate token
@@ -444,7 +447,7 @@ const forgotPassword = async (req, res) => {
         html: htmlMessage
       });
 
-      res.status(200).json({ message: "Email sent" });
+      res.status(200).json({ message: "If that email is registered, a reset link has been sent." });
     } catch (err) {
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
@@ -666,9 +669,6 @@ const resubmit = async (req, res) => {
 // ================= VERIFY EMAIL =================
 const verifyEmail = async (req, res) => {
   try {
-    // TEMP: confirm request reaches this controller on Azure
-    console.log("🚀 AZURE VERIFY HIT — token:", req.params.token);
-
     const { token } = req.params;
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 

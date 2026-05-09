@@ -290,6 +290,19 @@ const updateNegotiationStatus = async (req, res) => {
       });
     }
 
+    // 🔒 Ownership guard — only the two parties to this negotiation may
+    // accept, reject, or change its status. Any other authenticated user
+    // (even a valid FARMER or MILL_OWNER) must be rejected.
+    const isParticipant =
+      req.user.id === negotiation.farmer.toString() ||
+      req.user.id === negotiation.millOwner.toString();
+
+    if (!isParticipant) {
+      return res.status(403).json({
+        message: "Not authorized for this negotiation"
+      });
+    }
+
     negotiation.status = status;
 
     negotiation.messages.push({

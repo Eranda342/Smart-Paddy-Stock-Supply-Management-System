@@ -169,15 +169,12 @@ app.set("onlineUsers", onlineUsers);
 // Falls back safely — no token = connected but unauthenticated (no crash).
 const jwt = require("jsonwebtoken");
 io.use((socket, next) => {
-  console.log("🔍 Socket handshake auth:", socket.handshake.auth);
-  console.log("🔍 Socket headers:", socket.handshake.headers);
   try {
     const token = socket.handshake.auth?.token;
     if (!token) {
       console.warn("⚠️  Socket connected without token (unauthenticated)");
       return next(); // allow connection — room guards enforce restrictions
     }
-    console.log("🔐 Token received:", token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = decoded; // attach decoded payload (has .id, .role, etc.)
     next();
@@ -236,8 +233,21 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("joinDispute", (disputeId) => socket.join(disputeId));
+  socket.on("joinDispute", (disputeId) => {
+    // 🔒 Only authenticated sockets may join dispute rooms
+    if (!socket.user) {
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
+    socket.join(disputeId);
+  });
+
   socket.on("joinNegotiation", (negotiationId) => {
+    // 🔒 Only authenticated sockets may join negotiation rooms
+    if (!socket.user) {
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
     socket.join(negotiationId);
     socket.join(`negotiation_${negotiationId}`); // STEP 5: Room per negotiation
   });
@@ -255,7 +265,7 @@ io.on("connection", (socket) => {
       negotiationId,
       message
     });
-    
+
     // STEP 4: Live updates to receiver room
     if (receiverId) {
       io.to(receiverId).emit("new_message", message);
@@ -266,6 +276,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("markAsRead", ({ negotiationId, userId }) => {
+    // 🔒 Only authenticated sockets may broadcast read receipts
+    if (!socket.user) {
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
     io.to(negotiationId).emit("messagesRead", {
       negotiationId,
       readerId: userId
@@ -273,6 +288,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("deleteMessage", ({ negotiationId, messageId }) => {
+    // 🔒 Only authenticated sockets may broadcast message deletion events
+    if (!socket.user) {
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
     io.to(negotiationId).emit("messageDeleted", {
       negotiationId,
       messageId
@@ -280,6 +300,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("editMessage", ({ negotiationId, messageId, newText }) => {
+    // 🔒 Only authenticated sockets may broadcast message edit events
+    if (!socket.user) {
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
     io.to(negotiationId).emit("messageEdited", {
       negotiationId,
       messageId,
@@ -311,6 +336,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendNotification", ({ userId, notification }) => {
+    // 🔒 Only authenticated sockets may send notifications to other users
+    if (!socket.user) {
+      socket.emit("socket_error", "Unauthorized");
+      return;
+    }
     const socketId = onlineUsers[userId];
     if (socketId) {
       io.to(socketId).emit("receiveNotification", notification);
