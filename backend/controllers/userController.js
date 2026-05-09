@@ -9,6 +9,7 @@ const Transaction = require("../models/Transaction");
 const Listing = require("../models/Listing");
 const Dispute = require("../models/Dispute");
 const { isCloudinaryUrl } = require("../utils/validators");
+const { validatePassword } = require("../utils/passwordPolicy");
 const logger = require("../utils/logger"); // Phase 4 structured logging
 
 // ================= REGISTER USER =================
@@ -45,8 +46,9 @@ const registerUser = async (req, res) => {
       });
     }
 
-    if (!password || password.trim().length < 8) {
-      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({ message: passwordValidation.message });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -164,7 +166,7 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "12h" }
     );
 
     res.status(200).json({
@@ -479,8 +481,9 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    if (!req.body.password || req.body.password.trim().length < 8) {
-      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    const passwordValidation = validatePassword(req.body.password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({ message: passwordValidation.message });
     }
 
     // Hash and set new password

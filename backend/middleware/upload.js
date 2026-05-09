@@ -2,18 +2,31 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
 
-const storage = new CloudinaryStorage({
+const createStorage = (folderName, formats) => new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "agrobridge",
-    // Allowed formats include images and documents
-    allowed_formats: ["jpg", "jpeg", "png", "webp", "pdf"],
+    folder: folderName,
+    allowed_formats: formats,
   },
 });
 
-const upload = multer({
-  storage,
+const uploadAvatar = multer({
+  storage: createStorage("agrobridge/avatars", ["jpg", "jpeg", "png", "webp"]),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
+
+const uploadDocument = multer({
+  storage: createStorage("agrobridge/documents", ["jpg", "jpeg", "png", "webp", "pdf"]),
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB
 });
 
-module.exports = upload;
+const uploadAttachment = multer({
+  storage: createStorage("agrobridge/attachments", ["jpg", "jpeg", "png", "webp", "pdf"]),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+});
+
+module.exports = {
+  uploadAvatar,
+  uploadDocument,
+  uploadAttachment
+};

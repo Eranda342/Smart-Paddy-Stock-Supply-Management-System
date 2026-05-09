@@ -4,7 +4,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { protect } = require("../middleware/authMiddleware");
 const { completeProfile } = require("../controllers/oauthOnboardingController");
-const upload = require("../middleware/upload");
+const { uploadDocument } = require("../middleware/upload");
 
 // ================= INITIATE GOOGLE LOGIN =================
 // GET /api/auth/google
@@ -33,7 +33,7 @@ router.get(
       const token = jwt.sign(
         { id: user._id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "1d" }
+        { expiresIn: "12h" }
       );
 
       // ── Redirect to frontend with token ──
@@ -51,7 +51,7 @@ router.get(
 // PUT /api/auth/complete-profile
 // Called by new Google users to set role + personal details before admin review.
 // Requires a valid JWT (protect) but NOT checkApproved (still PENDING at this point).
-router.put("/complete-profile", protect, upload.single("document"), completeProfile);
+router.put("/complete-profile", protect, uploadDocument.single("document"), completeProfile);
 
 module.exports = router;
 

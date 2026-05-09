@@ -19,14 +19,14 @@ const {
 } = require("../controllers/userController");
 
 const { protect, checkApproved } = require("../middleware/authMiddleware");
-const upload = require("../middleware/upload");
+const { uploadAvatar: uploadAvatarMiddleware, uploadDocument } = require("../middleware/upload");
 const asyncHandler = require("../utils/asyncHandler"); // Phase 4 pilot
 const authLimiter = require("../middleware/authLimiter");
 
 
 // ================= REGISTER =================
 // asyncHandler pilot: unhandled errors forward to global errorHandler
-router.post("/register", authLimiter, upload.single("document"), asyncHandler(registerUser));
+router.post("/register", authLimiter, uploadDocument.single("document"), asyncHandler(registerUser));
 
 
 // ================= LOGIN =================
@@ -62,7 +62,7 @@ router.put("/set-role", protect, setRole);
 
 // ================= RESUBMIT APPLICATION (REJECTED users — no checkApproved) =================
 // Allows a REJECTED user to upload a new document and re-enter the PENDING queue.
-router.put("/resubmit", protect, upload.single("document"), resubmit);
+router.put("/resubmit", protect, uploadDocument.single("document"), resubmit);
 
 
 // ================= UPDATE PROFILE =================
@@ -73,7 +73,7 @@ router.delete("/me", protect, deleteAccount);
 
 
 // ================= UPLOAD AVATAR =================
-router.post("/me/avatar", protect, checkApproved, upload.single("avatar"), uploadAvatar);
+router.post("/me/avatar", protect, checkApproved, uploadAvatarMiddleware.single("avatar"), uploadAvatar);
 
 
 module.exports = router;

@@ -9,6 +9,7 @@ const bcrypt = require("bcryptjs");
 const Announcement = require("../models/Announcement");
 const Notification = require("../models/Notification");
 const SystemSetting = require("../models/SystemSetting");
+const { validatePassword } = require("../utils/passwordPolicy");
 
 // Month name helper
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -46,6 +47,11 @@ const createAdmin = async (req, res) => {
     
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+    
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({ message: passwordValidation.message });
     }
     
     const userExists = await User.findOne({ email });

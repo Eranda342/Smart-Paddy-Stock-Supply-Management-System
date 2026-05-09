@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const { isCloudinaryUrl } = require("../utils/validators");
+const { validatePassword } = require("../utils/passwordPolicy");
 
 /**
  * PUT /api/auth/complete-profile
@@ -72,8 +73,9 @@ const completeProfile = async (req, res) => {
 
     // ── Optionally store a password so the account can also use email/password login ──
     if (password) {
-      if (password.trim().length < 8) {
-        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({ message: passwordValidation.message });
       }
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password.trim(), salt);
