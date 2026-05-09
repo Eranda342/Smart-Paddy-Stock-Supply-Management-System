@@ -44,9 +44,29 @@ const router = express.Router();
 const adminOnly = [protect, checkApproved, authorizeRoles("ADMIN")];
 
 const checkAdminCreationAccess = (req, res, next) => {
-  if (req.body.adminSecret && req.body.adminSecret === process.env.ADMIN_SECRET) {
-    return next();
+  const envSecret = process.env.ADMIN_SECRET;
+
+  // 🔒 Fail CLOSED: if ADMIN_SECRET is not configured, or is too short,
+  // reject the secret-based path entirely — do not fall through.
+  // This prevents the undefined === undefined bypass (MED-3 / MIN-14).
+  const secretIsUsable =
+    typeof envSecret === "string" && envSecret.length >= 32;
+
+  if (req.body.adminSecret) {
+    // Secret path: only proceed if the env var is configured AND matches exactly
+    if (!secretIsUsable) {
+      return res.status(403).json({
+        message: "Admin secret is not configured on this server"
+      });
+    }
+    if (req.body.adminSecret === envSecret) {
+      return next();
+    }
+    // Wrong secret — reject immediately, do not fall through to JWT check
+    return res.status(403).json({ message: "Not authorized to create admin" });
   }
+
+  // JWT path: caller must be an authenticated ADMIN
   protect(req, res, (err) => {
     if (err) return next(err);
     if (req.user && req.user.role === "ADMIN") {

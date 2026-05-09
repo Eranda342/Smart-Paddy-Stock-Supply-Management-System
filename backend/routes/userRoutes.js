@@ -21,25 +21,26 @@ const {
 const { protect, checkApproved } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 const asyncHandler = require("../utils/asyncHandler"); // Phase 4 pilot
+const authLimiter = require("../middleware/authLimiter");
 
 
 // ================= REGISTER =================
 // asyncHandler pilot: unhandled errors forward to global errorHandler
-router.post("/register", upload.single("document"), asyncHandler(registerUser));
+router.post("/register", authLimiter, upload.single("document"), asyncHandler(registerUser));
 
 
 // ================= LOGIN =================
 // asyncHandler pilot: unhandled errors forward to global errorHandler
-router.post("/login", asyncHandler(loginUser));
+router.post("/login", authLimiter, asyncHandler(loginUser));
 
 
 // ================= EMAIL VERIFICATION =================
 router.get("/verify-email/:token", verifyEmail);
-router.post("/resend-verification", protect, resendVerification);
+router.post("/resend-verification", authLimiter, protect, resendVerification);
 
 
 // ================= PASSWORD RESET FLOW =================
-router.post("/forgot-password", forgotPassword);
+router.post("/forgot-password", authLimiter, forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
 // ================= GET PROFILE (approved users — dashboard etc.) =================

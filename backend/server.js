@@ -38,6 +38,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 
 const reportRoutes = require("./routes/reportRoutes");
+const { protect, authorizeRoles } = require("./middleware/authMiddleware");
 const disputeRoutes = require("./routes/disputeRoutes");
 const maintenanceMode = require("./middleware/maintenanceMode");
 
@@ -93,9 +94,11 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(passport.initialize()); // Passport – stateless (session: false)
 
-// ================= API DOCS =================
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapi));
-app.get("/api-docs.json", (req, res) => res.json(openapi));
+// ================= API DOCS (Admin-only) =================
+// 🔒 Both the interactive UI and the raw JSON spec require a valid ADMIN JWT.
+// Anonymous or non-admin requests are rejected before Swagger serves any content.
+app.use("/api-docs", protect, authorizeRoles("ADMIN"), swaggerUi.serve, swaggerUi.setup(openapi));
+app.get("/api-docs.json", protect, authorizeRoles("ADMIN"), (req, res) => res.json(openapi));
 
 // ================= STATIC FILES =================
 // Resolve uploads dir relative to this file so it works regardless of cwd

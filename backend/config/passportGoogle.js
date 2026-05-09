@@ -62,9 +62,24 @@ passport.use(
           }
 
         } else if (!user.googleId) {
-          // ── Existing email/password user — link their Google account ──
-          user.googleId = profile.id;
-          await user.save({ validateBeforeSave: false });
+          // ── Existing local account — do NOT auto-link ──
+          //
+          // A user registered with email + password under this address.
+          // Silently linking their account to any Google profile that shares
+          // the email would be a full account takeover vector: an attacker who
+          // controls a Google account with the victim's email gains access
+          // without ever knowing the victim's password.
+          //
+          // Safe behavior: reject the OAuth flow. The failureRedirect in the
+          // callback route sends the user to /login?error=oauth_failed.
+          // They can log in with their existing email + password instead.
+          console.warn(
+            "[OAuth] Rejected auto-link: local account exists for email:",
+            email
+          );
+          return done(null, false, {
+            message: "An account with this email already exists. Please sign in with your password."
+          });
         }
 
         return done(null, user);
