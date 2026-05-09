@@ -207,8 +207,8 @@ export default function FarmerListings() {
       </div>
 
       <div className="bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl relative z-10">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+        <div className="overflow-x-auto min-w-0">
+          <table className="w-full text-sm text-left min-w-[700px]">
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.04]">
                 <th className="px-6 py-5 text-xs font-semibold text-white/50 uppercase tracking-widest">Paddy Type</th>

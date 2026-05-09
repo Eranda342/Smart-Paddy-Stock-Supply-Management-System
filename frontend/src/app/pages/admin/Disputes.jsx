@@ -291,8 +291,8 @@ export default function AdminDisputes() {
           <p>No disputes found.</p>
         </div>
       ) : (
-        <div className="bg-white/[0.02] border border-white/8 rounded-2xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-white/[0.02] border border-white/8 rounded-2xl overflow-x-auto min-w-0">
+          <table className="w-full text-sm min-w-[900px]">
             <thead>
               <tr className="border-b border-white/8">
                 {['Case', 'Type', 'Transaction', 'Raised By', 'Status', 'Filed', ''].map(h => (
@@ -420,7 +420,7 @@ export default function AdminDisputes() {
                             <div><p className="text-white/40 text-xs mb-1 flex items-center gap-1"><Truck className="w-3 h-3" />Transport</p>
                               <p className="text-white">{selectedDispute.transaction.transportStatus?.replace(/_/g, ' ') || 'PENDING'}</p></div>
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="p-3 bg-[#22C55E]/5 border border-[#22C55E]/20 rounded-lg">
                               <p className="text-xs text-white/40 mb-1">🌾 Farmer</p>
                               <p className="font-medium text-white text-sm">{selectedDispute.transaction.farmer?.fullName || '—'}</p>
@@ -699,7 +699,7 @@ export default function AdminDisputes() {
               <button onClick={() => setShowTransactionModal(false)} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/40"><X className="w-5 h-5" /></button>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                 <p className="text-xs text-white/40 mb-1">Order Number</p>
                 <p className="font-mono text-white text-lg font-bold">{selectedDispute.transaction.orderNumber || selectedDispute.transaction._id?.slice(-6).toUpperCase()}</p>
@@ -735,7 +735,7 @@ export default function AdminDisputes() {
 
               <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3 col-span-2">
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider border-b border-white/10 pb-2">Commodity</p>
-                <div className="grid grid-cols-3 gap-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                   <div>
                     <p className="text-white/50 mb-1">Paddy Type</p>
                     <p className="font-medium text-white">{selectedDispute.transaction.listing?.paddyType || '—'}</p>

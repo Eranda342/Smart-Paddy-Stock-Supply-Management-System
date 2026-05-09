@@ -295,8 +295,8 @@ export default function MillOwnerTransport() {
             <p className="font-semibold text-lg">No completed deliveries yet</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="p-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Date</th>

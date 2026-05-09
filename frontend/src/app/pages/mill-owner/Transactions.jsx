@@ -109,9 +109,9 @@ export default function MillOwnerTransactions() {
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto min-w-0">
 
-          <table className="w-full">
+          <table className="w-full min-w-[800px]">
 
             <thead>
 

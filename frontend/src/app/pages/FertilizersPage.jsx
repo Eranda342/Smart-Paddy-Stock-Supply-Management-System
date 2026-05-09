@@ -79,8 +79,8 @@ export default function FertilizersPage() {
         </div>
         {/* Core Differences Table */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-          <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflow: "hidden" }}>
-             <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse" }}>
+          <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", overflowX: "auto", minWidth: 0 }}>
+             <table style={{ width: "100%", minWidth: "500px", textAlign: "left", borderCollapse: "collapse" }}>
                <thead>
                  <tr style={{ background: "rgba(0,0,0,0.4)" }}>
                    <th style={{ padding: "16px", borderBottom: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>Factor</th>

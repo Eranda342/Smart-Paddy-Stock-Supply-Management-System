@@ -465,7 +465,7 @@ export default function PendingVerifications() {
     <div className="max-w-[1320px] mx-auto">
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-1.5">Pending Verifications</h1>
           <p className="text-muted-foreground text-sm">
@@ -484,7 +484,7 @@ export default function PendingVerifications() {
       </div>
 
       {/* ── Stat cards (clickable filter) ── */}
-      <div className="grid grid-cols-3 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         {statCards.map(({ label, value, color, bg, border, icon: Icon, status }) => (
           <button
             key={status}
@@ -556,8 +556,8 @@ export default function PendingVerifications() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   {TABLE_HEADERS.map(h => (

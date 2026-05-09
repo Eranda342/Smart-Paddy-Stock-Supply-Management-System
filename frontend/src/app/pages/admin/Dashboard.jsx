@@ -385,7 +385,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Header ── */}
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-3"
             style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22C55E' }}>
@@ -410,7 +410,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── KPI Cards ── */}
-      <div className="grid grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {kpis.map((kpi) => (
           <KpiCard key={kpi.label} {...kpi} loading={loading} />
         ))}
@@ -511,10 +511,10 @@ export default function AdminDashboard() {
       )}
 
       {/* ── Charts ── */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
         {/* Area Chart — Sales Trend */}
-        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(34,197,94,0.08)]"
+        <div className="rounded-2xl p-6 min-w-0 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(34,197,94,0.08)]"
           style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between mb-5">
             <div>
@@ -556,7 +556,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Bar Chart — User Growth */}
-        <div className="rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(59,130,246,0.08)]"
+        <div className="rounded-2xl p-6 min-w-0 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(59,130,246,0.08)]"
           style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between mb-5">
             <div>
@@ -606,7 +606,7 @@ export default function AdminDashboard() {
             <p className="text-xs mt-0.5" style={{ color: 'rgba(148,163,184,0.7)' }}>Jump to any admin module</p>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {QUICK_ACTIONS.map(({ label, desc, icon: Icon, path, color }) => (
             <button
               key={path}
@@ -645,7 +645,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Platform Health Footer ── */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Platform Metrics with gradient progress bars */}
         <div className="rounded-2xl p-6"

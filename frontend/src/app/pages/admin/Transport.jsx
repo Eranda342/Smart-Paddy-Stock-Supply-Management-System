@@ -74,7 +74,7 @@ export default function AdminTransport() {
 
   return (
     <div className="max-w-[1320px] mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-1">Transport Management</h1>
           <p className="text-muted-foreground">Track all platform deliveries and logistics</p>
@@ -85,7 +85,7 @@ export default function AdminTransport() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {statCards.map(s => {
           const Icon = s.icon;
           return (
@@ -137,8 +137,8 @@ export default function AdminTransport() {
             <p>No transport records found</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   {['Txn ID', 'Farmer', 'Mill Owner', 'Paddy Type', 'Quantity', 'Vehicle', 'Transport Status', 'Payment', 'Last Updated'].map(h => (

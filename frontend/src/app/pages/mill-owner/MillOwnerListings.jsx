@@ -156,7 +156,7 @@ export default function MillOwnerListings() {
     <div className="max-w-[1320px] mx-auto">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-2">Buy Requests</h1>
           <p className="text-muted-foreground">Create and manage your paddy purchase requests</p>
@@ -175,8 +175,8 @@ export default function MillOwnerListings() {
           <p className="text-sm mt-1">Click "Create Request" to get started</p>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-          <table className="w-full text-sm">
+        <div className="bg-card border border-border rounded-2xl overflow-x-auto min-w-0 shadow-sm">
+          <table className="w-full text-sm min-w-[800px]">
             <thead>
               <tr className="bg-muted/40 border-b border-border">
                 <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Paddy Type</th>
@@ -402,7 +402,7 @@ export default function MillOwnerListings() {
 
               <div className="space-y-4">
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-muted/40 border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
                       <Tag className="w-3.5 h-3.5" /> Paddy Type
@@ -444,7 +444,7 @@ export default function MillOwnerListings() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-muted/40 border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
                       <DollarSign className="w-3.5 h-3.5" /> Price per kg

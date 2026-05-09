@@ -60,7 +60,7 @@ export default function AdminNegotiations() {
 
   return (
     <div className="max-w-[1320px] mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-1">Negotiations Monitor</h1>
           <p className="text-muted-foreground">View all active and historical negotiations</p>
@@ -113,8 +113,8 @@ export default function AdminNegotiations() {
             <p>No negotiations found</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   {['Buyer', 'Seller', 'Listing', 'Offer Price (Rs)', 'Quantity', 'Status', 'Date', 'Actions'].map(h => (
@@ -225,7 +225,7 @@ export default function AdminNegotiations() {
                             {msg.type || 'MESSAGE'}
                           </span>
                         </div>
-                        <p className="text-foreground mt-1">{msg.message}</p>
+                        <p className="text-foreground mt-1 break-words whitespace-pre-wrap">{msg.message}</p>
                         {msg.offeredPrice && (
                           <div className="mt-2 text-sm font-medium text-amber-500 bg-amber-500/10 inline-block px-2 py-1 rounded">
                             Offer: Rs {msg.offeredPrice}/kg

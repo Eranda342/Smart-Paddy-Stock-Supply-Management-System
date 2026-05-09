@@ -61,7 +61,7 @@ export default function AdminTransactions() {
 
   return (
     <div className="max-w-[1320px] mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-1">Transactions Management</h1>
           <p className="text-muted-foreground">Monitor all platform transactions and revenue</p>
@@ -72,7 +72,7 @@ export default function AdminTransactions() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         {statCards.map(s => {
           const Icon = s.icon;
           return (
@@ -124,8 +124,8 @@ export default function AdminTransactions() {
             <p>No transactions found</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   {['Transaction ID', 'Buyer', 'Seller', 'Listing', 'Amount (Rs)', 'Status', 'Date', 'Actions'].map(h => (

@@ -73,7 +73,7 @@ export default function MillOwnerVehicles() {
 
   return (
     <div className="max-w-[1320px] mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-2">Vehicle Management</h1>
           <p className="text-muted-foreground">Manage your transport fleet</p>
@@ -85,7 +85,7 @@ export default function MillOwnerVehicles() {
       </div>
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto min-w-0">
 
           {/* Loading */}
           {loading && (
@@ -104,7 +104,7 @@ export default function MillOwnerVehicles() {
 
           {/* Table */}
           {!loading && vehicles.length > 0 && (
-            <table className="w-full">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left p-4 text-sm font-medium">Vehicle Number</th>
@@ -194,7 +194,7 @@ function AddVehicleModal({ onClose, onSubmit }) {
       <div className="bg-card border border-border rounded-2xl p-8 max-w-xl w-full">
         <h2 className="text-2xl font-semibold mb-6">Add New Vehicle</h2>
         <form className="space-y-4" onSubmit={handleSubmit(onValid)} noValidate>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormInput
               label="Vehicle Number"
               placeholder="e.g., LK-AB-1234"

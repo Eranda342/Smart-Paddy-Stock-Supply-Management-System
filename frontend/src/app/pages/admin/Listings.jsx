@@ -101,7 +101,7 @@ export default function AdminListings() {
   return (
     <div className="max-w-[1320px] mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-semibold mb-1">Listings Management</h1>
           <p className="text-muted-foreground">Monitor and manage all farmer listings</p>
@@ -173,8 +173,8 @@ export default function AdminListings() {
             <p>No listings found</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   {['User', 'Paddy Type', 'Quantity (kg)', 'Price / kg', 'District', 'Status', 'Posted', 'Actions'].map(h => (
