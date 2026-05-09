@@ -26,6 +26,16 @@ export default function MillOwnerLayout() {
     setMobileOpen(false);
   }, [location.pathname]);
 
+  // Body scroll lock when drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -200,7 +210,7 @@ export default function MillOwnerLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <div className="h-[72px] border-b border-border bg-card flex items-center justify-between px-8 sticky top-0 z-40">
+        <div className="h-[72px] border-b border-border bg-card flex items-center justify-between px-4 lg:px-8 sticky top-0 z-40">
           <div className="flex-1 max-w-md flex items-center pr-4">
             <button
               onClick={() => setMobileOpen(true)}
@@ -279,7 +289,7 @@ export default function MillOwnerLayout() {
 
         {/* Page Content */}
         <main className="flex-1 w-full bg-background dark:bg-gradient-to-b dark:from-[#0B0F19] dark:to-[#0A0D16]">
-          <div className="w-full px-6 md:px-10 lg:px-14 py-8">
+          <div className="w-full px-3 sm:px-6 md:px-10 lg:px-14 py-4 sm:py-8">
             <Outlet />
           </div>
         </main>

@@ -231,7 +231,7 @@ export default function Complaints() {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h1 className="text-3xl font-bold mb-1">Disputes</h1>
+          <h1 className="text-xl sm:text-3xl font-bold mb-1">Disputes</h1>
           <p className="text-white/50 text-sm">Track disputes linked to your transactions.</p>
         </div>
         <button

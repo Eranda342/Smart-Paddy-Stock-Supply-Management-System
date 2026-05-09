@@ -218,6 +218,16 @@ export default function AdminLayout() {
     setMobileOpen(false);
   }, [location.pathname]);
 
+  // Body scroll lock when drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   // Click-outside closes admin profile dropdown
   useEffect(() => {
     const handler = (e) => {
@@ -374,7 +384,7 @@ export default function AdminLayout() {
         <div className="flex-1 flex flex-col min-w-0">
 
           {/* Top Navbar */}
-          <div className="h-[64px] border-b border-border bg-card flex items-center justify-between px-8 shrink-0 sticky top-0 z-40">
+          <div className="h-[64px] border-b border-border bg-card flex items-center justify-between px-4 lg:px-8 shrink-0 sticky top-0 z-40">
 
             {/* Search */}
             <div className="flex-1 max-w-md flex items-center pr-4">
@@ -480,7 +490,7 @@ export default function AdminLayout() {
 
           {/* Page Content */}
           <div className="flex-1">
-            <div className="p-8">
+            <div className="p-3 sm:p-6 lg:p-8">
               <Outlet />
             </div>
           </div>

@@ -627,11 +627,11 @@ export default function FarmerDashboard() {
 
       {/* â”€â”€ Header â”€â”€ */}
       {!user.emailVerified && (
-        <div className="mb-6 p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-yellow-300 flex items-center justify-between">
-          <span>⚠️ Your email is not verified. Please verify to unlock full access.</span>
+        <div className="mb-6 p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-yellow-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <span className="text-sm">⚠️ Your email is not verified. Please verify to unlock full access.</span>
           <button
             onClick={() => navigate("/verify-email-notice")}
-            className="ml-4 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 rounded-lg text-sm"
+            className="shrink-0 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 rounded-lg text-sm w-full sm:w-auto"
           >
             Verify Now
           </button>
@@ -644,7 +644,7 @@ export default function FarmerDashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
             Farmer Portal
           </div>
-          <h1 className="text-4xl font-bold mb-1.5" style={{ letterSpacing: '-0.02em' }}>Dashboard</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-1.5" style={{ letterSpacing: '-0.02em' }}>Dashboard</h1>
           <p className="text-sm" style={{ color: 'rgba(148,163,184,0.8)' }}>Welcome back - Here's your farm performance overview</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -740,20 +740,20 @@ export default function FarmerDashboard() {
           {/* Export Buttons */}
           <div className="flex items-center gap-2">
             <button onClick={exportExcel}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
+              className="flex items-center gap-2 px-3 sm:px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
               style={{ background: 'linear-gradient(135deg, #10B981, #059669)', color: '#000', boxShadow: '0 0 20px rgba(16,185,129,0.25)' }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 30px rgba(16,185,129,0.45)'}
               onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(16,185,129,0.25)'}>
               <FileSpreadsheet className="w-4 h-4" />
-              Export Excel
+              <span className="hidden sm:inline">Export Excel</span>
             </button>
             <button onClick={exportPDF}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
+              className="flex items-center gap-2 px-3 sm:px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-200 active:scale-95"
               style={{ background: 'linear-gradient(135deg, #22C55E, #16a34a)', color: '#000', boxShadow: '0 0 20px rgba(34,197,94,0.25)' }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 30px rgba(34,197,94,0.45)'}
               onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(34,197,94,0.25)'}>
               <FileText className="w-4 h-4" />
-              Export PDF
+              <span className="hidden sm:inline">Export PDF</span>
             </button>
           </div>
         </div>

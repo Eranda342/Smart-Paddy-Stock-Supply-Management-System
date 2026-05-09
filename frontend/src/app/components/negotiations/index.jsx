@@ -87,7 +87,7 @@ export const ConversationItem = memo(function ConversationItem({ grp, isSelected
           {/* Row 1: Name + Time */}
           <div className="flex items-center justify-between gap-1 mb-0.5">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`font-semibold text-sm truncate ${isSelected ? "text-foreground" : "text-foreground/90"}`}>
+              <span className={`font-semibold text-sm line-clamp-2 break-words ${isSelected ? "text-foreground" : "text-foreground/90"}`}>
                 {name}
               </span>
               {grp.user?.isVerified && <CheckCircle2 className="w-3 h-3 text-blue-400 shrink-0" />}
@@ -99,7 +99,7 @@ export const ConversationItem = memo(function ConversationItem({ grp, isSelected
 
           {/* Row 2: Preview + Badge */}
           <div className="flex items-center justify-between gap-1">
-            <p className={`text-xs truncate ${isSelected ? "text-muted-foreground" : "text-muted-foreground/70"}`}>
+            <p className={`text-xs line-clamp-2 break-words ${isSelected ? "text-muted-foreground" : "text-muted-foreground/70"}`}>
               {preview}
             </p>
             {grp.unreadCount > 0 && !isSelected && (

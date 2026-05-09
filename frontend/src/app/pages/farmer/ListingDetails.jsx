@@ -60,7 +60,7 @@ export default function ListingDetails() {
           Listing Details
         </h1>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
           <div>
             <p className="text-gray-400 text-sm">Paddy Type</p>

@@ -279,7 +279,7 @@ function UserModal({ user, onClose, onAction, actionLoading, onBlockPrompt }) {
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-8">
+          <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 sm:grid-cols-2 gap-8">
             {/* Section 1: Basic Info */}
             <div className="space-y-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 border-b border-border pb-2">Basic Info</p>

@@ -261,7 +261,7 @@ export default function AdminDisputes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-1">Dispute Management</h1>
+          <h1 className="text-xl sm:text-3xl font-bold mb-1">Dispute Management</h1>
           <p className="text-white/50 text-sm flex items-center gap-2">
             Review and resolve user disputes
             {socketConnected && <span className="inline-flex w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Live sync" />}

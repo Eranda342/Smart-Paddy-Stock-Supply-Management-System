@@ -558,7 +558,7 @@ export default function AdminReports() {
           </div>
 
           {/* ADVANCED INSIGHTS PANEL */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
               <Award className="w-6 h-6 text-indigo-500 mb-2" />
               <div className="text-xs text-muted-foreground">Top Paddy</div>

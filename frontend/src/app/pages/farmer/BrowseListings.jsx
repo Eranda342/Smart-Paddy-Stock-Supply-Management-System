@@ -346,7 +346,7 @@ export default function BrowseListings() {
 
           ) : (
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
               {filteredListings.map((listing) => (
 

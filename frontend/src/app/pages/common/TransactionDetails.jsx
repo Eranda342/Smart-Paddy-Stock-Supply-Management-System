@@ -611,7 +611,7 @@ export default function TransactionDetails() {
             
             <h2 className="text-xl font-bold mb-6 text-white tracking-tight">Order Specifications</h2>
             
-            <div className="grid grid-cols-2 gap-y-8 gap-x-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6">
               <div className="group">
                 <p className="text-xs text-white/40 mb-1.5 uppercase tracking-widest font-semibold group-hover:text-green-400 transition-colors">Buyer (Mill)</p>
                 <p className="font-semibold text-white/90 text-sm sm:text-base">{getBuyerName(transaction)}</p>

@@ -99,7 +99,7 @@ function DocModal({ user, onClose }) {
           </div>
         </div>
 
-        <div className="p-6 grid grid-cols-2 gap-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6 max-h-[75vh] overflow-y-auto">
           {/* Left: User info */}
           <div className="space-y-4">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
