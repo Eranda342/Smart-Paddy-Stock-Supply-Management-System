@@ -10,18 +10,19 @@
 
   **Real-time negotiation • Secure authentication • End-to-end supply chain workflow**
 
-  🚀 Built and deployed with production-grade backend security on cloud infrastructure
+  🚀 Deployed on Azure cloud infrastructure with a custom domain
 
   🌐 **Live Demo**: https://www.agrobridge.dev  
   🔗 **Backend API**: https://agrobridge-backend-a5egezhqeag5brgs.southeastasia-01.azurewebsites.net
 
   **End-to-end paddy trading — from listing to delivery — on a single platform**
 
-  [![Status](https://img.shields.io/badge/status-stable-success.svg)](#)
+  [![Release](https://img.shields.io/badge/release-v0.9.0-blue.svg)](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/releases/tag/v0.9.0)
+  [![Status](https://img.shields.io/badge/status-Production_Beta-success.svg)](#)
   [![Stack](https://img.shields.io/badge/stack-MERN-informational.svg)](#5-tech-stack)
   [![License](https://img.shields.io/badge/license-Closed_Source-red.svg)](#17-license)
 
-  [View Repository](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System) &nbsp;|&nbsp; [Report an Issue](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/issues)
+  [View Repository](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System) &nbsp;|&nbsp; [Releases](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/releases) &nbsp;|&nbsp; [Report an Issue](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/issues)
 </div>
 
 ---
@@ -30,12 +31,13 @@
 
 - **Complete trade lifecycle** — Listing creation through negotiation, transaction confirmation, transport assignment, and delivery tracking in a single integrated flow
 - **Real-time communication** — Socket.IO powers live negotiation chat, instant in-app notification delivery, and dispute chat without polling
-- **Three-role system** — fully isolated dashboards and route guards for Farmer, Mill Owner, and Admin roles, enforced independently on both client and server
-- **Glassmorphism UI** — dark-themed SaaS interface built with Tailwind CSS and Framer Motion; consistent glassmorphism design language across all role dashboards
-- **Fully Mobile Responsive** — completely optimized for all device sizes, handling safe-area viewports, mobile drawers, and edge-case z-index stacking
-- **Soft-delete architecture** — deleted user accounts are flagged, not removed; all historical transactions, negotiations, and disputes remain intact and queryable
-- **Multi-layer authentication** — email verification (Nodemailer), JWT session management, and Google OAuth 2.0 supported in parallel
-- **Analytics and reporting** — admin analytics dashboard with PDF (jsPDF) and Excel (ExcelJS) export capability
+- **Three-role system** — Fully isolated dashboards and route guards for Farmer, Mill Owner, and Admin roles, enforced independently on both client and server
+- **Fully Mobile Responsive** — Complete mobile-first design across all role dashboards, handling safe-area viewports, mobile drawer navigation, and edge-case z-index stacking
+- **Glassmorphism UI** — Dark-themed SaaS interface with consistent glassmorphism design language, animated transitions via Framer Motion
+- **Soft-delete architecture** — Deleted user accounts are flagged, not removed; all historical transactions, negotiations, and disputes remain intact and queryable
+- **Multi-layer authentication** — Email verification (Nodemailer), JWT session management, and Google OAuth 2.0 supported in parallel
+- **Analytics and reporting** — Admin analytics dashboard with PDF (jsPDF) and Excel (xlsx) export capability
+- **Socket.IO singleton pattern** — Stable WebSocket connection management with crash-safe Proxy pattern preventing teardown errors on logout
 
 ---
 
@@ -60,16 +62,17 @@ AgroBridge demonstrates the design and implementation of a production-ready full
 This project demonstrates:
 - End-to-end system architecture design
 - Real-time communication using WebSockets (Socket.IO)
-- Secure authentication flows (JWT + Google OAuth)
+- Secure authentication flows (JWT + Google OAuth 2.0)
 - Cloud-based media handling using Cloudinary
-- Production-grade backend security (rate limiting, CORS, validation)
+- Production-grade backend security (rate limiting, CORS, helmet, validation)
+- Mobile-first responsive SaaS UI design
 
 Agricultural supply chains often suffer from fragmentation, lack of transparency, and reliance on middlemen, leading to unfair pricing for farmers and logistical inefficiencies for buyers. AgroBridge was built to solve this real-world problem by providing a transparent and reliable trading platform.
 
 **Why this system matters:**
 - **Real-time Communication:** Eliminates delays in price negotiation and issue resolution through persistent WebSocket connections.
 - **Secure Authentication:** Multi-layered security using JWT for session management, Google OAuth 2.0 for seamless onboarding, and mandatory email verification to ensure trusted actors.
-- **Scalable Deployment:** Built on a decoupled MERN architecture with Cloudinary for decentralized asset management, making it cloud-ready for high traffic.
+- **Scalable Deployment:** Built on a decoupled MERN architecture with Cloudinary for decentralized asset management, deployed to Azure cloud infrastructure.
 - **Data Integrity:** A rigorous soft-delete model guarantees that critical historical trade data is never lost, maintaining a perfect audit trail even if users leave the platform.
 
 ---
@@ -80,33 +83,35 @@ AgroBridge uses a standard client-server architecture with a persistent real-tim
 
 ```mermaid
 graph TD
-    Client[React 18 Frontend]
-    
-    subgraph Backend API [Express Node.js Server]
+    Client[React 18 Frontend — Vite SPA]
+
+    subgraph Backend API [Express 5 / Node.js Server — Azure App Service]
         Auth[Auth & Guard Middleware]
         REST[REST Controllers]
         WS[Socket.IO Server]
+        Cron[node-cron Jobs]
     end
-    
-    DB[(MongoDB)]
-    Cloud[Cloudinary]
-    
+
+    DB[(MongoDB Atlas)]
+    Cloud[Cloudinary CDN]
+
     Client -- "HTTPS / REST" --> Auth
     Auth -- "Validated Req" --> REST
     Client -- "WebSocket (WSS)" --> WS
-    REST -- "Mongoose" --> DB
+    REST -- "Mongoose ODM" --> DB
     WS -- "Real-time Sync" --> DB
-    
+    Cron -- "Scheduled Tasks" --> DB
+
     Client -- "Upload Media" --> REST
     REST -- "Stream API" --> Cloud
     Cloud -. "Image URL" .-> DB
 ```
 
-- **Frontend** — React 18 SPA bundled with Vite. All API calls are made via Axios to the Express REST API. A persistent Socket.IO WebSocket connection is established on login for real-time event delivery.
-- **Backend** — Node.js/Express 5 server exposing a structured REST API organised by resource (users, listings, negotiations, transactions, transport, disputes, analytics, notifications). Handles authentication middleware, remote file uploads (Cloudinary), scheduled background jobs (node-cron), and Socket.IO event emission.
-- **Database** — MongoDB accessed via Mongoose ODM. Active schemas: `User`, `Listing`, `Negotiation`, `Transaction`, `Transport`, `Vehicle`, `Dispute`, `DisputeChat`, `Notification`, `Announcement`, `SystemSetting`.
-- **Real-time layer** — Socket.IO rooms are used to scope events to the relevant participants. Events emitted include: negotiation offer/counter/accept/reject, in-app notification delivery, and dispute chat messages.
-- **UI/UX** — Dark-themed glassmorphism design system implemented with Tailwind CSS utility classes. Animated transitions and micro-interactions delivered via Framer Motion.
+- **Frontend** — React 18 SPA bundled with Vite, deployed to Azure Static Web Apps. All API calls use a configured Axios client. A singleton Socket.IO WebSocket connection is established on login via a Proxy-based singleton pattern (`socket.js`) for safe teardown on logout.
+- **Backend** — Node.js/Express 5 server exposing a structured REST API organized by resource. Handles JWT + OAuth authentication middleware, Cloudinary file uploads, Winston-based logging, scheduled background jobs (node-cron), and Socket.IO event emission.
+- **Database** — MongoDB Atlas accessed via Mongoose ODM. Active schemas: `User`, `Listing`, `Negotiation`, `Transaction`, `Transport`, `Vehicle`, `Dispute`, `Notification`, `Announcement`, `SystemSetting`.
+- **Real-time layer** — Socket.IO rooms scope events to participants. Events include: negotiation offer/counter/accept/reject, in-app notification delivery, dispute chat messages, and dashboard refresh signals.
+- **UI/UX** — Dark-themed glassmorphism design system built with Tailwind CSS and Radix UI primitives. Animated transitions and micro-interactions via Framer Motion.
 
 ---
 
@@ -120,33 +125,36 @@ graph TD
 - Track active and completed transactions with full history
 - Coordinate transport and monitor delivery status
 - Raise formal complaints through the dispute system
+- View account verification status and manage profile documents
 
 ### Mill Owner
 
 - Post targeted buy requests for specific paddy varieties
 - Browse and filter the full farmer listing marketplace
-- Negotiate terms directly with farmers
-- Manage vehicles and coordinate logistics
+- Negotiate terms directly with farmers in real time
+- Manage vehicles and coordinate delivery logistics
 - Track purchases, transport assignments, and transaction history
+- View analytics dashboard with procurement trends and PDF/Excel export
 
 ### Admin
 
 - Manage all user accounts; approve or reject business verifications
 - Oversee all listings, negotiations, and transactions platform-wide
-- Handle disputes between farmers and mill owners
-- Broadcast system-wide announcements
-- View analytics dashboards with export capability (PDF and Excel)
+- Handle disputes between farmers and mill owners with real-time chat
+- Broadcast system-wide announcements to all users
+- View platform-wide analytics with export capability (PDF and Excel)
 - Configure system settings and maintenance mode
 
 ### Platform-Wide
 
 - Email verification required before account activation
-- Google OAuth 2.0 login and registration
-- Real-time in-app notifications via Socket.IO
+- Google OAuth 2.0 login and registration (Passport.js)
+- Real-time in-app notifications with sound alerts via Socket.IO
+- Global search bar across listings, users, and negotiations
 - Role-based access control with protected routes (client and server)
 - Soft-delete system preserving historical data integrity
-- PDF and Excel report generation
 - Dark-themed glassmorphism UI with animated transitions (Framer Motion)
+- Fully mobile responsive across all device sizes and orientations
 
 ---
 
@@ -154,18 +162,20 @@ graph TD
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 18, Vite, Tailwind CSS, Framer Motion, React Router v6, Axios, Socket.IO client |
-| **Backend** | Node.js, Express 5, Socket.IO |
-| **Database** | MongoDB, Mongoose |
+| **Frontend** | React 18, Vite, Tailwind CSS, Framer Motion, React Router v7, Radix UI, Socket.IO client |
+| **Backend** | Node.js, Express 5, Socket.IO 4, Winston, helmet |
+| **Database** | MongoDB Atlas, Mongoose 9 |
 | **Authentication** | JSON Web Tokens (JWT), Passport.js, Google OAuth 2.0, bcryptjs |
-| **HTTP / Config** | Axios (client), cors, dotenv |
-| **Email** | Nodemailer (Gmail App Password) |
-| **Media Storage** | Cloudinary |
+| **HTTP / Config** | Axios (client), cors, dotenv, express-rate-limit |
+| **Email** | Nodemailer (Gmail App Password), custom HTML email templates |
+| **Media Storage** | Cloudinary (multer-storage-cloudinary) |
 | **Scheduling** | node-cron |
-| **Reports** | jsPDF, jspdf-autotable, ExcelJS |
-| **UI / Design** | Glassmorphism design system, dark SaaS theme, Framer Motion animations |
+| **Reports** | jsPDF, jspdf-autotable, xlsx |
+| **UI Components** | Radix UI primitives, lucide-react icons, recharts, react-hot-toast |
+| **Deployment** | Azure Static Web Apps (frontend), Azure App Service (backend) |
+| **Domain** | Custom domain — `www.agrobridge.dev` |
 
-> Built with a focus on scalability, security, and real-time performance in a production-like environment.
+> Built with a focus on scalability, security, and real-time performance in a production environment.
 
 ---
 
@@ -173,14 +183,23 @@ graph TD
 
 The backend exposes a RESTful API structured by resource:
 
-- `/api/users` — authentication, profile, email verification
-- `/api/listings` — paddy listings management
-- `/api/negotiations` — real-time offer and counter-offer system
-- `/api/transactions` — finalized agreements
-- `/api/transport` — logistics and delivery tracking
-- `/api/disputes` — dispute resolution and chat system
+| Route | Purpose |
+| :--- | :--- |
+| `/api/users` | Authentication, profile management, email verification, password policy |
+| `/api/auth` | Google OAuth 2.0 initiation and callback, OAuth profile completion |
+| `/api/listings` | Paddy listing CRUD, browse and filter marketplace |
+| `/api/negotiations` | Real-time offer and counter-offer system |
+| `/api/transactions` | Finalized trade agreements |
+| `/api/transport` | Logistics assignment and delivery tracking |
+| `/api/vehicles` | Vehicle management for mill owners |
+| `/api/disputes` | Dispute creation, resolution, and real-time chat |
+| `/api/notifications` | In-app notification fetch and mark-as-read |
+| `/api/reports` | Admin report generation (PDF/Excel) |
+| `/api/analytics` | Platform-wide analytics data |
+| `/api/dashboard` | Role-specific KPI dashboard data |
+| `/api/admin` | Admin user and platform management |
 
-All protected routes require JWT authentication and role-based authorization.
+All protected routes require a valid JWT Bearer token and role-based authorization via middleware guards.
 
 ---
 
@@ -195,7 +214,7 @@ Listing  →  Negotiation  →  Transaction  →  Transport  →  Delivery
 | Stage | Actor(s) | Description |
 | :--- | :--- | :--- |
 | **Listing** | Farmer | Farmer creates a paddy listing specifying variety, quantity, price, and location. Mill Owner can also post a buy request. |
-| **Negotiation** | Farmer + Mill Owner | Either party initiates a negotiation. Offers and counter-offers are exchanged in real time via Socket.IO chat. When both parties agree, the negotiation is marked accepted. |
+| **Negotiation** | Farmer + Mill Owner | Either party initiates a negotiation. Offers and counter-offers are exchanged in real time via Socket.IO. When both parties agree, the negotiation status moves to `AGREED` then `ACCEPTED`. |
 | **Transaction** | System | An accepted negotiation automatically generates a Transaction record linking both parties, the listing, and the agreed terms. |
 | **Transport** | Mill Owner + Driver | The Mill Owner assigns a vehicle and driver to the transaction. Transport status is updated through pickup, in-transit, and delivered stages. |
 | **Delivery** | Both parties | Delivery is confirmed and the transaction is closed. Full history is preserved for both parties and visible to Admin. |
@@ -207,9 +226,10 @@ Listing  →  Negotiation  →  Transaction  →  Transport  →  Delivery
 Socket.IO is integrated throughout the platform to eliminate polling and provide an interactive experience:
 
 - **Negotiation chat** — each negotiation has a dedicated Socket.IO room. Offer submissions, counter-offers, acceptances, and rejections are pushed instantly to both participants.
-- **In-app notifications** — server-side events (e.g. new negotiation offer, transaction created, dispute opened) emit a notification event to the target user's socket room. The notification is simultaneously persisted to the `Notification` collection in MongoDB.
-- **Dispute chat** — open disputes have a dedicated real-time chat channel between the affected parties and the Admin, backed by the `DisputeChat` model.
-- **Connection management** — users join personal socket rooms on authentication. Rooms are identified by user ID, ensuring notifications are delivered only to the correct recipient.
+- **In-app notifications** — server-side events (new negotiation offer, transaction created, dispute opened) emit a notification event to the target user's personal socket room. The notification is simultaneously persisted to MongoDB.
+- **Dispute chat** — open disputes have a dedicated real-time chat channel between affected parties and Admin, backed by the `Dispute` model.
+- **Dashboard refresh** — the `dashboard_update` event triggers the KPI dashboard to re-fetch live data without a page reload.
+- **Connection management** — users join personal socket rooms on authentication. A singleton Proxy pattern (`src/socket.js`) ensures no duplicate connections and prevents crashes during logout teardown.
 
 ---
 
@@ -217,7 +237,7 @@ Socket.IO is integrated throughout the platform to eliminate polling and provide
 
 AgroBridge implements a non-destructive account deletion model:
 
-- When an Admin deletes a user account, the `User` document is **flagged** with a `isDeleted: true` field — it is never removed from the database.
+- When an Admin deletes a user account, the `User` document is **flagged** with `isDeleted: true` — it is never removed from the database.
 - All associated records (Listings, Negotiations, Transactions, Disputes) that reference the deleted user remain intact and continue to resolve correctly.
 - Auth middleware blocks deleted users from logging in or making API calls immediately upon deletion.
 - The Admin panel displays deleted users distinctly (labelled "Deleted User") to preserve visibility into historical platform activity.
@@ -225,35 +245,69 @@ AgroBridge implements a non-destructive account deletion model:
 
 ---
 
-## 10. Folder Structure
+## 10. Security & Reliability
+
+AgroBridge implements rigorous security controls to ensure production-grade safety:
+
+- **JWT Authentication** — Stateless, short-lived access tokens (12h expiry) validated on every protected route. The full DB user is fetched on every request to catch live `isBlocked`/`isDeleted` changes.
+- **Google OAuth 2.0** — Secure Passport.js strategy providing a seamless verified alternative to password authentication, with JWT handoff on callback.
+- **Email Verification** — Strict gating mechanism; accounts are blocked from platform actions until their email is explicitly confirmed.
+- **Password Policy** — Enforced complexity rules via `passwordPolicy.js` utility.
+- **Role-Based Access Control (RBAC)** — Dedicated middleware guards for `FARMER`, `MILL_OWNER`, and `ADMIN`, enforced independently on both client and server.
+- **Rate Limiting** — Global API limiter and a dedicated auth limiter (10 req / 15 min per IP, fully IPv4/IPv6-safe) to prevent brute-force attacks.
+- **CORS Origin Whitelisting** — Explicit allowlist including production domains (`www.agrobridge.dev`, `agrobridge.dev`) and development origins.
+- **Helmet** — HTTP security headers applied via `helmet` middleware.
+- **Socket.IO Security** — WebSocket connections require auth token handshakes; event emissions are scoped to validated user rooms.
+- **Input Validation & Error Handling** — Centralized error handlers, schema validations, and a global `asyncHandler` wrapper catch malformed requests before state mutations occur.
+- **Soft-Delete System** — Non-destructive account deletion preserves complete platform audit trails.
+- **Winston Logging** — Structured server-side logging via `logger.js` for operational monitoring.
+
+---
+
+## 11. Folder Structure
 
 ```
 Smart-Paddy-Stock-Supply-Management-System/
 ├── backend/
-│   ├── config/          # Database connection, Passport strategy
-│   ├── controllers/     # Route handler logic
-│   ├── middleware/       # Auth guards, role checks, error handlers
-│   ├── models/          # Mongoose schemas
-│   ├── routes/          # Express route definitions
-│   ├── jobs/            # node-cron scheduled tasks
-│   ├── utils/           # Shared helpers (email, tokens, Cloudinary etc.)
-│   ├── docs/            # Swagger API specification
-│   ├── server.js        # Entry point
+│   ├── config/          # Database connection, Passport OAuth strategy
+│   ├── controllers/     # Route handler logic (user, listing, negotiation, etc.)
+│   ├── middleware/       # Auth guards, role checks, rate limiters, error handlers
+│   ├── models/          # Mongoose schemas (User, Listing, Negotiation, Transaction,
+│   │                    #   Transport, Vehicle, Dispute, Notification, Announcement,
+│   │                    #   SystemSetting)
+│   ├── routes/          # Express route definitions (13 route files)
+│   ├── jobs/            # node-cron scheduled tasks (e.g. auto-dispute generation)
+│   ├── utils/           # Shared helpers (email, tokens, PDF, validators, logger,
+│   │                    #   password policy, SMS stub)
+│   ├── scripts/         # One-off data migration scripts
+│   ├── server.js        # Entry point — Express app, Socket.IO, middleware
 │   └── .env.example     # Environment variable template
 │
 ├── frontend/
 │   └── src/
-│       ├── api/         # Axios API client modules
+│       ├── api/         # Axios API client configuration
 │       ├── app/
-│       │   ├── pages/   # Route-level components (farmer/, mill-owner/, admin/)
-│       │   ├── layouts/ # Role-specific layout wrappers
-│       │   ├── contexts/# React context providers
+│       │   ├── pages/   # Route-level components
+│       │   │   ├── farmer/       # Dashboard, Listings, Negotiations, Transactions,
+│       │   │   │                 # Transport, Disputes, Profile, BrowseListings
+│       │   │   ├── mill-owner/   # Dashboard, Negotiations, Transactions,
+│       │   │   │                 # Transport, Vehicles, Disputes, Profile
+│       │   │   ├── admin/        # Dashboard, Users, Listings, Negotiations,
+│       │   │   │                 # Transactions, Transport, Disputes, Reports,
+│       │   │   │                 # Analytics, Announcements, Settings
+│       │   │   └── common/       # TransactionDetails, shared flows
+│       │   ├── layouts/ # Role-specific layout wrappers (FarmerLayout,
+│       │   │            # MillOwnerLayout, AdminLayout)
+│       │   ├── contexts/# React context providers (AuthContext, ThemeContext)
 │       │   └── routes.jsx
-│       ├── components/  # Shared UI components
+│       ├── components/  # Shared UI components (Navbar, NotificationDropdown,
+│       │                # GlobalSearchBar, ProtectedRoute, RaiseDisputeModal, etc.)
 │       ├── constants/   # Static data (paddy types, categories, etc.)
 │       ├── assets/      # Images, icons, paddy variety photos
+│       ├── socket.js    # Socket.IO singleton with Proxy-based safe teardown
 │       ├── styles/      # Global CSS
-│       └── utils/       # Frontend helpers (PDF generator, formatters)
+│       └── utils/       # Frontend helpers (analyticsEngine, PDF generator,
+│                        # formatters, file URL resolver)
 │
 └── docs/
     └── images/          # README screenshots
@@ -261,7 +315,7 @@ Smart-Paddy-Stock-Supply-Management-System/
 
 ---
 
-## 11. Screenshots
+## 12. Screenshots
 
 ### Landing Page
 
@@ -293,7 +347,7 @@ Smart-Paddy-Stock-Supply-Management-System/
 
 ---
 
-## 12. ⚖️ Usage Restrictions
+## 13. ⚖️ Usage Restrictions
 
 This project is protected and intended strictly for:
 - Academic submission
@@ -311,28 +365,14 @@ Environment configuration details are intentionally withheld for security reason
 
 ---
 
-## 13. Security & Reliability
-
-AgroBridge implements rigorous security controls to ensure production-grade safety for both user data and system operations:
-
-- **JWT Authentication** — Stateless, short-lived access tokens validated on every protected route.
-- **Google OAuth 2.0** — Secure passport-google-oauth20 strategy providing a seamless, verified alternative to password authentication.
-- **Email Verification** — Strict gating mechanism; accounts are blocked from platform actions until their email is explicitly confirmed via Nodemailer.
-- **Role-Based Access Control (RBAC)** — Dedicated middleware guards for `FARMER`, `MILL_OWNER`, and `ADMIN`, strictly enforced independently on both the React client and Express API.
-- **Rate Limiting** — Global and route-specific API rate limiting (fully IPv6-safe) to prevent brute-force and DDoS attacks.
-- **CORS Origin Whitelisting** — Explicit Cross-Origin Resource Sharing policy blocking unauthorized domains, correctly mapped to production domains.
-- **Socket.IO Security** — WebSocket connections mandate authentication handshakes, and event emissions are locked strictly to validated user rooms to prevent data leakage.
-- **Input Validation & Error Handling** — Centralized error handlers and schema validations catch malformed requests before state mutations occur.
-- **Soft-Delete System** — User deletions are non-destructive; related transactions, negotiations, and disputes are preserved to maintain platform audit trails.
-
----
-
 ## 14. Known Limitations
 
 - **No server-side pagination** — list endpoints return full datasets; performance degrades with large collections
-- **Large frontend bundle** — the main JS chunk exceeds 500 kB (surfaced during `vite build`); code-splitting is a planned improvement
+- **Large frontend bundle** — the main JS chunk is ~2.8 MB (789 KB gzipped); code-splitting is a planned improvement
+- **iOS Safari rubber-band overscroll** — when the mobile drawer is open, Safari's momentum scrolling can occasionally reveal content behind the overlay (cosmetic only)
+- **Negotiation keyboard compression** — on very short device viewports (< 568px height), the negotiation chat input may be partially compressed by the software keyboard
 - **Swagger configuration** — API documentation is hardcoded to `localhost` and requires manual adjustment for production use
-- **SMS notifications** — transport milestone alerts are mocked; no live Twilio or equivalent SMS integration exists
+- **SMS notifications** — transport milestone alerts stub exists (`sendSMS.js`) but no live SMS gateway is integrated
 
 ---
 
@@ -344,6 +384,7 @@ AgroBridge implements rigorous security controls to ensure production-grade safe
 - AI-assisted price recommendations derived from historical transaction data
 - Secure payment gateway integration
 - Environment-variable-driven Swagger host configuration for production
+- iOS Safari mobile drawer overscroll fix
 
 ---
 
@@ -363,3 +404,11 @@ This project is NOT open source.
 All rights reserved © Eranda Buddhika
 
 No permission is granted to use, copy, modify, or distribute this software in any form without explicit written consent.
+
+---
+
+## 18. Release History
+
+| Release | Date | Classification | Notes |
+| :--- | :--- | :--- | :--- |
+| [**v0.9.0**](https://github.com/Eranda342/Smart-Paddy-Stock-Supply-Management-System/releases/tag/v0.9.0) | May 2026 | Production Beta | Full trading lifecycle, real-time negotiation, mobile-first redesign, WebSocket auth hardening, Azure deployment, custom domain |
