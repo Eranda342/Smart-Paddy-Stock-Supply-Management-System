@@ -3,7 +3,6 @@ import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tool
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { io } from "socket.io-client";
 import { useTheme } from "../../contexts/ThemeContext";
 import CountUp from "react-countup";
 import autoTable from "jspdf-autotable";

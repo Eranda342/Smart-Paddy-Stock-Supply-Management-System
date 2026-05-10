@@ -48,10 +48,10 @@ export default function NotificationDropdown() {
       window.socket = socket;
     }
 
-    const handleConnect = () => console.log("✅ SOCKET CONNECTED:", socket.id);
-    const handleDisconnect = (reason) => console.log("❌ SOCKET DISCONNECTED:", reason);
-    const handleConnectError = (err) => console.log("🚨 SOCKET ERROR:", err.message);
-    const handleReconnectAttempt = () => console.log("🔄 Reconnecting...");
+    const handleConnect = () => {};
+    const handleDisconnect = (reason) => {};
+    const handleConnectError = (err) => {};
+    const handleReconnectAttempt = () => {};
     
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
@@ -78,7 +78,6 @@ export default function NotificationDropdown() {
     };
 
     const handleNotification = (data) => {
-      console.log("🔔 New notification:", data);
       fetchNotifications();
       const msg = data?.message || data?.body || data?.data?.message || "New notification";
       toast.success(msg);
